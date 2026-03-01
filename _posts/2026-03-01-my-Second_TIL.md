@@ -5,11 +5,5 @@ categories: [TIL, Blog]
 tags: [jekyll, github-pages]
 ---
 
-![](/assets/img/posts/2026-03-01-my-Second_TIL-1772356293960.png)
-
-
-![|500x386](/assets/img/posts/2026-03-01-my-Second_TIL-1772357113616.png)
-
-
-![|500x564](/assets/img/posts/2026-03-01-my-Second_TIL-1772357466924.png)
+![오늘배운4](/assets/img/posts/2026-03-01-my-Second_TIL-1772357466924.png)
 
