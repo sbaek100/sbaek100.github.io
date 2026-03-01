@@ -4,4 +4,4 @@ date: 2026-03-01 15:01:00 +0900
 categories: [TIL, Blog]
 tags: [jekyll, github-pages]
 ---
-![[./_posts_img/image-8.png]]
+![](./_posts_img/image-9.png)
