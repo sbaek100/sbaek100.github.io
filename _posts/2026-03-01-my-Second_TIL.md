@@ -5,8 +5,4 @@ categories: [TIL, Blog]
 tags: [jekyll, github-pages]
 ---
 
-
-
-ㄹㅊㅎㅇㄹ
-
-![](/sbaek100.github.io/_posts/_posts_img/2026-03-01-my-Second_TIL-1772353736326.webp)
+![](../assets/img/_posts/image-8.png)
