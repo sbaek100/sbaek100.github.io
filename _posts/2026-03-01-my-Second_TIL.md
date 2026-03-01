@@ -8,13 +8,16 @@ tags: [jekyll, github-pages]
 ## 오늘 배운 내용
 
 - 이것은 옵시디안으로 옮겨진 내용이다.
-![[Pasted image 20260301162600.png |483x317]]
+
+
+
+
+
+![](../../assets/img/posts/image-1.png)
 
 
 
 
 
 
-
-
-
+![](../../assets/img/posts/image.png)
