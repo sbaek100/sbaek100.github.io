@@ -5,4 +5,7 @@ categories: [TIL, Blog]
 tags: [jekyll, github-pages]
 ---
 
-![](../assets/img/_posts/image-8.png)
+![](/assets/img/_posts/2026-03-01-my-Second_TIL-1772355844692.png)
+
+
+
