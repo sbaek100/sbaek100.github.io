@@ -7,5 +7,5 @@ tags: [jekyll, github-pages]
 
 2026-03-01-my-Second_TIL
 
-![|457x561](/assets/img/posts/2026-03-01-my-Second_TIL1-1772356868554.png)
+![이미지 조정 | 457x561](/assets/img/posts/2026-03-01-my-Second_TIL1-1772356868554.png)
 
