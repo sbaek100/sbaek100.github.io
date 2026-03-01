@@ -13,11 +13,4 @@ tags: [jekyll, github-pages]
 
 
 
-![](../../assets/img/posts/image-1.png)
-
-
-
-
-
-
-![](../../assets/img/posts/image.png)
+![](/assets/img/posts/image-3.png)
