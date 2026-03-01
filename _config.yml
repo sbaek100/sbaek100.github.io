@@ -14,12 +14,12 @@ timezone: Asia/Seoul
 # jekyll-seo-tag settings › https://github.com/jekyll/jekyll-seo-tag/blob/master/docs/usage.md
 # ↓ --------------------------
 
-title: Brain Buffer # 브레인 버퍼 # the main title
+title: Secure Life # 브레인 버퍼 # the main title
 
-tagline: 백승수의 학습과 생각 기록 # it will display as the subtitle
+tagline: 프로젝트 No.1 # it will display as the subtitle
 
 description: >- # used by seo meta and the atom feed
-  정보보안, AI, 음악, 그리고 일상의 기록
+  정보보안, AI, 문화, 그리고 일상의 기록
 
 author:
   name: "백승수 (Seungsoo Baek)"
@@ -104,7 +104,7 @@ theme_mode: # [light | dark]
 cdn:
 
 # the avatar on sidebar, support local or CORS resources
-avatar: "/assets/img/my.jpg"
+avatar: "/assets/img/my.png"
 
 # The URL of the site-wide social preview image used in SEO `og:image` meta tag.
 # It can be overridden by a customized `page.image` in front matter.
