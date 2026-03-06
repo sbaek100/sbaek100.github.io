@@ -5,10 +5,9 @@ categories:
   - 강의
   - 실습
 tags:
-  - markdown
-  - 포트폴리오
-  - 문법
-  - 가이드
+  - 리눅스
+  - 설치
+  - Virtualbox
 pin: true
 ---
 ---
@@ -70,7 +69,7 @@ Ubuntu 24는 기본적으로 한글 지원이 부족하므로 별도 설정이 �
 
 1. **한글 패키지 설치**:
     
-    - `sudo apt install fcitx-hangul fonts-nanum* -y`.
+    - `sudo apt install fcitx5-hangul fonts-nanum* -y`.
         
 2. **입력기 설정**:
     
