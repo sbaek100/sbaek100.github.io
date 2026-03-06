@@ -1,3 +1,4 @@
+# --- 기존 설정 ---
 # Bundler cache
 .bundle
 vendor
@@ -25,3 +26,11 @@ package-lock.json
 # Misc
 _sass/vendors
 assets/js/dist
+
+# --- 보안 추가 설정 (중요) ---
+.env
+*.pem
+*.key
+id_rsa
+id_rsa.pub
+secrets.json
