@@ -33,4 +33,4 @@ assets/js/dist
 *.key
 id_rsa
 id_rsa.pub
-secrets.json
+secrets.json.obsidian/ 
