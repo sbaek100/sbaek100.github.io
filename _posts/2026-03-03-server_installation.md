@@ -3,12 +3,12 @@ title: 보안 실험을 위한 VM 환경 구축(Ubuntu)
 date: 2026-03-03 15:00:00 +0900
 categories:
   - 강의
-  - 실습
+  - 보안시스템구축실습
 tags:
   - 리눅스
   - 설치
   - Virtualbox
-pin: true
+pin: false
 ---
 ---
 
