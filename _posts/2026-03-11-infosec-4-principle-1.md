@@ -318,8 +318,8 @@ DR(Disaster Recovery) 센터는 주 데이터센터 장애 시 업무 연속성�
 - 단독 공격: 1%
 - 공모 공격: 0.001%
 
-![](/assets/img/posts/2026-03-11-infosec-3-principle-1-1773220084871.png)
-<the two-person concept(Two-person rule) : 미국 공군 지침(AFI) 91-104에 따르면, "2인 개념"은 한 개인이 우발적이거나 악의적으로 핵무기를 발사하는 것을 방지하기 위해 설계>
+![the two-person concept(Two-person rule) : 미국 공군 지침(AFI) 91-104에 따르면, "2인 개념"은 한 개인이 우발적이거나 악의적으로 핵무기를 발사하는 것을 방지하기 위해 설계](/assets/img/posts/2026-03-11-infosec-3-principle-1-1773220084871.png)
+
 
 ### 9.3 운영 예시
 
