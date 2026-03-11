@@ -1,4 +1,4 @@
-# --- 기존 설정 ---
+# --- 기존 ?�정 ---
 # Bundler cache
 .bundle
 vendor
@@ -27,10 +27,12 @@ package-lock.json
 _sass/vendors
 assets/js/dist
 
-# --- 보안 추가 설정 (중요) ---
+# --- 보안 추�? ?�정 (중요) ---
 .env
 *.pem
 *.key
 id_rsa
 id_rsa.pub
-secrets.json.obsidian/ 
+secrets.json`r`n`r`n# Local Obsidian workspace/config should not be published`r`n.obsidian/`r`n
+# Local Obsidian workspace/config should not be published
+.obsidian/
