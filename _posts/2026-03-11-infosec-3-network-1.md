@@ -188,7 +188,7 @@ graph LR
 토폴로지(Topology)는 장비 연결 형태를 의미함.
 네트워크의 성능, 장애 전파, 보안 정책 위치를 결정하는 중요한 개념임.
 
-![](/assets/img/posts/2026-03-11-infosec-2-network-1773211617727.png)
+![597](/assets/img/posts/2026-03-11-infosec-2-network-1773211617727.png)
 
 | 토폴로지(Topology) | 특징 | 장점 | 단점 | 보안 포인트 |
 |---|---|---|---|---|
@@ -203,7 +203,7 @@ graph LR
 # Part 3. OSI 7계층(Open Systems Interconnection 7 Layers)과 캡슐화
 
 
-![](/assets/img/posts/2026-03-11-infosec-2-network-1773211644059.png)
+![|697x397](/assets/img/posts/2026-03-11-infosec-2-network-1773211644059.png)
 
 ## 3.1 OSI 7계층(Open Systems Interconnection 7 Layers)의 목적
 
@@ -432,6 +432,12 @@ L7은 공격자에게도 매력적인 계층임.
 
 이 순서를 습관화하면, "이상 징후"를 "근거 기반 결론"으로 바꾸는 속도가 빨라짐.
 
+동영상 링크
+![How Packet Travels in Network](https://www.youtube.com/watch?v=xIuBmOufbls)
+
+(패킷의 여정)
+
+
 ---
 
 
@@ -440,7 +446,7 @@ L7은 공격자에게도 매력적인 계층임.
 송신 시 각 계층 헤더(Header)가 붙고,
 수신 시 반대로 벗겨지는 과정임.
 
-![](/assets/img/posts/2026-03-11-infosec-2-network-1773212222842.png)
+![|700x488](/assets/img/posts/2026-03-11-infosec-2-network-1773212222842.png)
 
 
 ```mermaid
@@ -580,6 +586,8 @@ UDP(User Datagram Protocol)는 비연결형 전송임.
 **"연결 가능"보다 "신뢰 가능한 연결"이 중요함.**
 
 
+
+
 ---
 
 # Part 5. 보안 장비와 실무형 분석 질문
@@ -606,6 +614,8 @@ flowchart LR
 3. 어떤 프로토콜과 포트를 사용했는가?
 4. 요청 내용(페이로드)이 정상 업무와 어떻게 다른가?
 5. 방화벽/IDS/서버 로그가 같은 이야기를 하는가?
+
+
 
 ---
 
