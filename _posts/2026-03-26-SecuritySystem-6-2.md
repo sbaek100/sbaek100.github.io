@@ -1,5 +1,5 @@
 ---
-title: (6주차) 보안시스템구축실습 6-2 - SSH 보안 설정 과제 & 접속 로그 분석
+title: (6주차) 보안시스템구축실습 6-2 - SSH 공개키 인증 강화와 공격 실패 확인
 date: 2026-03-26 08:30:00 +0900
 categories:
   - 강의
@@ -7,405 +7,315 @@ categories:
 tags:
   - SSH
   - OpenSSH
+  - 공개키인증
   - 로그분석
-  - 보안설정
-  - 셀프체크
+  - 하드닝
 mermaid: true
 pin: false
-description: 6주차 SSH 보안 설정 점검 과제, 포트 2222와 공개키 인증 기반 SSH 운영 점검, 접속 로그 분석, 무차별 대입 공격 이해 및 셀프체크.
+description: 6-1의 느슨한 SSH 서버를 공개키 기반 인증 중심으로 강화하고, 포트를 2222로 변경한 뒤 Kali에서 이전 방식의 공격이 실패하는 모습을 확인하는 실습.
 ---
 
-## 실습 환경
+# SSH 공개키 인증 강화와 공격 실패 확인
 
-| 구분 | 운영체제 | IP 주소 | 역할 |
-|------|----------|---------|------|
-| 공격자 PC | Kali Linux | 192.168.0.10 | SSH 접속 시도, 로그 확인 |
-| 서버 | Ubuntu | 192.168.0.30 | SSH 서버 운영 |
+---
+
+## 실습 목표
+
+6-1에서는 일부러 허술한 SSH 서버를 만들고, Kali에서 비밀번호 로그인 시도와 성공 가능성을 확인했다.
+
+이번 6-2의 목표는 그 서버를 실제로 강화하는 것이다.
+
+- SSH 포트를 `22`에서 `2222`로 변경
+- 공개키 기반 인증 설정
+- 비밀번호 로그인 차단
+- Kali에서 예전 방식 공격이 실패하는지 확인
+- 로그에서 `Accepted password` 가 `Accepted publickey` 로 바뀌는 차이 이해
 
 > **6-1에서 이어지는 내용입니다.**
-> 6-1에서 SSH 서버 설치, 포트 변경(2222), 키 인증 설정을 완료했다고 가정합니다.
-> 아직 6-1을 완료하지 않았다면 먼저 진행해 주세요.
+> 6-1에서 SSH 서버가 설치되어 있고, Kali와 Ubuntu 사이 통신이 가능한 상태를 전제로 합니다.
+{: .prompt-info }
 
 ---
 
-## 시작 전 확인 (6-1 연결 체크)
+## Part 1. 6-1 상태 다시 확인
 
-Ubuntu 서버에서 아래를 확인합니다.
+먼저 Ubuntu에서 현재 상태를 확인한다.
 
 ```bash
-# SSH 서비스가 실행 중인지 확인
-# systemctl: 서비스(프로그램)를 관리하는 명령어
-# status: 해당 서비스의 현재 상태를 표시
-# ssh: 확인할 서비스 이름
 sudo systemctl status ssh
-# 출력에서 "active (running)" 이 보이면 정상입니다
-
-# SSH 설정 파일에서 포트 번호 확인
-# grep: 파일에서 특정 단어가 포함된 줄만 찾아서 출력
-# Port: 찾을 단어
-# /etc/ssh/sshd_config: SSH 서버 설정 파일 경로
-grep Port /etc/ssh/sshd_config
-# "Port 2222" 가 보이면 6-1 설정이 완료된 것입니다
-
-# 키 인증이 허용되어 있는지 확인
-grep PubkeyAuthentication /etc/ssh/sshd_config
-# "PubkeyAuthentication yes" 가 보이면 정상입니다
-
-# 비밀번호 인증이 꺼져 있는지 확인
-grep PasswordAuthentication /etc/ssh/sshd_config
-# "PasswordAuthentication no" 가 보이면 공개키 중심 설정이 완료된 것입니다
+sudo ss -tlnp | grep -E '(:22|ssh)'
+sudo journalctl -u ssh.service -u ssh.socket | grep "Accepted password"
 ```
+
+6-1을 진행했다면 보통 아래 특징이 있다.
+
+- 22번 포트 사용
+- 비밀번호 로그인 허용
+- `Accepted password` 로그가 보일 수 있음
+
+이제 이 상태를 바꿀 것이다.
 
 ---
 
-## Part 1: 과제 — SSH 보안 설정 점검
+## Part 2. Ubuntu SSH 설정 강화
 
-### 1-1. 현재 SSH 설정 전체 점검
+### 2.1 `ssh.socket` 상태 확인
 
-아래 명령어로 현재 `/etc/ssh/sshd_config` 파일에서 보안 관련 항목만 추려봅니다. 이번 주차의 기준은 `Port 2222`, `PubkeyAuthentication yes`, `PasswordAuthentication no` 이다.
+최신 Ubuntu에서는 `ssh.socket` 이 함께 보일 수 있다. 다만 이것이 보인다고 해서 **무조건 먼저 비활성화해야 하는 것은 아니다.**
+
+먼저 현재 상태를 확인한다.
 
 ```bash
-# Ubuntu 서버에서 실행하세요
-# grep: 파일에서 특정 단어가 있는 줄만 출력
-# -E: 여러 패턴을 | (또는) 으로 연결하여 한 번에 검색 가능
-# 검색 대상: Port, PermitRootLogin, PasswordAuthentication, PubkeyAuthentication, MaxAuthTries
-sudo grep -E "Port|PermitRootLogin|PasswordAuthentication|PubkeyAuthentication|MaxAuthTries" /etc/ssh/sshd_config \
-  | grep -v "^#"
-# grep -v "^#": # 로 시작하는 줄(주석)을 제외
-# ^: 줄의 맨 앞을 의미, ^# 은 "줄이 #으로 시작한다" 는 뜻
-# -v: 해당 패턴과 일치하지 않는 줄만 출력 (반전)
+sudo systemctl status ssh.socket
 ```
 
-예상 출력 예시:
+설명:
 
+- `ssh.socket` 이 활성화된 환경도 있다.
+- 이런 환경에서도 보통은 `sshd_config` 의 `Port` 값을 수정한 뒤 `sudo systemctl daemon-reload` 와 `sudo systemctl restart ssh` 를 실행하면 변경 사항이 반영된다.
+- 즉, 이번 실습에서는 **우선 SSH 설정 파일을 수정하고 정상 반영되는지 확인하는 흐름**으로 진행한다.
+- 만약 수업 환경에서 포트가 끝까지 바뀌지 않는다면, 그때 추가 점검이 필요하다.
+
+### 2.2 SSH 설정 파일 수정
+
+```bash
+sudo nano /etc/ssh/sshd_config
 ```
+
+`Ctrl+End` 로 파일 맨 아래로 이동하면 6-1에서 추가한 설정 블록이 보인다. 그 내용을 아래처럼 **수정**한다.
+
+> 새로 추가하지 않고 기존 블록을 수정해야 한다. sshd_config는 같은 항목이 여러 개 있으면 **먼저 나온 값**이 적용되므로, 아래에 새로 추가하면 `Port 2222`가 무시된다.
+{: .prompt-warning }
+
+```ini
+# 6-2 실습용 강화 SSH 설정
 Port 2222
 PermitRootLogin no
-PasswordAuthentication no
 PubkeyAuthentication yes
+PasswordAuthentication yes
 MaxAuthTries 3
+LoginGraceTime 30
 ```
 
-> **각 항목 의미 정리**
->
-> | 항목 | 설정값 | 의미 |
-> |------|--------|------|
-> | Port | 2222 | 기본 22 대신 2222 사용 → 22번만 노리는 자동화 스캔과 무차별 대입 시도를 줄이는 데 도움 |
-> | PermitRootLogin | no | root 계정으로 직접 SSH 접속 불가 |
-> | PasswordAuthentication | no | 비밀번호 로그인 불가, 키 파일만 사용 |
-> | PubkeyAuthentication | yes | 공개키 인증 허용 |
-> | MaxAuthTries | 3 | 인증 실패 3회면 연결 강제 종료 |
+지금은 아직 `PasswordAuthentication yes` 로 둔다. 이유는 **공개키를 서버에 복사하는 중간 단계**가 필요하기 때문이다.
 
-### 1-2. SSH 키 인증 확인
+저장은 `Ctrl+O` → `Enter`, 종료는 `Ctrl+X` 다.
 
-Kali에서 Ubuntu로 키 인증 접속이 제대로 되는지 확인합니다.
+### 2.3 설정 적용
 
 ```bash
-# Kali에서 실행하세요
-# ssh: SSH 접속 명령어
-# -i: identity file, 사용할 개인키 파일을 지정
-#     ~/.ssh/id_ed25519 는 홈 디렉터리의 .ssh 폴더 안에 있는 개인키 파일
-# -p: port, 접속할 포트 번호 (기본 22 대신 2222 지정)
-# -v: verbose, 접속 과정을 상세히 출력 (문제 발생 시 원인 파악에 유용)
-# student@192.168.0.30: Ubuntu 서버의 student 계정으로 접속
-ssh -i ~/.ssh/id_ed25519 -p 2222 -v student@192.168.0.30
+sudo sshd -t
+sudo systemctl daemon-reload
+sudo systemctl restart ssh
+sudo ss -tlnp | grep -E '2222|ssh'
 ```
 
-`-v` 옵션을 붙이면 접속 과정이 상세히 출력됩니다.
-아래와 같은 줄이 보이면 키 인증 성공입니다:
+정상이라면 `2222` 포트가 보인다.
 
-```
-debug1: Authentication succeeded (publickey).
-```
+환경에 따라 `sshd` 가 직접 리슨할 수도 있고, `systemd` 가 먼저 `2222` 포트를 열고 있을 수도 있다. 둘 다 설정이 반영된 상태라면 정상이다.
 
-### 1-3. 원격 명령 실행 (SSH 원라이너)
+만약 여전히 `22`번만 보인다면 아래를 순서대로 점검한다.
 
-SSH에 접속한 뒤 명령을 실행하고 바로 나오는 방법입니다.
-자동화 스크립트나 빠른 점검에 매우 유용합니다.
+1. `sshd_config` 맨 아래의 기존 실습 블록이 정말 `Port 2222` 로 수정되었는지 확인
+2. `sudo sshd -t` 에서 문법 오류가 없었는지 확인
+3. `sudo systemctl daemon-reload` 와 `sudo systemctl restart ssh` 를 다시 실행
+4. 그래도 바뀌지 않으면 그때 `ssh.socket` 설정을 별도로 점검
+
+---
+
+## Part 3. Kali에서 공개키 생성 및 등록
+
+### 3.1 Kali에서 키 생성
 
 ```bash
-# Kali에서 실행하세요
-# SSH 접속과 동시에 명령을 실행하고 결과만 받아오는 방식
-# 마지막에 있는 '' 안의 명령은 Ubuntu 서버에서 실행됩니다
-ssh -i ~/.ssh/id_ed25519 -p 2222 student@192.168.0.30 'hostname && uptime'
-# hostname: 서버의 이름 출력
-# &&: 앞 명령이 성공하면 뒤 명령도 실행
-# uptime: 서버가 부팅된 이후 경과 시간과 현재 시스템 부하를 출력
+ssh-keygen -t ed25519 -C "kali-to-ubuntu-2222"
 ```
 
-```bash
-# 서버의 열린 포트 목록을 원격으로 확인
-ssh -i ~/.ssh/id_ed25519 -p 2222 student@192.168.0.30 'ss -tlnp'
-# ss: 소켓(네트워크 연결) 상태 확인 명령어 (옛날의 netstat를 대체)
-# -t: TCP 소켓만 표시
-# -l: 현재 Listen(대기) 중인 소켓만 표시
-# -n: 포트 번호를 숫자로 표시 (서비스 이름 변환 없이)
-# -p: 해당 포트를 사용하는 프로세스(프로그램) 이름도 함께 표시
+기본 경로를 사용하면 보통 아래 두 파일이 생긴다.
+
+```text
+/home/kali/.ssh/id_ed25519
+/home/kali/.ssh/id_ed25519.pub
 ```
 
-### 1-4. SCP로 파일 전송 실습
+### 3.2 공개키를 Ubuntu에 복사
 
-SCP(Secure Copy Protocol)는 SSH를 이용해 파일을 안전하게 전송하는 명령어입니다.
-전송 중 데이터가 암호화되므로 도청당해도 내용을 알 수 없습니다.
+Ubuntu 사용자 이름이 `student` 라고 가정하면:
 
 ```bash
-# Kali에서 Ubuntu로 파일 보내기 (업로드)
-
-# 먼저 보낼 테스트 파일 만들기
-echo "SSH 실습 테스트 파일" > test_upload.txt
-# echo: 텍스트를 화면에 출력하는 명령어
-# >: 출력 내용을 파일로 저장 (파일이 없으면 새로 생성, 있으면 덮어씀)
-
-# scp로 파일 전송
-scp -i ~/.ssh/id_ed25519 -P 2222 test_upload.txt student@192.168.0.30:~/
-# scp: Secure Copy, SSH 기반 파일 전송 명령어
-# -i: 사용할 개인키 파일 지정
-# -P: 포트 번호 지정 (주의! scp는 대문자 -P, ssh는 소문자 -p)
-# test_upload.txt: 전송할 파일 이름
-# student@192.168.0.30:~/  → Ubuntu의 student 계정 홈 디렉터리(~/)에 저장
+ssh-copy-id -i ~/.ssh/id_ed25519.pub -p 2222 student@192.168.0.30
 ```
 
-```bash
-# Ubuntu에서 Kali로 파일 가져오기 (다운로드)
-scp -i ~/.ssh/id_ed25519 -P 2222 student@192.168.0.30:/etc/os-release ./
-# /etc/os-release: Ubuntu의 운영체제 정보가 담긴 파일
-# ./: 현재 Kali의 작업 디렉터리에 저장
-```
+`student` 부분은 실제 Ubuntu 사용자 이름으로 바꿔서 사용한다.
+
+이 단계에서는 Ubuntu 사용자 비밀번호를 한 번 물어볼 수 있다.
+
+### 3.3 키 기반 로그인 확인
 
 ```bash
-# Ubuntu에서 파일이 도착했는지 확인
-ssh -i ~/.ssh/id_ed25519 -p 2222 student@192.168.0.30 'ls -l ~/test_upload.txt'
-# ls -l: 파일 목록을 자세히 출력 (크기, 날짜, 소유자 등 포함)
-# ~/test_upload.txt: 홈 디렉터리의 파일 경로
+ssh -i ~/.ssh/id_ed25519 -p 2222 student@192.168.0.30
+```
+
+성공하면 비밀번호 없이 접속되거나, 최소한 공개키 인증으로 로그인되는 것을 확인할 수 있다.
+
+Ubuntu 로그에서는 다음과 같은 형태가 보인다.
+
+```text
+Accepted publickey for student from 192.168.0.10 ...
 ```
 
 ---
 
-## Part 2: auth.log 분석
+## Part 4. 이제 비밀번호 로그인을 끄기
 
-`/var/log/auth.log`는 Ubuntu의 인증 관련 로그 파일입니다.
-SSH 접속 성공, 실패, sudo 사용 등의 모든 기록이 여기에 저장됩니다.
-보안 사고 발생 시 가장 먼저 확인해야 하는 파일입니다.
-
-### 2-1. 최근 로그 확인
+공개키 로그인이 성공했다면 Ubuntu에서 다시 설정을 바꾼다.
 
 ```bash
-# Ubuntu 서버에서 실행하세요
-# tail: 파일의 마지막 부분을 출력하는 명령어
-# -n 50: 마지막 50줄만 출력 (숫자를 바꿔서 더 많이 볼 수 있음)
-sudo tail -n 50 /var/log/auth.log
+sudo nano /etc/ssh/sshd_config
 ```
 
-### 2-2. SSH 접속 성공 기록만 추출
+파일 맨 아래에서 아까 추가한 설정을 찾아 아래 한 줄을 바꾼다.
+
+```ini
+PasswordAuthentication no
+```
+
+최종 예시는 다음과 같다.
+
+```ini
+# 6-2 실습용 강화 SSH 설정
+Port 2222
+PermitRootLogin no
+PubkeyAuthentication yes
+PasswordAuthentication no
+MaxAuthTries 3
+LoginGraceTime 30
+```
+
+적용:
 
 ```bash
-# grep으로 "Accepted" 가 포함된 줄만 출력
-# "Accepted" = 인증을 수락했다는 의미, 즉 접속 성공
-sudo grep "Accepted" /var/log/auth.log
-```
-
-출력 예시:
-
-```
-Mar 26 09:15:33 ubuntu sshd[1234]: Accepted publickey for student from 192.168.0.10 port 54321 ssh2
-```
-
-로그 해석:
-- `Mar 26 09:15:33`: 접속이 이루어진 시각
-- `Accepted publickey`: 공개키 인증 방식으로 성공
-- `for student`: student 계정으로 접속
-- `from 192.168.0.10`: 접속한 Kali의 IP 주소
-- `port 54321`: Kali에서 사용한 임시 포트 번호
-
-### 2-3. SSH 접속 실패 기록 확인
-
-```bash
-# "Failed" 키워드로 실패 기록 추출
-# PasswordAuthentication no 상태에서도 잘못된 키 사용, 잘못된 계정, 허용되지 않은 인증 시도는 실패 로그로 남을 수 있음
-sudo grep "Failed" /var/log/auth.log
-```
-
-```bash
-# "Invalid user" 로 존재하지 않는 계정으로의 접속 시도 확인
-# 자동화된 공격은 보통 admin, root, test 등 흔한 계정명을 시도함
-sudo grep "Invalid user" /var/log/auth.log
-```
-
-### 2-4. 특정 IP의 접속 시도 횟수 세기 (awk 활용)
-
-`awk`는 텍스트를 열(column) 단위로 처리하는 강력한 도구입니다.
-처음에는 복잡해 보이지만, 패턴만 이해하면 됩니다.
-
-```bash
-# 명령어 파이프라인 설명:
-# ① Failed password 줄만 추출
-# ② IP 주소가 있는 열(column)만 뽑기
-# ③ 정렬해서 같은 IP끼리 묶기
-# ④ 중복 제거하면서 개수 세기
-# ⑤ 많이 시도한 순으로 정렬
-
-sudo grep "Failed password" /var/log/auth.log \
-  | awk '{print $11}' \
-  | sort \
-  | uniq -c \
-  | sort -rn
-
-# awk '{print $11}': 각 줄을 공백 기준으로 나눠서 11번째 단어 출력
-#   → 로그 형식에서 11번째 위치가 IP 주소에 해당
-#   (환경에 따라 $9 또는 $11 이 될 수 있음, 실제 로그를 보고 확인)
-# sort: 텍스트를 알파벳 순으로 정렬 (같은 IP를 연속되게 모음)
-# uniq -c: 연속된 중복 줄을 하나로 합치고, 앞에 개수(-c) 표시
-# sort -rn: 숫자(-n) 기준으로 역순(-r) 정렬 → 많이 시도한 IP가 맨 위
-```
-
-> **awk 이해하기 — 로그 한 줄을 분해해봅시다**
->
-> 로그의 한 줄 예시:
-> ```
-> Mar  26 10:00:01 ubuntu sshd[999]: Failed password for root from 10.0.0.5 port 12345 ssh2
->  $1   $2  $3      $4      $5        $6     $7       $8  $9   $10  $11    $12   $13   $14
-> ```
-> 공백으로 구분했을 때 `$11` 위치에 IP 주소(`10.0.0.5`)가 옵니다.
-
-### 2-5. 오늘 날짜 로그만 확인
-
-```bash
-# date 명령어로 오늘 날짜를 "Mar 26" 형식으로 구하고 grep에 활용
-TODAY=$(date +"%b %e")
-# date: 현재 날짜/시간 출력
-# +"%b %e": 출력 형식 지정
-#   %b = 월 이름 축약형 (Jan, Feb, Mar 등)
-#   %e = 날짜 (1~31, 한 자리면 앞에 공백 추가)
-# $( ): 괄호 안의 명령어를 실행하고 그 결과를 변수에 저장
-
-sudo grep "$TODAY" /var/log/auth.log | grep "sshd"
-# "$TODAY": 위에서 저장한 오늘 날짜 변수 사용
-# grep "sshd": SSH 데몬(서비스)과 관련된 로그만 필터
+sudo sshd -t
+sudo systemctl daemon-reload
+sudo systemctl restart ssh
+sudo ss -tlnp | grep -E '2222|ssh'
 ```
 
 ---
 
-## Part 3: 무차별 대입 공격(Brute Force) 이해
+## Part 5. Kali에서 공격 실패 확인
 
-무차별 대입 공격이란 비밀번호를 자동으로 수천~수백만 번 시도해 맞추려는 공격입니다.
-이번 실습 환경에서는 `PasswordAuthentication no` 로 비밀번호 로그인을 차단했기 때문에, 이 공격은 성공하기 훨씬 어려워집니다. 그래도 공격 시도 자체는 로그에 남고, 공개된 SSH 포트(2222)에 대한 탐색과 계정 추측은 계속 발생할 수 있습니다.
-아래 다이어그램으로 공격 흐름을 이해해 봅시다.
+이제 같은 Kali에서, 6-1에서 가능했던 시도가 어떻게 달라지는지 본다.
 
-```mermaid
-sequenceDiagram
-    participant A as 공격자<br/>(Kali 192.168.0.10)
-    participant S as SSH 서버<br/>(Ubuntu 192.168.0.30)
-    participant L as auth.log
+### 5.1 예전처럼 비밀번호 로그인 시도
 
-    A->>S: SSH 접속 시도: root / password123
-    S->>L: 기록: Failed password for root
-    S-->>A: 인증 실패
-
-    A->>S: SSH 접속 시도: root / 123456
-    S->>L: 기록: Failed password for root
-    S-->>A: 인증 실패
-
-    A->>S: SSH 접속 시도: root / admin
-    S->>L: 기록: Failed password for root (3회째)
-    S-->>A: MaxAuthTries 초과 → 연결 강제 종료
-
-    Note over S: MaxAuthTries 3 설정과<br/>PasswordAuthentication no 로 공격 난이도 상승
-    Note over L: 모든 시도가 로그에 기록됨<br/>→ 나중에 분석 가능
+```bash
+ssh -p 2222 student@192.168.0.30
 ```
 
-## Part 4: 6주차 전체 복습
+이제는 서버가 비밀번호 로그인을 허용하지 않으므로, 예전처럼 비밀번호를 맞춰서 들어가는 방식이 통하지 않는다.
 
-6주차에서 배운 내용을 전체 흐름으로 정리합니다.
+### 5.2 공개키 없이 접속 시도
+
+```bash
+ssh -o PreferredAuthentications=password -o PubkeyAuthentication=no -p 2222 student@192.168.0.30
+```
+
+이 시도는 실패해야 정상이다.
+
+### 5.3 공개키로 접속
+
+```bash
+ssh -i ~/.ssh/id_ed25519 -p 2222 student@192.168.0.30
+```
+
+이 시도는 성공해야 정상이다.
+
+즉, 같은 Kali라도:
+
+- 비밀번호만 가지고는 실패
+- 올바른 개인키가 있으면 성공
+
+이라는 차이가 생긴다.
+
+---
+
+## Part 6. 로그에서 바뀐 점 확인
+
+Ubuntu에서 실시간 로그를 본다.
+
+```bash
+sudo journalctl -u ssh.service -u ssh.socket -f
+```
+
+### 6.1 강화 전 성공 로그
+
+6-1에서는 이런 로그가 가능했다.
+
+```text
+Accepted password for student from 192.168.0.10 ...
+```
+
+### 6.2 강화 후 성공 로그
+
+6-2 이후에는 성공 로그가 이런 형태로 바뀌어야 한다.
+
+```text
+Accepted publickey for student from 192.168.0.10 ...
+```
+
+### 6.3 실패 로그 확인
+
+```bash
+sudo journalctl -u ssh.service -u ssh.socket | grep "Failed"
+sudo journalctl -u ssh.service -u ssh.socket | grep "Invalid user"
+```
+
+이제 실패 시도는 계속 남을 수 있지만, 비밀번호로 성공하는 상태는 아니어야 한다.
+
+---
+
+## Part 7. 왜 6-2만으로도 보안이 크게 좋아지는가?
+
+6-1과 비교하면 가장 큰 변화는 이것이다.
+
+- 공격자가 서버를 찾더라도
+- 비밀번호 추측만으로는 더 이상 로그인 성공이 어렵다
+- 실제로는 올바른 개인키가 있어야 접속 가능하다
+
+즉, 6-2는 **공격 시도 자체를 완전히 없애는 단계가 아니라, 공격 성공 가능성을 크게 낮추는 단계**다.
+
+---
+
+## 다음 시간 예고
+
+6-3에서는 여기서 한 단계 더 나아가:
+
+- 반복 로그인 실패를 탐지하고
+- 해당 IP를 자동 차단하는
+- `Fail2Ban` 을 붙인다.
+
+그렇게 하면 "성공은 어렵고, 시도도 오래 못 하게 만드는" 구조가 완성된다.
+
+---
+
+## 정리
+
+| 항목 | 6-1 | 6-2 |
+|------|-----|------|
+| 포트 | `22` | `2222` |
+| 비밀번호 로그인 | 허용 | 차단 |
+| 공개키 인증 | 선택 가능 | 사실상 필수 |
+| 성공 로그 | `Accepted password` 가능 | `Accepted publickey` 중심 |
+| 공격 결과 | 성공 가능 | 대부분 실패 |
 
 ```mermaid
 flowchart TD
-    A["6주차 시작<br/>SSH 서버란?<br/>암호화된 원격 접속"] --> B["SSH 설치<br/>sudo apt install openssh-server<br/>서비스 시작 확인"]
-    B --> C["포트 변경<br/>22 → 2222<br/>자동화 공격 회피"]
-    C --> D["키 인증 설정<br/>ssh-keygen으로 키 쌍 생성<br/>authorized_keys 에 공개키 등록"]
-    D --> E["비밀번호 인증 비활성<br/>PasswordAuthentication no<br/>키 없이는 접속 불가"]
-    E --> F["root 로그인 차단<br/>PermitRootLogin no<br/>관리자 직접 접속 금지"]
-    F --> G["실패 횟수 제한<br/>MaxAuthTries 3<br/>3회 실패시 연결 종료"]
-    G --> H["원격 접속 실습<br/>ssh -i 키파일 -p 2222<br/>키 인증 성공 확인"]
-    H --> I["SCP 파일 전송<br/>scp -P 2222<br/>암호화된 파일 전송"]
-    I --> J["auth.log 분석<br/>성공/실패 기록 확인<br/>awk로 통계 추출"]
-    J --> K["6주차 완료!<br/>7주차: 공격자 시점으로<br/>내 서버를 Nmap으로 스캔"]
+    A["6-1: 느슨한 SSH"] --> B["22번 포트 + 비밀번호 로그인"]
+    B --> C["Kali에서 공격 성공 가능"]
+    C --> D["6-2: 포트 2222 변경"]
+    D --> E["공개키 등록"]
+    E --> F["PasswordAuthentication no"]
+    F --> G["비밀번호 공격 실패"]
+    G --> H["성공 로그는 Accepted publickey 로 변경"]
 ```
-
----
-
-## Part 5: 셀프체크
-
-### 객관식 문제 (각 1점)
-
-**Q1.** SSH 설정 파일에서 비밀번호 로그인을 비활성화하는 항목은 무엇인가?
-
-① `MaxAuthTries no`
-② `PermitRootLogin no`
-③ `PasswordAuthentication no`
-④ `PubkeyAuthentication no`
-
----
-
-**Q2.** `scp`로 파일을 전송할 때 포트를 지정하는 옵션은 무엇인가?
-
-① `-p` (소문자)
-② `-P` (대문자)
-③ `-port`
-④ `-i`
-
----
-
-**Q3.** `/var/log/auth.log`에서 SSH 접속 성공을 나타내는 키워드는?
-
-① `Connected`
-② `Authorized`
-③ `Accepted`
-④ `Granted`
-
----
-
-**Q4.** `MaxAuthTries 3`으로 설정하면 어떤 효과가 있는가?
-
-① 접속 후 3분이 지나면 자동으로 연결 종료
-② 인증 실패 3회 시 해당 연결 강제 종료
-③ 동시 접속자를 3명으로 제한
-④ 3가지 인증 방식을 순서대로 시도
-
----
-
-### 단답형 문제 (각 2점)
-
-**Q5.** `awk '{print $11}'` 명령에서 `$11`이 의미하는 것은 무엇인가?
-
-**Q6.** SCP는 어떤 프로토콜 위에서 동작하며, 그것을 사용하는 이유는 무엇인가?
-
-**Q7.** `tail -n 50 /var/log/auth.log` 에서 `-n 50`의 의미를 설명하시오.
-
----
-
-### 정답
-
-| 번호 | 정답 | 해설 |
-|------|------|------|
-| Q1 | ③ | `PasswordAuthentication no` 가 비밀번호 로그인을 비활성화하는 항목 |
-| Q2 | ② | scp는 대문자 `-P`, ssh는 소문자 `-p` 사용 — 헷갈리기 쉬우니 주의! |
-| Q3 | ③ | `Accepted` = 인증을 수락(성공)했다는 의미 |
-| Q4 | ② | 인증 시도 3회 실패 시 해당 연결을 강제로 종료함 |
-| Q5 | 각 줄에서 공백으로 구분된 11번째 단어 (auth.log 에서 주로 IP 주소에 해당) |
-| Q6 | SSH 프로토콜 위에서 동작. SSH의 암호화를 그대로 사용하기 때문에 전송 중 데이터가 도청되지 않음 |
-| Q7 | 파일의 마지막 50줄만 출력 (`-n` 은 줄 수 지정, `50` 은 출력할 줄 수) |
-
----
-
-## 다음 주 예고: 7주차 — 공격자의 눈으로 내 서버를 바라보다
-
-6주차에서 우리는 **방어하는 입장**에서 SSH 서버를 설정했습니다.
-7주차에서는 **공격자의 눈으로** 같은 서버를 바라봅니다.
-
-- Kali Linux에서 `nmap`으로 Ubuntu 서버의 열린 포트를 스캔합니다.
-- 6주차에서 설정한 포트 2222가 공격자에게 어떻게 노출되는지 직접 확인합니다.
-- Wireshark로 스캔 패킷이 실제로 어떻게 생겼는지 분석합니다.
-- Apache 웹 서버와 MySQL 데이터베이스를 설치하여 공격 표면이 넓어지는 것을 관찰합니다.
-
-> 보안은 공격자의 시각을 이해할 때 더 잘 방어할 수 있습니다.
-> 다음 주에는 내 서버가 외부에서 어떻게 보이는지 직접 확인해 봅시다!
