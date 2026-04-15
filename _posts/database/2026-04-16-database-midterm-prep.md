@@ -24,25 +24,17 @@ description: "2~6주차 핵심 SQL을 복습하는 중간고사 대비 실습 20
 
 # 2026-1학기 중간고사준비 — MySQL 실습 환경 20문제
 
-이 자료는 2주차부터 6주차까지 배운 핵심 SQL을 하나의 실습 데이터베이스에서 복습하는 중간고사 대비 문제집이다.
-
-MySQL Workbench에서 `midterm_db`를 직접 만들고, 아래 20문제를 순서대로 풀면서 각 주차 내용을 정리한다.
-
-다루는 범위는 다음과 같다.
-
-| 주차 | 핵심 주제 |
-|------|-----------|
-| 2주차 | CRUD 기초 — CREATE TABLE, INSERT, SELECT, UPDATE, DELETE |
-| 3주차 | 데이터 필터링 — WHERE, AND, OR, NOT, IN, BETWEEN, LIKE |
-| 4주차 | 자료형 — INT, VARCHAR, DECIMAL, DATE, TEXT |
-| 5주차 | 집계 함수 — COUNT, SUM, AVG, MAX, MIN, GROUP BY, ORDER BY, HAVING |
-| 6주차 | 키와 제약조건 — PRIMARY KEY, FOREIGN KEY, NOT NULL, UNIQUE, DEFAULT, AUTO_INCREMENT |
-
-> 주의
+> **제출 안내 1 — 실습 포트폴리오**
 >
-> 아래 SQL은 MySQL 8.x 기준이다.
-> MySQL Workbench를 열고 로컬 서버에 연결한 상태에서 시작한다.
-{: .prompt-warning }
+> 실습 문제(문제 1~20)는 MySQL Workbench에서 직접 SQL을 입력하고 실행한 뒤, 입력 화면과 출력 결과를 포트폴리오에 포함하여 제출한다.
+> 웹 포트폴리오가 준비되지 않은 경우, 각 문제의 SQL 입력 화면과 결과 화면을 캡처하여 문서(Word 또는 PDF)로 정리한 뒤 출력하여 제출한다.
+{: .prompt-info }
+
+> **제출 안내 2 — 주관식 문제**
+>
+> 이 자료 하단의 주관식 10문제는 사무자동화산업기사 수준의 데이터베이스 이론 문제이다.
+> 각 문제를 읽고 답을 직접 작성하여 문서로 만든 뒤 출력하여 제출한다.
+{: .prompt-info }
 
 ---
 
@@ -629,15 +621,90 @@ VALUES ('테스트', 1, '서울', 80, 99);
 
 ---
 
-## 마무리
+## 주관식 문제 — 사무자동화산업기사 수준 이론 10문제
 
-위 20문제는 2~6주차 핵심 SQL을 실제 테이블에서 직접 작성하며 연습하는 데 초점을 맞췄다. 틀린 문제가 있으면 해당 주차 자료를 다시 읽고 반복 실습하자.
+> 아래 문제는 답을 직접 작성하여 문서로 정리한 뒤 출력하여 제출한다.
+{: .prompt-warning }
 
-추가로 복습할 때는 아래를 점검하라.
+---
 
-- `WHERE`와 `HAVING`의 차이를 설명할 수 있는가? (`WHERE`는 행 필터, `HAVING`은 그룹 필터)
-- `GROUP BY` 절에 없는 컬럼을 `SELECT`에 쓰면 어떤 오류가 나는지 알고 있는가?
-- `LIKE '%단어%'`와 `LIKE '단어%'`의 차이를 알고 있는가?
-- `COUNT(*)`와 `COUNT(컬럼)`의 차이를 설명할 수 있는가? (NULL 포함 여부)
-- `PRIMARY KEY`와 `FOREIGN KEY`의 역할 차이를 설명할 수 있는가?
-- `UPDATE`/`DELETE` 실행 전에 `SELECT`로 대상을 먼저 확인하는 습관이 있는가?
+### 주관식 1
+
+SQL 명령어는 기능에 따라 DDL, DML, DCL로 분류된다. `CREATE`, `SELECT`, `DROP`, `ALTER`를 각각 해당 분류에 넣으시오.
+
+---
+
+### 주관식 2
+
+`PRIMARY KEY`의 특성 두 가지를 쓰시오.
+
+---
+
+### 주관식 3
+
+아래 SQL에서 빈칸에 들어갈 키워드를 쓰시오.
+
+```sql
+SELECT dept_id, AVG(score)
+FROM students
+GROUP BY dept_id
+( ? ) AVG(score) >= 80;
+```
+
+---
+
+### 주관식 4
+
+트랜잭션의 ACID 특성 4가지를 쓰고, 각각을 한 문장으로 설명하시오.
+
+---
+
+### 주관식 5
+
+아래 SQL의 실행 결과로 `COUNT(*)`와 `COUNT(score)`에서 각각 어떤 값이 출력되는지 쓰고, 두 결과가 다른 이유를 설명하시오.
+
+```sql
+-- score 컬럼 값: 85, NULL, 90, NULL, 75
+SELECT COUNT(*), COUNT(score) FROM test_table;
+```
+
+---
+
+### 주관식 6
+
+`FOREIGN KEY` 제약조건의 역할을 설명하고, FOREIGN KEY 컬럼에 NULL이 허용되는지 여부와 그 이유를 쓰시오.
+
+---
+
+### 주관식 7
+
+아래 SQL이 내부적으로 처리되는 실행 순서(`FROM`, `WHERE`, `GROUP BY`, `HAVING`, `SELECT`, `ORDER BY`)를 올바르게 나열하시오.
+
+```sql
+SELECT dept_id, AVG(score)
+FROM students
+WHERE grade >= 2
+GROUP BY dept_id
+HAVING AVG(score) > 80
+ORDER BY AVG(score) DESC;
+```
+
+---
+
+### 주관식 8
+
+아래 설명이 가리키는 데이터베이스 용어를 쓰시오.
+
+> 릴레이션에서 튜플을 유일하게 식별할 수 있는 속성들의 집합으로, 유일성과 최소성을 모두 만족해야 한다.
+
+---
+
+### 주관식 9
+
+`WHERE`와 `HAVING`의 차이점을 GROUP BY 실행 순서와 연관지어 설명하시오.
+
+---
+
+### 주관식 10
+
+`GROUP BY` 절을 사용할 때 `SELECT` 절에 올 수 있는 항목과 올 수 없는 항목을 구분하여 설명하시오.
