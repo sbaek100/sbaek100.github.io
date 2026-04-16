@@ -1,6 +1,6 @@
 ---
-title: "2026-1학기 중간고사준비 - setup-script.sh 실습 환경 20문제"
-date: 2026-04-16 09:00:00 +0900
+title: 2026-1학기 중간고사준비 - setup-script.sh 실습 환경 20문제
+date: 2026-04-15 09:00:00 +0900
 categories:
   - 강의
   - 보안시스템구축실습
@@ -18,7 +18,7 @@ tags:
   - 파이프
 mermaid: false
 pin: true
-description: "2~6주차 핵심 명령어를 복습하는 중간고사 대비 실습 20문제. GitHub에서 setup-script.sh를 내려받아 ~/security 환경을 만들고 문제를 푼다."
+description: 2~6주차 핵심 명령어를 복습하는 중간고사 대비 실습 20문제. GitHub에서 setup-script.sh를 내려받아 ~/security 환경을 만들고 문제를 푼다.
 ---
 
 # 2026-1학기 중간고사준비 — setup-script.sh 실습 환경 20문제

@@ -1,7 +1,7 @@
 ---
 layout: post
-title: "2026-1학기 중간고사준비 - MySQL 실습 환경 20문제"
-date: 2026-04-16 10:00:00 +0900
+title: 2026-1학기 중간고사준비 - MySQL 실습 환경 20문제
+date: 2026-04-15 10:00:00 +0900
 categories:
   - 강의
   - 데이터베이스보안
@@ -19,7 +19,7 @@ tags:
   - beginner
 mermaid: false
 pin: true
-description: "2~6주차 핵심 SQL을 복습하는 중간고사 대비 실습 20문제. midterm_db 환경을 직접 만들고 CRUD, 필터링, 집계함수, GROUP BY, 키/제약조건을 단계별로 연습한다."
+description: 2~6주차 핵심 SQL을 복습하는 중간고사 대비 실습 20문제. midterm_db 환경을 직접 만들고 CRUD, 필터링, 집계함수, GROUP BY, 키/제약조건을 단계별로 연습한다.
 ---
 
 # 2026-1학기 중간고사준비 — MySQL 실습 환경 20문제
