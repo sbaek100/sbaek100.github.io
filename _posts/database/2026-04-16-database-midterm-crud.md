@@ -1,6 +1,6 @@
 ---
 layout: post
-title: 2026-1학기 중간고사준비 - CRUD 및 AND/OR 실습 20문제
+title: 2026-1학기 중간고사준비(재직자반) - CRUD 및 AND/OR 실습 20문제
 date: 2026-04-16 10:00:00 +0900
 categories:
   - 강의
@@ -22,12 +22,8 @@ pin: true
 description: 재직자 과정 중간고사 대비 CRUD(INSERT, SELECT, UPDATE, DELETE)와 AND/OR 조건 필터링을 집중 연습하는 20문제. 직접 DB를 만들고, 데이터를 넣고, 조회·수정·삭제하는 전 과정을 단계별로 익힌다.
 ---
 
-# 2026-1학기 중간고사준비 — CRUD 및 AND/OR 실습 20문제
+# 2026-1학기 중간고사(재직자반)
 
-> **제출 안내**
->
-> 아래 실습 문제(문제 1~20)는 MySQL Workbench에서 직접 SQL을 입력하고 실행한 뒤, 입력 화면과 출력 결과를 캡처하여 문서(Word 또는 PDF)로 정리한 뒤 출력하여 제출한다.
-{: .prompt-info }
 
 ---
 
