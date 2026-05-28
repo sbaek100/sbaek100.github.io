@@ -12,7 +12,7 @@ tags:
   - 웹보안
 mermaid: true
 pin: false
-description: 일부러 취약하게 만든 웹 앱 DVWA를 Ubuntu에 설치하고, Kali에서 SQL Injection·XSS·Command Injection을 직접 성공시키며 "방화벽이 못 막는 공격"을 손으로 체험하는 1학년용 자체 완결형 실습.
+description: 일부러 취약하게 만든 웹 앱 DVWA를 Ubuntu에 설치하고, Kali에서 SQL Injection·XSS·Command Injection·Directory Traversal을 직접 성공시키며 "방화벽이 못 막는 공격"을 손으로 체험하는 1학년용 자체 완결형 실습.
 ---
 
 ## 실습 환경
@@ -50,7 +50,7 @@ flowchart LR
     K["Kali<br/>공격자"] --> P["80번 포트로<br/>HTTP 요청"]
     P --> FW["UFW 방화벽<br/>(7주차)"]
     FW -->|"80은 ALLOW"| WEB["Apache + DVWA"]
-    WEB --> DB["MySQL"]
+    WEB --> DB["MariaDB"]
     style FW fill:#ffd43b,color:#333
     style WEB fill:#ff6b6b,color:#fff
     style DB fill:#fa5252,color:#fff
@@ -104,16 +104,19 @@ sudo ufw status verbose
 #   22/tcp ALLOW, 80/tcp ALLOW
 ```
 
-만약 비활성이거나 80이 막혀 있으면 7-2 §5 단계를 따라 정상 상태로 만들고 옵니다.
+만약 UFW가 비활성이거나 80이 막혀 있으면 7-2 §5 단계를 따라 정상 상태로 만들고 옵니다.
+
+Apache2와 MariaDB는 아직 설치되지 않았어도 괜찮습니다. Part 2에서 처음부터 설치합니다. 이미 설치해 둔 학생은 여기서 서비스 상태만 먼저 확인합니다.
 
 ```bash
-# 서비스 동작 확인
-sudo systemctl is-active apache2 mysql
-# 두 줄 모두 active 가 나와야 함
+# 이미 설치돼 있다면 서비스 동작 확인
+systemctl is-active apache2 mariadb
+# 두 줄 모두 active 가 나오면 바로 Part 2.3으로 가도 됨
+# "Unit ... could not be found" 가 나오면 아직 설치 전이라는 뜻
 ```
 
 ```bash
-# Kali에서 — 현재 상태 확인
+# Apache가 이미 설치돼 있고 active 인 경우에만 Kali에서 현재 상태 확인
 curl -I http://192.168.0.30/
 # HTTP/1.1 200 OK 가 나와야 정상
 # (80번이 UFW에서 허용된 채로 Apache 기본 페이지 반환)
@@ -158,21 +161,25 @@ flowchart LR
 
 ## Part 2. DVWA 설치하기
 
-### 2.1 필요 패키지 설치
+### 2.1 Apache2·MariaDB·PHP 필요 패키지 설치
 
-DVWA는 PHP로 만들어졌고 MySQL을 씁니다. 7-2까지 와서 Apache·MySQL은 이미 깔려 있을 겁니다. PHP 관련 패키지만 추가합니다.
+DVWA는 PHP로 만들어졌고 데이터베이스로 MySQL/MariaDB 계열을 씁니다. **최신 DVWA는 MariaDB 기준으로 맞추는 것이 가장 안전합니다.** `mysql-server`를 쓰면 DB 초기화 중 `ADD IF NOT EXISTS` 문법 오류가 날 수 있습니다.
 
 ```bash
 # Ubuntu에서 실행
 sudo apt update
 
 sudo apt install -y \
+  apache2 mariadb-server mariadb-client \
   php libapache2-mod-php \
   php-mysql php-gd php-mbstring php-xml php-curl \
   git unzip
+# apache2               : 웹 서버
+# mariadb-server        : DVWA 데이터베이스 서버
+# mariadb-client        : mariadb/mysql 명령어 클라이언트
 # php                   : PHP 인터프리터 본체
 # libapache2-mod-php    : Apache가 PHP 파일을 실행할 수 있게 해주는 모듈
-# php-mysql             : PHP에서 MySQL 접속용 모듈
+# php-mysql             : PHP에서 MySQL/MariaDB 접속용 모듈
 # php-gd                : 이미지 처리 (DVWA Captcha 등)
 # php-mbstring, php-xml : DVWA가 요구하는 추가 모듈
 # php-curl              : DVWA의 일부 모듈(API)에서 사용
@@ -180,9 +187,31 @@ sudo apt install -y \
 ```
 
 ```bash
-# 설치 확인
+# Apache2와 MariaDB 서비스 시작 + 부팅 시 자동 시작
+sudo systemctl enable --now apache2
+sudo systemctl enable --now mariadb
+
+# 설치/서비스 확인
+apache2 -v
+mariadb --version
+systemctl is-active apache2 mariadb
+# apache2, mariadb 두 줄 모두 active 가 나오면 정상
+
 php -v
 # PHP 8.1.x 같은 버전 정보가 보이면 정상
+```
+
+```bash
+# Ubuntu 자기 자신에서 Apache 기본 페이지 확인
+curl -I http://localhost/
+# HTTP/1.1 200 OK 가 나오면 Apache2 동작 정상
+```
+
+```bash
+# 선택 사항: MariaDB 기본 보안 정리
+sudo mariadb-secure-installation
+# 실습 VM에서는 꼭 필요하진 않지만, 익명 사용자 제거·test DB 제거 같은 정리를 할 수 있음
+# 이 과정에서 root 비밀번호/인증 방식을 바꿨다면 이후 mariadb 접속 때 -p 옵션이 필요할 수 있음
 ```
 
 ### 2.2 Apache mod_rewrite + PHP 모듈 활성화
@@ -257,6 +286,8 @@ sudo nano "$PHP_INI_APACHE"
 # Ctrl+W 로 검색하면서 다음 항목을 찾아 값을 변경:
 #   allow_url_include = On      ← 기본 Off, On 으로
 #   allow_url_fopen   = On      ← 기본 On (확인만)
+#   display_errors = On         ← 오류 원인 확인용, 실습 환경에서만
+#   display_startup_errors = On ← 오류 원인 확인용, 실습 환경에서만
 # Ctrl+O 저장(Enter), Ctrl+X 종료
 ```
 
@@ -271,38 +302,61 @@ sudo nano "$PHP_INI_APACHE"
 sudo systemctl restart apache2
 ```
 
-### 2.5 MySQL에 DVWA 전용 사용자·DB 만들기
+### 2.5 MariaDB에 DVWA 전용 사용자·DB 만들기
 
 ```bash
-# Ubuntu에서 실행 — MySQL 관리자로 접속
-sudo mysql -u root
+# Ubuntu에서 실행 — MariaDB 관리자로 접속
+sudo mariadb
 # Ubuntu 기본 설치 직후는 unix_socket 인증이라 비밀번호 없이 들어가집니다.
-# 만약 "Access denied" 가 뜨면, 누군가 mysql_secure_installation 으로
+# 만약 "Access denied" 가 뜨면, 누군가 mariadb-secure-installation 으로
 # root에 비밀번호를 걸어 둔 것 — 그 비밀번호로 다음과 같이 접속:
-#   mysql -u root -p
+#   mariadb -u root -p
 ```
 
-MySQL 프롬프트(`mysql>`)가 뜨면 다음을 차례로 입력:
+MariaDB 프롬프트(`MariaDB [(none)]>`)가 뜨면 다음을 차례로 입력:
 
 ```sql
 -- 1. 빈 데이터베이스 만들기
-CREATE DATABASE dvwa;
+CREATE DATABASE IF NOT EXISTS dvwa;
 
 -- 2. DVWA가 쓸 사용자 만들기 (비밀번호: p@ssw0rd)
-CREATE USER 'dvwa'@'localhost' IDENTIFIED BY 'p@ssw0rd';
+CREATE USER IF NOT EXISTS 'dvwa'@'localhost' IDENTIFIED BY 'p@ssw0rd';
 
--- 3. 그 사용자에게 dvwa DB 권한 부여
+-- 3. 이미 사용자가 있던 경우에도 비밀번호를 실습값으로 맞추기
+ALTER USER 'dvwa'@'localhost' IDENTIFIED BY 'p@ssw0rd';
+
+-- 4. 그 사용자에게 dvwa DB 권한 부여
 GRANT ALL PRIVILEGES ON dvwa.* TO 'dvwa'@'localhost';
 
--- 4. 권한 변경 적용
+-- 5. 권한 변경 적용
 FLUSH PRIVILEGES;
 
--- 5. 종료
+-- 6. 종료
 EXIT;
 ```
 
 > **DVWA 권장 비밀번호 `p@ssw0rd` 그대로 사용합니다.** 이 비밀번호는 DVWA의 기본 설정 파일과 일치합니다. 학습 환경에서만 쓰는 더미 비밀번호이므로 운영에서 절대 흉내내지 마세요.
 {: .prompt-warning }
+
+```bash
+# DB 계정이 실제로 접속되는지 확인
+mariadb -u dvwa -pp@ssw0rd -D dvwa -e "SELECT DATABASE();"
+# DATABASE() 아래에 dvwa 가 나오면 정상
+# 주의: -p와 비밀번호 사이에는 공백을 넣지 않음
+```
+
+> **이미 `mysql-server`로 설치했고 setup.php에서 `ADD IF NOT EXISTS` SQL 문법 오류가 난다면?** 최신 DVWA와 MySQL 문법 호환 문제입니다. 실습 VM이라면 MySQL을 제거하고 MariaDB로 바꾸는 것이 가장 깔끔합니다.
+>
+> ```bash
+> sudo systemctl stop mysql
+> sudo apt remove --purge -y mysql-server mysql-client
+> sudo apt autoremove -y
+> sudo apt install -y mariadb-server mariadb-client
+> sudo systemctl enable --now mariadb
+> ```
+>
+> 그다음 위의 **2.5 MariaDB에 DVWA 전용 사용자·DB 만들기**를 다시 진행하고, setup.php에서 **Create / Reset Database** 를 다시 누릅니다.
+{: .prompt-tip }
 
 ### 2.6 DVWA 설정 파일 만들기
 
@@ -316,8 +370,9 @@ sudo cp config.inc.php.dist config.inc.php
 # .dist (배포 템플릿) → 실제 사용 파일로 복사
 
 sudo nano config.inc.php
-# 다음 줄들이 우리 MySQL 사용자와 일치하는지 확인:
+# 다음 줄들이 우리 MariaDB 사용자와 일치하는지 확인:
 #   $_DVWA[ 'db_server'   ] = '127.0.0.1';
+#   $_DVWA[ 'db_port'     ] = '3306';
 #   $_DVWA[ 'db_database' ] = 'dvwa';
 #   $_DVWA[ 'db_user'     ] = 'dvwa';
 #   $_DVWA[ 'db_password' ] = 'p@ssw0rd';
@@ -342,17 +397,34 @@ http://192.168.0.30/dvwa/setup.php
 | PHP module `gd` | installed |
 | PHP module `mysql` | installed |
 | Writable folder `hackable/uploads/` | Yes |
-| Writable file `external/phpids/.../config.ini` | Yes |
+| 구버전에서 보이는 PHPIDS 임시 파일 권한 | 있으면 Yes |
 
 빨간 항목이 있으면 메시지에 따라 권한 조정:
 
 ```bash
 # 예: 업로드 폴더 권한이 부족할 때
-sudo chmod 777 /var/www/html/dvwa/hackable/uploads
-sudo chmod 777 /var/www/html/dvwa/external/phpids/0.6/lib/IDS/tmp/phpids_log.txt
+sudo chown -R www-data:www-data /var/www/html/dvwa/hackable/uploads
+sudo chmod 775 /var/www/html/dvwa/hackable/uploads
+
+# DVWA 버전에 따라 PHPIDS 임시 폴더가 있을 때만 권한 조정
+if [ -d /var/www/html/dvwa/external/phpids/0.6/lib/IDS/tmp ]; then
+  sudo chown -R www-data:www-data /var/www/html/dvwa/external/phpids/0.6/lib/IDS/tmp
+  sudo chmod -R 775 /var/www/html/dvwa/external/phpids/0.6/lib/IDS/tmp
+fi
 ```
 
 페이지 맨 아래 **"Create / Reset Database"** 버튼 클릭 → 잠시 기다리면 자동으로 로그인 페이지로 이동합니다.
+
+정상 생성 여부를 터미널에서도 한 번 확인합니다.
+
+```bash
+# DVWA가 만든 users 테이블이 보이면 DB 초기화 성공
+mariadb -u dvwa -pp@ssw0rd -D dvwa -e "SHOW TABLES;"
+
+# 기본 관리자 계정이 들어갔는지 확인
+mariadb -u dvwa -pp@ssw0rd -D dvwa -e "SELECT user FROM users;"
+# admin, gordonb, 1337, pablo, smithy 같은 계정이 보이면 정상
+```
 
 ### 2.8 DVWA 로그인 + 보안 레벨 설정
 
@@ -363,6 +435,18 @@ sudo chmod 777 /var/www/html/dvwa/external/phpids/0.6/lib/IDS/tmp/phpids_log.txt
 | 기본 비밀번호 | `password` |
 
 로그인 후, 좌측 메뉴 **DVWA Security** → 드롭다운을 **Low** 로 선택하고 **Submit**.
+
+터미널에서 HTTP 접속도 확인할 수 있습니다.
+
+```bash
+# Ubuntu 서버 자기 자신에서 로그인 페이지 응답 확인
+curl -I http://localhost/dvwa/login.php
+# HTTP/1.1 200 OK 가 나오면 Apache + PHP + DVWA 연결 정상
+
+# Kali에서는 서버 IP로 확인
+curl -I http://192.168.0.30/dvwa/login.php
+# HTTP/1.1 200 OK 가 나오면 Kali에서 DVWA까지 네트워크 접근 정상
+```
 
 > **왜 Low로 시작하는가?**
 > Low는 거의 방어 없이 공격이 그대로 통과합니다. "공격이 통한다 = 코드에 취약점이 있다" 를 가장 명확히 보여주기 위해서입니다. Medium·High는 일부 방어가 들어가 있어 약간의 우회 기법이 필요합니다. Impossible은 잘 작성된 보안 코드의 예시 — 학습용으로 비교해 볼 가치가 있습니다.
@@ -629,11 +713,11 @@ http://192.168.0.30/dvwa/vulnerabilities/fi/?page=php://filter/convert.base64-en
 # 1) 먼저 로그인 페이지를 받아서 세션 쿠키와 CSRF 토큰 동시에 추출
 curl -c /tmp/cookie.txt -s "http://192.168.0.30/dvwa/login.php" -o /tmp/login.html
 
-# 2) CSRF 토큰 추출 — DVWA 버전에 따라 따옴표가 다를 수 있으므로 둘 다 처리
-TOKEN=$(grep -oP "user_token['\"]\s+value=['\"]\K[^'\"]+" /tmp/login.html | head -1)
+# 2) 로그인 CSRF 토큰 추출
+TOKEN=$(grep -oP "name=['\"]user_token['\"][^>]*value=['\"]\K[^'\"]+" /tmp/login.html | head -1)
 echo "TOKEN: $TOKEN"
 # 빈 값이 나오면 패턴이 안 맞은 것 — 다음으로 fallback:
-#   TOKEN=$(grep -oP 'user_token[^>]*value="\K[^"]+' /tmp/login.html | head -1)
+#   TOKEN=$(grep -oP "user_token['\"][^>]*value=['\"]\K[^'\"]+" /tmp/login.html | head -1)
 
 # 3) 로그인 (받은 토큰을 함께 전송)
 curl -b /tmp/cookie.txt -c /tmp/cookie.txt \
@@ -644,9 +728,19 @@ curl -b /tmp/cookie.txt -c /tmp/cookie.txt \
      -s "http://192.168.0.30/dvwa/login.php" -o /dev/null
 # --data-urlencode : 폼 값을 안전하게 URL 인코딩해서 전송
 
-# 4) 보안 레벨을 Low로 (이미 Low면 그대로 통과)
-curl -b /tmp/cookie.txt -s \
-     "http://192.168.0.30/dvwa/security.php?security=low&seclev_submit=Submit" \
+# 4) 보안 레벨을 Low로 변경
+# security.php도 CSRF 토큰이 필요하므로 먼저 페이지를 받아 토큰 추출
+curl -b /tmp/cookie.txt -c /tmp/cookie.txt -s \
+     "http://192.168.0.30/dvwa/security.php" -o /tmp/security.html
+
+SEC_TOKEN=$(grep -oP "name=['\"]user_token['\"][^>]*value=['\"]\K[^'\"]+" /tmp/security.html | head -1)
+echo "SEC_TOKEN: $SEC_TOKEN"
+
+curl -b /tmp/cookie.txt -c /tmp/cookie.txt \
+     --data-urlencode "security=low" \
+     --data-urlencode "seclev_submit=Submit" \
+     --data-urlencode "user_token=$SEC_TOKEN" \
+     -s "http://192.168.0.30/dvwa/security.php" \
      -o /dev/null
 
 # 5) SQL Injection 자동 실행
@@ -680,7 +774,7 @@ curl -b /tmp/cookie.txt -s \
 | XSS (`<script>...`) | 80 (HTTP) | 80은 ALLOW 규칙 | ❌ 막지 못함 |
 | Command Injection (`; whoami`) | 80 (HTTP) | 80은 ALLOW 규칙 | ❌ 막지 못함 |
 | Directory Traversal (`../../etc/passwd`) | 80 (HTTP) | 80은 ALLOW 규칙 | ❌ 막지 못함 |
-| (참고) MySQL 직접 접근 | 3306 시도 | 3306은 deny | ✅ 차단됨 (7-2 결과) |
+| (참고) MariaDB 직접 접근 | 3306 시도 | 3306은 deny | ✅ 차단됨 (7-2 결과) |
 
 > **방화벽의 한계가 너무도 명확하게 드러납니다.** 80번 포트로 들어오는 한 어떤 페이로드든 통과합니다. 방화벽은 **"문이 열려 있는가"** 만 보지, **"문 안으로 무엇이 들어가는가"** 를 보지 않기 때문입니다.
 {: .prompt-warning }
@@ -689,7 +783,7 @@ curl -b /tmp/cookie.txt -s \
 flowchart LR
     K["Kali"] -->|"GET /sqli/?id=1' OR '1'='1"| FW["UFW (포트 80 ALLOW)"]
     FW -->|"포트만 보고 통과"| WEB["Apache + DVWA"]
-    WEB -->|"입력값 그대로 SQL에 끼움"| DB["MySQL"]
+    WEB -->|"입력값 그대로 SQL에 끼움"| DB["MariaDB"]
     DB -->|"모든 사용자 데이터 반환"| K
     style FW fill:#ffd43b,color:#333
     style WEB fill:#fa5252,color:#fff
@@ -706,18 +800,18 @@ OWASP(Open Web Application Security Project)는 매년 가장 흔한 웹 취약�
 
 | OWASP Top 10 (2021) | 오늘 실습과 매핑 |
 |---------------------|-----------------|
-| A01: Broken Access Control | DVWA의 "Brute Force", "CSRF" 모듈 |
+| A01: Broken Access Control | File Inclusion/Directory Traversal처럼 허용되지 않은 파일에 접근하는 흐름 |
 | A02: Cryptographic Failures | DVWA의 "Insecure CAPTCHA" 등 |
-| A03: **Injection** | **오늘 SQL Injection · Command Injection** |
+| A03: **Injection** | **오늘 SQL Injection · Command Injection · XSS** |
 | A04: Insecure Design | (구조 자체 결함) |
-| A05: Security Misconfiguration | DVWA가 의도한 환경 자체 |
+| A05: Security Misconfiguration | DVWA가 의도한 취약 설정, PHP `allow_url_include` 같은 위험 설정 |
 | A06: Vulnerable Components | 옛 라이브러리 사용 |
 | A07: Identification and Authentication Failures | DVWA의 약한 비밀번호 정책 |
 | A08: Software and Data Integrity Failures | (CDN/패키지 신뢰) |
 | A09: Security Logging and Monitoring Failures | (로그 부재) |
-| A10: Server-Side Request Forgery | DVWA의 "File Inclusion" |
+| A10: Server-Side Request Forgery | 오늘 직접 실습하진 않지만, 서버가 외부 URL을 대신 요청하게 만드는 취약점 |
 
-오늘 실습한 SQLi·XSS·Command Injection이 OWASP Top 10의 **A03 (Injection)** 카테고리입니다. 가장 자주, 가장 심각하게 발생하는 종류입니다.
+오늘 실습한 SQLi·XSS·Command Injection은 OWASP Top 10의 **A03 (Injection)** 카테고리와 직접 연결됩니다. Directory Traversal/File Inclusion은 상황에 따라 Broken Access Control 또는 Security Misconfiguration 관점에서 함께 다룹니다.
 
 ### 6.2 왜 공격을 직접 해보는 게 학습에 중요한가
 
@@ -743,7 +837,7 @@ OWASP(Open Web Application Security Project)는 매년 가장 흔한 웹 취약�
 
 | 항목 | 내용 |
 |------|------|
-| DVWA 설치 | Apache + PHP + MySQL + DVWA 소스 |
+| DVWA 설치 | Apache + PHP + MariaDB + DVWA 소스 |
 | DVWA 보안 레벨 | Low / Medium / High / Impossible |
 | SQL Injection | `' OR '1'='1` — 모든 데이터 노출 |
 | UNION SELECT | 다른 테이블(비밀번호 해시 포함) 추출 |
