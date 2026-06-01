@@ -69,6 +69,13 @@ sudo apt update && sudo apt upgrade -y
 sudo apt install -y apache2 php php-mysqli php-gd libapache2-mod-php mariadb-server git
 ```
 
+> **왜 MySQL이 아닌 MariaDB인가?**  
+> MariaDB는 MySQL의 오픈소스 포크로, Oracle의 상용화 이후 커뮤니티 주도로 개발되고 있다.  
+> Ubuntu 22.04의 기본 `mysql-server` 패키지도 내부적으로 MariaDB를 포함하는 경우가 많다.  
+> MariaDB는 완전한 오픈소스이며, 보안 패치가 더 빠르고 기능적으로도 MySQL과 거의 완전히 호환된다.  
+> 실습 환경에서는 `mariadb-server` 패키지를 명시적으로 지정하는 것이 안전하다.
+{: .prompt-tip }
+
 설치 후 Apache2와 MariaDB 서비스를 활성화한다.
 
 ```bash
@@ -79,8 +86,12 @@ sudo systemctl enable --now mariadb
 ### 2.2 MariaDB 보안 초기화
 
 ```bash
-sudo mysql_secure_installation
+sudo mariadb-secure-installation
 ```
+
+> Ubuntu 22.04 이상에서는 `mysql_secure_installation` 대신 `mariadb-secure-installation`을 사용한다.  
+> 두 명령 모두 동작하지만, MariaDB 전용 명령을 쓰는 것이 더 명확하다.
+{: .prompt-tip }
 
 프롬프트가 나타나면 다음과 같이 응답한다.
 
@@ -91,10 +102,11 @@ sudo mysql_secure_installation
 
 ### 2.3 DVWA 데이터베이스 및 사용자 생성
 
-MariaDB 콘솔에 접속한다.
+MariaDB 콘솔에 접속한다.  
+`mariadb` 명령은 MariaDB 전용 클라이언트로, `mysql` 명령과 동일하게 동작한다.
 
 ```bash
-sudo mysql -u root -p
+sudo mariadb -u root -p
 ```
 
 다음 SQL을 실행한다.
