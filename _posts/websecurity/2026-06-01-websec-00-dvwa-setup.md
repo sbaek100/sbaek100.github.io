@@ -50,9 +50,9 @@ DVWA는 SQL Injection, XSS, CSRF, 파일 업로드 취약점 등 OWASP Top 10에
 ```mermaid
 graph LR
     subgraph "내부 네트워크 192.168.0.0/24"
-        K["Kali Linux\n192.168.0.10\n(공격자)"]
-        U["Ubuntu 22.04\n192.168.0.30\n(DVWA 서버)"]
-        K -- "HTTP :80\nBurp Proxy :8080" --> U
+        K["Kali Linux</br>192.168.0.10</br>(공격자)"]
+        U["Ubuntu 22.04</br>192.168.0.30</br>(DVWA 서버)"]
+        K -- "HTTP :80</br>Burp Proxy :8080" --> U
     end
 ```
 
@@ -312,10 +312,10 @@ Security Level을 조정하면 서버 측 방어 코드의 강도가 달라져, 
 
 ```mermaid
 graph LR
-    Low["Low\n방어 없음\n기초 공격 학습"]
-    Med["Medium\n블랙리스트 필터\n기본 우회 학습"]
-    High["High\n화이트리스트·토큰\n고급 우회 학습"]
-    Imp["Impossible\n완전 방어\n안전 코드 참고"]
+    Low["Low</br>방어 없음</br>기초 공격 학습"]
+    Med["Medium</br>블랙리스트 필터</br>기본 우회 학습"]
+    High["High</br>화이트리스트·토큰</br>고급 우회 학습"]
+    Imp["Impossible</br>완전 방어</br>안전 코드 참고"]
 
     Low --> Med --> High --> Imp
 ```

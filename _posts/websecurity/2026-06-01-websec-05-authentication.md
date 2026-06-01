@@ -68,13 +68,13 @@ mermaid: true
 ```mermaid
 flowchart TD
     A[공격자] --> B{공격 유형 선택}
-    B --> C[Brute Force\n모든 조합 대입]
-    B --> D[Dictionary Attack\n사전 파일 대입]
-    B --> E[Hybrid Attack\n사전 + 변형 규칙]
+    B --> C[Brute Force</br>모든 조합 대입]
+    B --> D[Dictionary Attack</br>사전 파일 대입]
+    B --> E[Hybrid Attack</br>사전 + 변형 규칙]
     C --> F{패스워드 일치?}
     D --> F
     E --> F
-    F -->|Yes| G[로그인 성공\n계정 탈취]
+    F -->|Yes| G[로그인 성공</br>계정 탈취]
     F -->|No| H[다음 후보 시도]
     H --> F
 ```
@@ -297,17 +297,17 @@ sequenceDiagram
 
 ```mermaid
 flowchart LR
-    A[정보 수집\n세션ID 획득] --> B[도구 선택]
-    B --> C[Hydra\nHTTP Form]
-    B --> D[Burp Suite\nIntruder]
-    B --> E[SQLmap\nSQLi 취약점]
+    A[정보 수집</br>세션ID 획득] --> B[도구 선택]
+    B --> C[Hydra</br>HTTP Form]
+    B --> D[Burp Suite</br>Intruder]
+    B --> E[SQLmap</br>SQLi 취약점]
     C --> F[패스워드 크래킹]
     D --> F
     E --> G[로그인 우회]
     F --> H{성공?}
     G --> H
-    H -->|Yes| I[계정 탈취\n세션 획득]
-    H -->|No| J[보안 레벨 분석\n우회 기법 적용]
+    H -->|Yes| I[계정 탈취</br>세션 획득]
+    H -->|No| J[보안 레벨 분석</br>우회 기법 적용]
     J --> B
 ```
 

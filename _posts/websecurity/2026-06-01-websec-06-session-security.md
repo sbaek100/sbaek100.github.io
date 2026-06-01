@@ -74,9 +74,9 @@ flowchart TD
     A --> C[XSS 쿠키 탈취]
     A --> D[로컬 쿠키 파일 접근]
 
-    B --> B1["비암호화 HTTP 환경에서\ntcpdump / Wireshark로\nCookie 헤더 추출"]
-    C --> C1["Stored/Reflected XSS로\ndocument.cookie를\n공격자 서버에 전송"]
-    D --> D1["악성코드 감염 기기에서\n브라우저 쿠키 DB 직접 열람"]
+    B --> B1["비암호화 HTTP 환경에서</br>tcpdump / Wireshark로</br>Cookie 헤더 추출"]
+    C --> C1["Stored/Reflected XSS로</br>document.cookie를</br>공격자 서버에 전송"]
+    D --> D1["악성코드 감염 기기에서</br>브라우저 쿠키 DB 직접 열람"]
 ```
 
 ---
@@ -390,16 +390,16 @@ flowchart LR
     A --> C[세션 ID 전달]
     A --> D[세션 관리]
 
-    B --> B1["128bit 이상\n암호학적 난수 사용"]
-    B --> B2["로그인 후\n세션 ID 재발급"]
+    B --> B1["128bit 이상</br>암호학적 난수 사용"]
+    B --> B2["로그인 후</br>세션 ID 재발급"]
 
-    C --> C1["HttpOnly\n(JS 접근 차단)"]
-    C --> C2["Secure\n(HTTPS 전용)"]
-    C --> C3["SameSite=Strict\n(CSRF 방지)"]
+    C --> C1["HttpOnly</br>(JS 접근 차단)"]
+    C --> C2["Secure</br>(HTTPS 전용)"]
+    C --> C3["SameSite=Strict</br>(CSRF 방지)"]
 
-    D --> D1["30분 무활동\n자동 만료"]
-    D --> D2["로그아웃 시\n서버 세션 파기"]
-    D --> D3["중요 작업 시\n재인증 요구"]
+    D --> D1["30분 무활동</br>자동 만료"]
+    D --> D2["로그아웃 시</br>서버 세션 파기"]
+    D --> D3["중요 작업 시</br>재인증 요구"]
 ```
 
 세션 보안의 핵심은 세 단계에서 모두 방어를 적용하는 것이다.
