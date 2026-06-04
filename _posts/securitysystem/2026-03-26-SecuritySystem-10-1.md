@@ -64,16 +64,26 @@ flowchart TD
 
 ### 2.1 설치
 
+> 이 실습은 Ubuntu 기본 저장소(apt)가 제공하는 **Snort 2.9.20** 기준입니다. (최신 계열은 Snort 3이지만 apt로 설치되지 않고 소스 빌드가 필요하므로, 1학년 실습에서는 apt로 설치되는 Snort 2를 사용합니다.)
+{: .prompt-info }
+
 ```bash
+# snort 패키지는 universe 저장소에 있으므로 먼저 활성화한다
+# (Ubuntu 서버/최소 설치에서는 꺼져 있어 install이 실패할 수 있다)
+sudo add-apt-repository universe -y
 sudo apt update
+
 sudo apt install snort -y
 ```
 
-설치 중 네트워크 인터페이스와 홈 네트워크 대역을 입력한다:
+설치 중 파란 설정 화면이 뜨면 네트워크 인터페이스(예: `ens33`)와 홈 네트워크 대역을 입력한다:
 
 ```
 HOME_NET: 192.168.0.0/24
 ```
+
+> 설정 화면을 그냥 넘겼거나 값이 틀려도 괜찮다. 이 실습의 룰은 IP를 직접 명시하므로 동작에는 영향이 없고, 인터페이스는 아래 실행 명령에서 `-i` 옵션으로 다시 지정한다.
+{: .prompt-tip }
 
 ### 2.2 설치 확인
 
@@ -101,7 +111,16 @@ snort --version
 ip addr show
 ```
 
-인터페이스 이름 확인 (예: `ens33`, `eth0`, `enp0s3`). 이후 Snort 실행 시 사용한다.
+`lo`가 아닌 인터페이스 이름을 확인한다. 가상머신 종류에 따라 이름이 다르다:
+
+| 가상머신 | 흔한 인터페이스 이름 |
+|----------|----------------------|
+| VMware | `ens33` |
+| VirtualBox | `enp0s3` |
+| 기타/구형 | `eth0` |
+
+> **중요:** 이 글의 모든 Snort 실행 명령은 `-i ens33`로 적혀 있다. **자신의 인터페이스 이름이 다르면 `ens33`을 자기 것으로 바꿔서** 실행해야 한다. (예: VirtualBox면 `-i enp0s3`)
+{: .prompt-warning }
 
 ---
 
@@ -167,17 +186,24 @@ alert tcp any any -> 192.168.0.30 80 (msg:"[ALERT] HTTP 접속 탐지"; content:
 alert icmp 192.168.0.10 any -> 192.168.0.30 any (msg:"[ALERT] Kali에서 Ping 탐지"; itype:8; sid:1000004; rev:1;)
 ```
 
-### 4.2 설정 파일에서 커스텀 룰 활성화
+### 4.2 설정 파일에서 커스텀 룰 활성화 확인
+
+Ubuntu apt로 설치한 Snort는 `snort.conf`에 `local.rules`가 **이미 포함되어 있다.** 그래서 보통 추가 작업이 필요 없다. 먼저 확인부터 한다:
 
 ```bash
-sudo nano /etc/snort/snort.conf
+grep "local.rules" /etc/snort/snort.conf
 ```
 
-파일 하단 룰 include 섹션에 추가:
+- 출력에 `include $RULE_PATH/local.rules` 줄이 **그대로(맨 앞에 `#` 없이)** 보이면 → **아무것도 하지 않는다.** (이미 활성화됨)
+- 줄 맨 앞에 `#`가 붙어 주석 처리되어 있으면 → 그 `#`만 지운다.
+- 아예 줄이 없을 때만 → 파일 하단에 아래 한 줄을 추가한다.
 
 ```bash
 include $RULE_PATH/local.rules
 ```
+
+> **흔한 실수:** 이미 있는데 한 줄 더 추가하면 `local.rules`가 두 번 읽혀 **"Duplicate rule" (중복 SID) 에러로 4.3 검증이 실패**한다. 반드시 위 `grep`으로 먼저 확인하고, 중복으로 넣지 말 것.
+{: .prompt-warning }
 
 ### 4.3 Snort 테스트 실행 (설정 검증)
 
@@ -185,9 +211,18 @@ include $RULE_PATH/local.rules
 sudo snort -T -c /etc/snort/snort.conf -i ens33
 ```
 
+성공하면 마지막에 아래 메시지가 나온다:
+
 ```
 Snort successfully validated the configuration!
 ```
+
+> **검증이 실패한다면** — 대부분 stock 설정의 평판(reputation) 룰 파일이 없어서 나는 에러다. 메시지에 `white_list.rules` 또는 `black_list.rules`가 보이면 빈 파일을 만들어 주면 해결된다:
+> ```bash
+> sudo touch /etc/snort/rules/white_list.rules /etc/snort/rules/black_list.rules
+> ```
+> `Duplicate rule` 에러가 보이면 4.2의 중복 include 문제이니 추가한 줄을 지운다.
+{: .prompt-tip }
 
 ### 4.4 Snort 실시간 탐지 모드 실행
 
