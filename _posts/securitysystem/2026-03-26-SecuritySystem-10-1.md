@@ -78,6 +78,8 @@ sudo apt install snort -y
 
 설치 중 파란 설정 화면이 뜨면 네트워크 인터페이스(예: `ens33`)와 홈 네트워크 대역을 입력한다:
 
+![](/assets/img/posts/2026-03-26-SecuritySystem-10-1-1780614719697.png)
+
 ```
 HOME_NET: 192.168.0.0/24
 ```
@@ -91,11 +93,7 @@ HOME_NET: 192.168.0.0/24
 snort --version
 ```
 
-```
-   ,,_     -*> Snort! <*-
-  o"  )~   Version 2.9.x.x
-   ''''    By Martin Roesch & The Snort Team
-```
+![](/assets/img/posts/2026-03-26-SecuritySystem-10-1-1780614745058.png)
 
 ### 2.3 주요 설정 파일
 
@@ -158,7 +156,7 @@ alert tcp any any -> 192.168.0.30 80 (msg:"HTTP 접속 탐지"; sid:1000001; rev
 | `content` | 페이로드 내용 매칭 | `content:"GET";` |
 | `flags` | TCP 플래그 | `flags:S;` (SYN만) |
 | `ttl` | TTL 값 조건 | `ttl:<64;` |
-| `threshold` | 임계치 설정 | `threshold:type limit,...` |
+| `detection_filter` | 특정 기간 내 탐지 횟수 임계치 설정 | `detection_filter: track by_src, count 20, seconds 3;` |
 
 ---
 
@@ -170,19 +168,30 @@ alert tcp any any -> 192.168.0.30 80 (msg:"HTTP 접속 탐지"; sid:1000001; rev
 sudo nano /etc/snort/rules/local.rules
 ```
 
-아래 룰을 추가한다:
+아래 룰을 추가한다. 각 옵션의 역할은 주석을 참고하여 정확하게 작성해야 오류가 나지 않는다:
 
 ```bash
-# Kali에서 오는 모든 TCP 트래픽 탐지
+# 1. Kali(192.168.0.10)에서 서버(192.168.0.30)로 오는 모든 TCP 트래픽 탐지
+#   - tcp: TCP 프로토콜만 감시
+#   - sid:1000001: 커스텀 룰 식별자 (1,000,000 이상 설정 필수)
 alert tcp 192.168.0.10 any -> 192.168.0.30 any (msg:"[ALERT] Kali에서 TCP 접속 탐지"; sid:1000001; rev:1;)
 
-# Nmap SYN 스캔 탐지 (SYN 플래그만 있는 패킷)
-alert tcp any any -> 192.168.0.30 any (msg:"[ALERT] SYN 스캔 탐지"; flags:S; threshold:type both, track by_src, count 20, seconds 3; sid:1000002; rev:1;)
+# 2. Nmap SYN 스캔 탐지 (3초 동안 동일한 출발지 IP에서 20번 이상 SYN 패킷 수신 시 탐지)
+#   - flags:S : TCP 헤더 플래그 중 SYN 플래그만 설정된 패킷 매칭
+#   - detection_filter: 기존의 threshold 옵션은 경보/오류를 방지하기 위해 최신 문법인 detection_filter로 대체
+#     * track by_src : 출발지 IP 기준으로 카운트 누적
+#     * count 20 : 20회 이벤트 도달 시 경보
+#     * seconds 3 : 3초의 임계 시간 설정 (오타인 'second' 대신 복수형 'seconds' 필수!)
+alert tcp any any -> 192.168.0.30 any (msg:"[ALERT] SYN 스캔 탐지"; flags:S; detection_filter: track by_src, count 20, seconds 3; sid:1000002; rev:1;)
 
-# HTTP 서버 접속 탐지
+# 3. HTTP 웹 서버 접속 탐지
+#   - 192.168.0.30 80 : 80번 포트(웹 서비스)로 향하는 트래픽 대상
+#   - content:"GET" : 패킷의 Application Layer 페이로드 내에 "GET" 문자열 매칭
 alert tcp any any -> 192.168.0.30 80 (msg:"[ALERT] HTTP 접속 탐지"; content:"GET"; sid:1000003; rev:1;)
 
-# ICMP Ping 탐지
+# 4. ICMP Ping 탐지 (Kali에서 오는 ICMP 패킷 탐지)
+#   - icmp: ICMP 프로토콜 지정
+#   - itype:8 : ICMP 타입 중 8번(Echo Request, Ping 요청) 패킷만 필터링
 alert icmp 192.168.0.10 any -> 192.168.0.30 any (msg:"[ALERT] Kali에서 Ping 탐지"; itype:8; sid:1000004; rev:1;)
 ```
 
@@ -191,7 +200,7 @@ alert icmp 192.168.0.10 any -> 192.168.0.30 any (msg:"[ALERT] Kali에서 Ping �
 Ubuntu apt로 설치한 Snort는 `snort.conf`에 `local.rules`가 **이미 포함되어 있다.** 그래서 보통 추가 작업이 필요 없다. 먼저 확인부터 한다:
 
 ```bash
-grep "local.rules" /etc/snort/snort.conf
+sudo grep "local.rules" /etc/snort/snort.conf
 ```
 
 - 출력에 `include $RULE_PATH/local.rules` 줄이 **그대로(맨 앞에 `#` 없이)** 보이면 → **아무것도 하지 않는다.** (이미 활성화됨)
@@ -208,7 +217,8 @@ include $RULE_PATH/local.rules
 ### 4.3 Snort 테스트 실행 (설정 검증)
 
 ```bash
-sudo snort -T -c /etc/snort/snort.conf -i ens33
+#이더넷 정확히 확인하고 기입 사람에 따라 ens33 아닐 수 있음
+sudo snort -T -c /etc/snort/snort.conf -i ens33 
 ```
 
 성공하면 마지막에 아래 메시지가 나온다:
@@ -227,9 +237,27 @@ Snort successfully validated the configuration!
 ### 4.4 Snort 실시간 탐지 모드 실행
 
 ```bash
-# -A console: 경보를 터미널에 출력
+# -A console: 탐지된 경보(Alert)를 파일 대신 실시간 터미널 화면에 출력
 sudo snort -A console -c /etc/snort/snort.conf -i ens33
 ```
+
+> **Tip: Snort 일시 중지 및 종료 방법**
+> 
+> Snort는 실행 후 터미널을 점유하며 실시간 모니터링을 수행합니다. 멈추거나 종료할 때 다음 단축키와 명령어를 사용하세요.
+> 
+> 1. **정상 종료 (`Ctrl + C`):**
+>    실행 중인 터미널 창에서 `Ctrl + C`를 누르면 패킷 수집 통계를 화면에 출력하며 안전하게 종료됩니다.
+> 2. **강제 종료 (`Ctrl + \`):**
+>    Snort가 멈추거나 `Ctrl + C` 키 입력에 반응하지 않을 때, **`Ctrl + \`** (SIGQUIT)을 누르면 즉시 강제 종료됩니다.
+> 3. **새 터미널에서 프로세스 종료 (`killall`/`pkill`):**
+>    터미널이 완전히 굳어서 입력이 되지 않는 경우, 새 터미널 창을 열고 아래 명령어로 실행 중인 snort 백그라운드/포그라운드 프로세스를 정리합니다.
+>    ```bash
+>    sudo killall snort      # Snort 정상 종료 요청
+>    sudo killall -9 snort   # 먹통일 때 강제 즉시 종료
+>    ```
+> 4. **일시정지 후 종료 (`Ctrl + Z`):**
+>    `Ctrl + Z`를 눌러 프로세스를 잠시 멈추고 백그라운드로 보낸 뒤, `sudo killall snort`를 입력해 종료할 수 있습니다.
+{: .prompt-info }
 
 ### 4.5 Kali에서 공격 시나리오 실행
 
@@ -328,27 +356,70 @@ Total alerts:        47
 
 ---
 
-## Part 6. 룰 심화 — 임계치(Threshold) 설정
+## Part 6. 룰 심화 — 임계치 필터(detection_filter) 및 추가 실무 실습
 
-무차별 스캔은 짧은 시간에 많은 패킷을 발생시킨다. 임계치 옵션으로 이를 탐지한다.
+무차별 스캔이나 자동화 도구를 사용한 무차별 대입 공격은 짧은 시간에 다량의 패킷을 발생시킵니다. 이를 효율적으로 탐지하기 위해 임계치를 적용하는 옵션을 심화하여 다뤄봅니다.
+
+### 6.1 `detection_filter` 적용 (기존 `threshold` 대체)
+
+> **중요:** 과거 Snort 룰 예제에 자주 쓰이는 `threshold` 옵션은 최신 Snort 버전의 룰 내부(Inline)에서 사용할 경우 경고(Deprecated)가 발생하며, 시간 인자로 단수형인 `second`를 쓰면 **문법 에러(Fatal Error)**로 시스템이 꺼집니다. 따라서 현재는 룰 내부에 **`detection_filter`** 옵션을 사용하는 것이 표준입니다.
+{: .prompt-warning }
 
 ```bash
-# 3초 안에 같은 IP에서 20번 이상 SYN이 오면 경보
+# 3초 안에 동일한 IP(by_src)로부터 20번 이상 SYN 패킷이 수신되면 경보를 울림
+#   - detection_filter: 임계 조건을 필터링
+#   - track by_src: 출발지 IP 기준으로 트래픽 추적
+#   - count 20: 3초(seconds 3) 내에 해당 룰 매칭 횟수가 20회에 도달 시 이벤트 발생
+#   - seconds 3: 임계 시간 범위(단위: 초). 복수형인 'seconds'로 정확히 기입 필수!
 alert tcp any any -> 192.168.0.30 any (
     msg:"[ALERT] 포트 스캔 의심";
     flags:S;
-    threshold:type both, track by_src, count 20, seconds 3;
+    detection_filter: track by_src, count 20, seconds 3;
     sid:1000005;
     rev:1;
 )
 ```
 
-| 옵션 | 의미 |
-|------|------|
-| `type both` | 탐지 + 로그 모두 |
-| `track by_src` | 출발지 IP 기준 |
-| `count 20` | 20회 발생 시 |
-| `seconds 3` | 3초 안에 |
+| 옵션 | 의미 | 상세 설명 |
+|------|------|-----------|
+| `detection_filter` | 임계치 탐지 옵션 | 특정 시간 동안의 공격 누적 횟수를 체크 |
+| `track by_src` | 출발지 IP 기준 집계 | 공격 주체(공격자 IP)를 기준으로 패킷 수를 집계 |
+| `count 20` | 임계 패킷 수 | 누적 패킷 개수가 20회 도달 시 이벤트 트리거 |
+| `seconds 3` | 임계 시간 범위 | 패킷 카운트가 유효한 시간대 (3초 내) |
+
+---
+
+### 6.2 추가 실무 실습
+
+현업에서 자주 모니터링해야 하는 주요 인프라 서비스인 **데이터베이스(MySQL)** 및 **원격 관리 도구(SSH)**에 대한 위협 탐지 룰을 작성하고 분석해 봅니다.
+
+#### 1) MySQL 데이터베이스 접근 탐지
+보안 정책상 내부 관리용 DB 포트(3306)에 외부 세션의 TCP 접근 시도가 발생하는지 실시간 모니터링하기 위한 룰입니다.
+
+* **룰 정의:**
+  ```bash
+  # 목적지 포트 3306(MySQL 기본 포트)으로 들어오는 모든 외부 TCP 트래픽을 탐지
+  #   - 3306 : 목적지 포트를 MySQL로 고정
+  #   - sid:1000007 : 중복되지 않는 고유 룰 식별 번호 설정
+  alert tcp any any -> 192.168.0.30 3306 (msg:"[ALERT] MySQL 접근 시도"; sid:1000007; rev:1;)
+  ```
+
+#### 2) SSH(22) 대상 무차별 대입(Brute Force) 공격 탐지
+원격 쉘 접속을 위해 22번 포트로 과도하게 빠른 요청을 반복하는 행위를 임계치 필터를 적용해 무차별 대입 시도로 의심하여 탐지합니다.
+
+* **룰 정의:**
+  ```bash
+  # 특정 공격지(Kali)로부터 SSH 22번 포트로 5초 동안 10번 이상 TCP 연결을 시도하는 경우 경보
+  #   - 192.168.0.10 : 출발지 IP를 공격자 IP(Kali)로 명시하여 표적 탐지 수행
+  #   - 22 : SSH 접속 포트 매칭
+  #   - detection_filter : 5초(seconds 5) 범위 안에 접속 시도가 10회(count 10) 이상 누적 시 작동
+  alert tcp 192.168.0.10 any -> 192.168.0.30 22 (
+      msg:"[ALERT] SSH 무차별 대입 의심";
+      detection_filter: track by_src, count 10, seconds 5;
+      sid:1000006;
+      rev:1;
+  )
+  ```
 
 ---
 

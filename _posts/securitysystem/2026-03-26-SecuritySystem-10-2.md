@@ -90,41 +90,6 @@ grep "\[\*\*\]" snort_log.txt | grep -oP '\[ALERT\][^[]+' | sort | uniq -c | sor
 
 ---
 
-### 과제 1-3. 룰 추가 작성
-
-아래 요구사항에 맞는 Snort 룰을 작성하라.
-
-**요구사항 1:** MySQL 포트(3306)에 대한 접근 시도를 탐지하는 룰
-
-```
-alert ____ any any -> 192.168.0.30 ____ (msg:"[ALERT] MySQL 접근 시도"; sid:______; rev:1;)
-```
-
-**요구사항 2:** Kali에서 SSH(22) 포트로 5초 안에 10번 이상 접속 시도 시 경보
-
-```
-alert tcp 192.168.0.10 any -> 192.168.0.30 22 (
-    msg:"[ALERT] SSH 무차별 대입 의심";
-    threshold:type both, track by_src, count ___, seconds ___;
-    sid:1000006; rev:1;
-)
-```
-
-**정답:**
-
-```bash
-# 요구사항 1
-alert tcp any any -> 192.168.0.30 3306 (msg:"[ALERT] MySQL 접근 시도"; sid:1000007; rev:1;)
-
-# 요구사항 2
-alert tcp 192.168.0.10 any -> 192.168.0.30 22 (
-    msg:"[ALERT] SSH 무차별 대입 의심";
-    threshold:type both, track by_src, count 10, seconds 5;
-    sid:1000006; rev:1;
-)
-```
-
----
 
 ## Part 2. IDS 우회 기법 소개
 
@@ -255,7 +220,7 @@ flowchart TD
 **Q5.** Snort 경보 로그가 저장되는 기본 디렉토리는?
 → `______`
 
-**Q6.** Snort에서 `threshold:type both, track by_src, count 20, seconds 3;` 의 의미를 설명하시오.
+**Q6.** Snort에서 `detection_filter: track by_src, count 20, seconds 3;` 의 의미를 설명하시오.
 → `______`
 
 **Q7.** 방화벽(iptables/ufw)과 IDS(Snort)를 함께 사용해야 하는 이유를 설명하시오.
@@ -272,7 +237,7 @@ flowchart TD
 | Q3 | ② |
 | Q4 | ④ (Prepared Statement는 SQL Injection 방어 코드) |
 | Q5 | `/var/log/snort/` |
-| Q6 | 같은 출발지 IP에서 3초 안에 20번 이상 패킷이 오면 경보와 로그를 모두 기록 |
+| Q6 | 동일한 출발지 IP에서 3초 이내에 20번 이상 패킷이 수신되면 경보 발생 |
 | Q7 | 방화벽은 알려진 포트/IP를 차단하지만, 허용된 포트를 통한 공격은 탐지하지 못한다. IDS는 허용된 트래픽 중에서도 공격 패턴을 탐지해 다층 방어를 완성한다. |
 
 ---
