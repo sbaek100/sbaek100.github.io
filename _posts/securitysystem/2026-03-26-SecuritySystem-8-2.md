@@ -421,7 +421,7 @@ curl -b /tmp/cookie.txt -s -o /dev/null -w "HTTP %{http_code}\n" \
 | UNION SELECT 비밀번호 해시 추출 | 해시 노출 | **403 Forbidden** | REQUEST-942 (SQLI) |
 | XSS (`<script>alert()</script>`) | alert 실행 | **403 Forbidden** | REQUEST-941 (XSS) |
 | Command Injection (`; whoami`) | `www-data` 노출 | **403 Forbidden** | REQUEST-932 (RCE) |
-| Directory Traversal (`../../etc/passwd`) | passwd 노출 | **403 Forbidden** | REQUEST-930 (LFI) |
+| Directory Traversal (`../../../../../../etc/passwd` 또는 `/etc/passwd`) | passwd 노출 | **403 Forbidden** | REQUEST-930 (LFI) |
 
 ```mermaid
 flowchart LR
@@ -781,7 +781,7 @@ WAF도 만능이 아닙니다.
 
 ---
 
-**Q7.** 8-1에서 통한 Directory Traversal 공격(`?page=../../../../etc/passwd`)이 8-2에서 막힌 이유를, "룰셋 번호"와 "검사 위치(URL/본문/헤더)" 를 모두 포함해서 설명하시오.
+**Q7.** 8-1에서 통한 Directory Traversal 공격(`?page=../../../../../../etc/passwd` 또는 `?page=/etc/passwd`)이 8-2에서 막힌 이유를, "룰셋 번호"와 "검사 위치(URL/본문/헤더)" 를 모두 포함해서 설명하시오.
 
 ---
 
