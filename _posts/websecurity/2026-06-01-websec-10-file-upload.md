@@ -29,14 +29,15 @@ mermaid: true
 
 | 항목 | 내용 |
 |---|---|
-| OWASP 카테고리 | **A05:2021 – Security Misconfiguration** · **A04:2021 – Insecure Design** (결과적으로 A03 Injection/RCE) |
+| OWASP 카테고리 | **A02:2025 – Security Misconfiguration** · **A06:2025 – Insecure Design** (결과적으로 A05 Injection/RCE) |
 | CWE | CWE-434 (위험한 유형의 파일 업로드 제한 실패) |
 | 영향 | 웹쉘·Reverse Shell 업로드 → **서버 완전 장악(RCE)**, 가장 파급력 큰 취약점 군 |
 | 한 줄 핵심 | 업로드 파일의 **유형·내용·실행 위치**를 통제하지 못해 악성 스크립트가 서버에서 실행됨 |
 
-> "무제한 파일 업로드(CWE-434)"는 OWASP Top 10 2021의 **단독 항목은 아니다.**  
-> 검증 누락은 **A04(설계 결함)**, 업로드 디렉터리에서 스크립트 실행이 허용되는 설정은 **A05(보안 설정 오류)**,  
-> 최종 결과는 **RCE**다. 즉 "설계+설정+실행" 세 단계 모두에서 막아야 한다.
+> "무제한 파일 업로드(CWE-434)"는 OWASP Top 10:2025에서도 **단독 항목은 아니다.**  
+> 검증 누락은 **A06 Insecure Design(설계 결함)**, 업로드 디렉터리에서 스크립트 실행이 허용되는 설정은 **A02 Security Misconfiguration(보안 설정 오류)**,  
+> 최종 결과는 **RCE(A05 Injection)** 다. 즉 "설계+설정+실행" 세 단계 모두에서 막아야 한다.  
+> (참고: 2025판에서 Security Misconfiguration은 A05→**A02**로, Insecure Design은 A04→**A06**으로 이동했다.)
 {: .prompt-info }
 
 ---

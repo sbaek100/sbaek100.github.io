@@ -34,10 +34,10 @@ DVWA는 SQL Injection, XSS, CSRF, 파일 업로드 취약점 등 OWASP Top 10에
 
 ### 1.1 환경 구성
 
-| 역할 | OS | IP 주소 | 주요 도구 |
-|---|---|---|---|
-| 공격자 머신 | Kali Linux | 192.168.0.10 | Burp Suite, SQLmap, Nikto, gobuster |
-| 피해자(대상) 서버 | Ubuntu 22.04 LTS | 192.168.0.30 | Apache2, PHP, MariaDB, DVWA |
+| 역할         | OS               | IP 주소        | 주요 도구                               |
+| ---------- | ---------------- | ------------ | ----------------------------------- |
+| 공격자 머신     | Kali Linux       | 192.168.0.10 | Burp Suite, SQLmap, Nikto, gobuster |
+| 피해자(대상) 서버 | Ubuntu 22.04 LTS | 192.168.0.30 | Apache2, PHP, MariaDB, DVWA         |
 
 두 머신은 동일한 내부 네트워크(192.168.0.0/24)에 연결되어 있으며, Kali Linux에서 Ubuntu 서버의 DVWA로 직접 접근한다.
 
@@ -483,26 +483,30 @@ gobuster dir -u http://192.168.0.30 \
 
 ---
 
-## 7. 이 시리즈와 OWASP Top 10 (2021) 매핑
+## 7. 이 시리즈와 OWASP Top 10 (2025) 매핑
 
-이 실습 시리즈의 각 포스트는 **OWASP Top 10 2021** 카테고리와 직접 연결된다.  
-실습 전, 자신이 다루는 취약점이 OWASP의 어느 항목·CWE에 해당하는지 먼저 인지하고 시작한다.
+이 실습 시리즈의 각 포스트는 **OWASP Top 10:2025**(2026년 1월 정식 공개, 현행 최신판) 카테고리와 직접 연결된다.  
+실습 전, 자신이 다루는 취약점이 OWASP의 어느 항목·CWE에 해당하는지 먼저 인지하고 시작한다.  
+번호가 바뀐 항목은 과거 자료와의 대조를 위해 `(구 …:2021)`을 함께 표기한다.
 
-| 포스트 | 취약점 | OWASP Top 10 (2021) | CWE |
+| 포스트 | 취약점 | OWASP Top 10:2025 | CWE |
 |---|---|---|---|
-| **01. SQL Injection** | SQL 주입 | **A03 – Injection** | CWE-89 |
-| **02. XSS** | 크로스 사이트 스크립팅 | **A03 – Injection** | CWE-79 |
+| **01. SQL Injection** | SQL 주입 | **A05 – Injection** (구 A03:2021) | CWE-89 |
+| **02. XSS** | 크로스 사이트 스크립팅 | **A05 – Injection** (구 A03:2021) | CWE-79 |
 | **03. CSRF** | 사이트 간 요청 위조 | **A01 – Broken Access Control** | CWE-352 |
-| **04. SSRF** | 서버 측 요청 위조 | **A10 – SSRF** | CWE-918 |
-| **05. Authentication** | 무차별 대입·취약 인증 | **A07 – Identification & Authentication Failures** | CWE-307 |
-| **06. Session Security** | 세션 관리 취약점 | **A07 – Identification & Authentication Failures** | CWE-384 / CWE-330 |
+| **04. SSRF** | 서버 측 요청 위조 | **A01 – Broken Access Control** (SSRF 흡수, 구 A10:2021) | CWE-918 |
+| **05. Authentication** | 무차별 대입·취약 인증 | **A07 – Authentication Failures** | CWE-307 |
+| **06. Session Security** | 세션 관리 취약점 | **A07 – Authentication Failures** | CWE-384 / CWE-330 |
 | **07. IDOR** | 접근 통제 실패 | **A01 – Broken Access Control** | CWE-639 |
-| **08. Command Injection** | OS 명령 삽입 | **A03 – Injection** | CWE-78 |
-| **09. File Inclusion** | LFI / RFI · 경로 조작 | **A03 – Injection** (경로 조작은 A01) | CWE-98 / CWE-22 |
-| **10. File Upload** | 무제한 파일 업로드 → RCE | **A05 – Security Misconfiguration / A04 – Insecure Design** | CWE-434 |
+| **08. Command Injection** | OS 명령 삽입 | **A05 – Injection** (구 A03:2021) | CWE-78 |
+| **09. File Inclusion** | LFI / RFI · 경로 조작 | **A05 – Injection** (경로 조작은 A01) | CWE-98 / CWE-22 |
+| **10. File Upload** | 무제한 파일 업로드 → RCE | **A02 – Security Misconfiguration / A06 – Insecure Design** | CWE-434 |
+
+> **2025판 주요 변화**: ① **SSRF**가 단독 항목(2021 A10)에서 **A01 Broken Access Control로 흡수**, ② **Injection**이 A03→**A05**로 하락, ③ **Security Misconfiguration**이 A05→**A02**로 상승, ④ 신설 항목 **A03 Software Supply Chain Failures**·**A10 Mishandling of Exceptional Conditions** 추가.
+{: .prompt-info }
 
 > **학습 포인트**: OWASP Top 10은 "발생 빈도 + 영향도"로 묶은 **취약점 카테고리**다.  
-> 개별 취약점(예: SQLi)이 어느 카테고리(A03 Injection)에 속하는지 함께 기억하면,  
+> 개별 취약점(예: SQLi)이 어느 카테고리(A05 Injection)에 속하는지 함께 기억하면,  
 > 실무에서 새로운 취약점을 만났을 때도 "어떤 부류의 문제인지" 빠르게 분류할 수 있다.
 {: .prompt-tip }
 

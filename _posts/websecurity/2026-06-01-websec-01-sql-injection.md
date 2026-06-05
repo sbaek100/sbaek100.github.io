@@ -30,12 +30,12 @@ mermaid: true
 
 | 항목 | 내용 |
 |---|---|
-| OWASP 카테고리 | **A03:2021 – Injection** |
+| OWASP 카테고리 | **A05:2025 – Injection** (구 A03:2021) |
 | CWE | CWE-89 (SQL 명령에 사용되는 특수 요소의 부적절한 처리) |
 | 영향 | 인증 우회, 전체 DB 열람·변조·삭제, 경우에 따라 OS 명령 실행(RCE) |
 | 한 줄 핵심 | 사용자 입력이 "데이터"가 아니라 **"SQL 명령의 일부"** 로 해석될 때 발생한다 |
 
-> SQL Injection은 XSS(02)·Command Injection(08)·File Inclusion(09)과 함께 **A03 Injection** 군에 속한다.  
+> SQL Injection은 XSS(02)·Command Injection(08)·File Inclusion(09)과 함께 **A05 Injection**(구 A03:2021) 군에 속한다.  
 > Injection 계열의 근본 방어 원리는 모두 동일하다 — **입력(데이터)과 코드(명령)를 분리**하는 것.
 {: .prompt-info }
 

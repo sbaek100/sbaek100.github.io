@@ -30,12 +30,12 @@ mermaid: true
 
 | 항목 | 내용 |
 |---|---|
-| OWASP 카테고리 | **A07:2021 – Identification and Authentication Failures** |
+| OWASP 카테고리 | **A07:2025 – Authentication Failures** (2021: Identification and Authentication Failures) |
 | CWE | CWE-384 (Session Fixation) · CWE-330 (예측 가능한 세션 ID) · CWE-614 (Secure 미설정 쿠키) |
 | 영향 | 세션 ID 예측·탈취·고정으로 **로그인 없이 타 사용자 세션 탈취(세션 하이재킹)** |
 | 한 줄 핵심 | 세션 ID가 **예측 가능**하거나, **전송/저장이 안전하지 않거나**, **로그인 후 재발급되지 않을** 때 발생 |
 
-> 세션 관리는 인증의 연장선이므로 **A07**에 속한다.  
+> 세션 관리는 인증의 연장선이므로 **A07:2025 Authentication Failures**에 속한다.  
 > 세 가지 축으로 기억한다 — ① 충분한 엔트로피(예측 불가), ② 안전한 전달(HTTPS·HttpOnly·SameSite), ③ 로그인 시 세션 재발급(고정 방지).
 {: .prompt-info }
 

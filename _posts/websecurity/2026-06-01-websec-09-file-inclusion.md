@@ -30,12 +30,12 @@ mermaid: true
 
 | 항목 | 내용 |
 |---|---|
-| OWASP 카테고리 | **A03:2021 – Injection** (경로 조작 측면은 **A01 – Broken Access Control**) |
+| OWASP 카테고리 | **A05:2025 – Injection** (구 A03:2021; 경로 조작 측면은 **A01 – Broken Access Control**) |
 | CWE | CWE-98 (PHP 원격 파일 포함) · CWE-22 (경로 조작, Path Traversal) |
 | 영향 | LFI: 시스템 파일 노출·로그 포이즈닝으로 RCE / RFI: 외부 악성 코드 실행(즉시 RCE) |
 | 한 줄 핵심 | 사용자 입력이 **`include()`의 파일 경로**로 쓰여, 임의 로컬/원격 파일이 코드로 실행됨 |
 
-> 코드를 포함·실행시키는 측면은 **A03 Injection(CWE-98)**, 디렉터리를 거슬러 올라가 파일을 읽는  
+> 코드를 포함·실행시키는 측면은 **A05 Injection(CWE-98, 구 A03:2021)**, 디렉터리를 거슬러 올라가 파일을 읽는  
 > **Path Traversal(CWE-22)** 측면은 **A01 Broken Access Control**로도 분류된다. 두 관점을 함께 이해한다.
 {: .prompt-info }
 

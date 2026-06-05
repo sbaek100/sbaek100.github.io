@@ -30,12 +30,12 @@ mermaid: true
 
 | 항목 | 내용 |
 |---|---|
-| OWASP 카테고리 | **A07:2021 – Identification and Authentication Failures** |
+| OWASP 카테고리 | **A07:2025 – Authentication Failures** (2021: Identification and Authentication Failures) |
 | CWE | CWE-307 (인증 시도 횟수 제한 미흡) · CWE-521 (취약한 비밀번호 요구사항) |
 | 영향 | 무차별 대입·사전 공격으로 계정 탈취, 관리자 계정 점유 시 전체 시스템 장악 |
 | 한 줄 핵심 | 로그인 시도 제한·강력한 자격증명·다단계 인증이 없어 **자격증명을 추측·대입으로 뚫을 수 있음** |
 
-> A07은 2017년 "취약한 인증(Broken Authentication)"이 2021년 이름이 바뀐 항목이다.  
+> A07은 2017 "Broken Authentication" → 2021 "Identification and Authentication Failures" → **2025 "Authentication Failures"** 로 명칭이 정리되어 온 항목이다(번호는 줄곧 A07).  
 > 무차별 대입(Brute Force)·기본 계정·약한 비밀번호 정책·세션 관리 미흡(06장)이 모두 여기에 속한다.
 {: .prompt-info }
 
