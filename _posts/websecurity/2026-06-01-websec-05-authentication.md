@@ -26,6 +26,21 @@ mermaid: true
 
 ---
 
+## OWASP Top 10 매핑
+
+| 항목 | 내용 |
+|---|---|
+| OWASP 카테고리 | **A07:2021 – Identification and Authentication Failures** |
+| CWE | CWE-307 (인증 시도 횟수 제한 미흡) · CWE-521 (취약한 비밀번호 요구사항) |
+| 영향 | 무차별 대입·사전 공격으로 계정 탈취, 관리자 계정 점유 시 전체 시스템 장악 |
+| 한 줄 핵심 | 로그인 시도 제한·강력한 자격증명·다단계 인증이 없어 **자격증명을 추측·대입으로 뚫을 수 있음** |
+
+> A07은 2017년 "취약한 인증(Broken Authentication)"이 2021년 이름이 바뀐 항목이다.  
+> 무차별 대입(Brute Force)·기본 계정·약한 비밀번호 정책·세션 관리 미흡(06장)이 모두 여기에 속한다.
+{: .prompt-info }
+
+---
+
 ## 1. 웹 인증 취약점 개요
 
 **인증(Authentication)** 은 사용자가 주장하는 신원을 확인하는 과정이다.  
@@ -99,6 +114,19 @@ flowchart TD
 ---
 
 ## 4. DVWA 실습 — Security Level: Low
+
+### 4.0 레벨별 공격·방어 한눈에 (Brute Force 모듈)
+
+| 레벨 | 서버 측 방어 | 공격(우회) 방안 | 그 레벨의 방어 한계 |
+|---|---|---|---|
+| **Low** | 없음 (시도 제한·지연·토큰 모두 없음) | Hydra·Burp Intruder로 초고속 자동 대입, SQLi 로그인 우회(`' or 1=1 -- `) | 자동화에 무방비 |
+| **Medium** | 실패 시 `sleep(2)` 고정 지연 | 스레드를 늘려 **병렬 요청**으로 지연 상쇄, 시간만 더 들 뿐 가능 | 지연은 대입 자체를 막지 못함 |
+| **High** | 요청마다 **Anti-CSRF 토큰(user_token)** + 랜덤 지연 | 매 요청 응답에서 토큰 파싱 후 다음 요청에 첨부(Burp `Recursive grep`/`csrftoken` 옵션) | 자동화를 늦출 뿐 차단은 아님 |
+| **Impossible** | **PDO Prepared Statement + 계정 잠금(실패 누적 시 차단) + 토큰** | 잠금으로 일정 횟수 후 차단되어 대입 불가 | — (근본 방어) |
+
+> 핵심: 지연(Medium)·토큰(High)은 자동화를 **늦출 뿐** 막지 못한다.  
+> Impossible의 **계정 잠금·Rate Limiting**(7장)이 무차별 대입을 실제로 차단한다. SQLi 우회까지 막으려면 **Prepared Statement**도 필수.
+{: .prompt-tip }
 
 ### 4.1 수동 테스트로 취약점 확인
 
@@ -290,6 +318,27 @@ sequenceDiagram
     B->>S: GET /brute/?password=password&user_token=def456
     S->>B: 로그인 성공!
 ```
+
+> High의 한계: 토큰은 응답에 노출되므로 Burp가 매번 추출해 첨부하면 자동화가 가능하다. **속도만 늦출 뿐 차단은 아니다.**
+{: .prompt-warning }
+
+### 5.3 Impossible 레벨 — 방어 성공
+
+Impossible 레벨은 세 가지를 결합한다.
+
+1. **PDO Prepared Statement** — 로그인 쿼리의 SQL Injection 우회(`' or 1=1 -- `) 차단.
+2. **계정 잠금(Account Lockout)** — 일정 횟수(예: 3회) 실패 시 일정 시간 계정을 잠가 추가 시도를 막는다.
+3. **Anti-CSRF 토큰** — 외부 자동화 도구의 위조 요청 차단.
+
+```php
+// Impossible 핵심: 실패 누적 시 잠금
+if ($failed_login_count >= 3) {
+    // 마지막 실패 후 일정 시간 동안 로그인 차단
+}
+```
+
+무차별 대입은 **시도 자체가 차단**되므로 Hydra·Intruder로도 뚫을 수 없다.  
+실무에서는 여기에 **Rate Limiting · CAPTCHA · MFA**(7장)를 더해 다층으로 방어한다.
 
 ---
 

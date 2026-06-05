@@ -25,6 +25,22 @@ mermaid: true
 
 ---
 
+## OWASP Top 10 매핑
+
+| 항목 | 내용 |
+|---|---|
+| OWASP 카테고리 | **A05:2021 – Security Misconfiguration** · **A04:2021 – Insecure Design** (결과적으로 A03 Injection/RCE) |
+| CWE | CWE-434 (위험한 유형의 파일 업로드 제한 실패) |
+| 영향 | 웹쉘·Reverse Shell 업로드 → **서버 완전 장악(RCE)**, 가장 파급력 큰 취약점 군 |
+| 한 줄 핵심 | 업로드 파일의 **유형·내용·실행 위치**를 통제하지 못해 악성 스크립트가 서버에서 실행됨 |
+
+> "무제한 파일 업로드(CWE-434)"는 OWASP Top 10 2021의 **단독 항목은 아니다.**  
+> 검증 누락은 **A04(설계 결함)**, 업로드 디렉터리에서 스크립트 실행이 허용되는 설정은 **A05(보안 설정 오류)**,  
+> 최종 결과는 **RCE**다. 즉 "설계+설정+실행" 세 단계 모두에서 막아야 한다.
+{: .prompt-info }
+
+---
+
 ## 1. File Upload 취약점 개요
 
 **파일 업로드 취약점(File Upload Vulnerability)** 은 웹 애플리케이션이 제공하는 파일 업로드 기능을 악용하여, 악성 파일(WebShell 등)을 서버에 업로드한 뒤 직접 접근함으로써 서버에서 임의의 코드를 실행시키는 공격이다.
@@ -130,6 +146,19 @@ flowchart TD
 ## 3. DVWA 실습 — Security Level: Low
 
 Low 레벨은 파일 확장자, Content-Type, 시그니처 검증이 **전혀 없다**. PHP 파일을 그대로 업로드할 수 있다.
+
+### 3.0 레벨별 공격·방어 한눈에
+
+| 레벨 | 서버 측 방어 | 공격(우회) 방안 | 방어 한계 |
+|---|---|---|---|
+| **Low** | 없음 | `shell.php` 그대로 업로드 → URL 직접 접근으로 RCE | 검증 자체가 없음 |
+| **Medium** | `Content-Type`(MIME)만 검사 (예: `image/jpeg`) | Burp로 업로드 요청의 `Content-Type`을 `image/jpeg`로 위조 + 파일명은 `.php` | MIME은 클라이언트가 보내는 값이라 위조 가능 |
+| **High** | 확장자 + **Magic Bytes(`getimagesize`)** 검사 | `GIF89a;` 시그니처를 앞에 붙이거나 exiftool로 이미지 메타데이터에 PHP 삽입 → `shell.php.jpg` + **LFI 연계** 실행 | 내용이 이미지처럼 보이면 통과 |
+| **Impossible** | **확장자 화이트리스트 + 내용 재처리(이미지 재인코딩) + 랜덤 파일명 + Anti-CSRF 토큰** | 페이로드가 재인코딩 과정에서 제거되어 불가 | — (근본 방어) |
+
+> 핵심: MIME(Medium)·시그니처(High)는 모두 위조·우회된다.  
+> Impossible은 **화이트리스트 + 서버 측 이미지 재처리 + 업로드 폴더 스크립트 실행 차단**(8장)을 결합해 막는다.
+{: .prompt-tip }
 
 ### 3.1 WebShell 파일 생성
 
@@ -287,6 +316,26 @@ http://192.168.0.30/DVWA/vulnerabilities/fi/?page=../../hackable/uploads/shell.g
 
 > GIF 시그니처가 포함된 파일이더라도 PHP include/require로 로드되면 PHP 코드가 실행된다.
 {: .prompt-danger }
+
+---
+
+## 5-1. Security Level: Impossible (방어 성공)
+
+Impossible 레벨은 여러 방어를 **동시에** 적용한다.
+
+1. **확장자 화이트리스트** — `jpg`,`jpeg`,`png` 만 허용(대소문자 정규화 포함).
+2. **내용 검증 + 재처리** — `getimagesize()`로 실제 이미지인지 확인하고, **`imagecreatefromjpeg()` → 재인코딩**으로 메타데이터(삽입된 PHP)를 제거한다.
+3. **랜덤 파일명** — 업로드 파일명을 서버가 난수로 바꿔 원본 확장자/경로 추측을 차단.
+4. **Anti-CSRF 토큰** — 자동화 업로드 위조 차단.
+
+```php
+// Impossible 핵심: 이미지를 재인코딩해 삽입 코드 제거
+$uploaded = imagecreatefromjpeg($tmp);   // 이미지가 아니면 실패
+imagejpeg($uploaded, $target, 100);      // 재인코딩 → EXIF/주석 내 PHP 소멸
+```
+
+exiftool로 EXIF에 PHP를 심어도 **재인코딩 과정에서 주석이 사라지므로** 실행 코드가 남지 않는다.  
+여기에 **업로드 디렉터리에서 PHP 실행 자체를 차단**(8.2 `.htaccess`)하면 LFI 연계까지 막힌다.
 
 ---
 

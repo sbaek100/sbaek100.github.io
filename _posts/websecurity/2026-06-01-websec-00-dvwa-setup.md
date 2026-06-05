@@ -30,7 +30,7 @@ DVWA는 SQL Injection, XSS, CSRF, 파일 업로드 취약점 등 OWASP Top 10에
 
 ---
 
-## 1. 실습 환경 개요
+## 1. 실습 환경 개요 및 가상머신 구축
 
 ### 1.1 환경 구성
 
@@ -55,6 +55,102 @@ graph LR
         K -- "HTTP :80</br>Burp Proxy :8080" --> U
     end
 ```
+
+---
+
+### 1.3 VirtualBox 설치와 두 대의 가상머신 준비
+
+이 실습은 **공격자(Kali)** 와 **피해 서버(Ubuntu)** 두 대의 가상머신이 필요하다. 둘 다 무료다.  
+처음이라면 아래 순서대로 그대로 따라 하면 된다.
+
+**(1) VirtualBox 설치 (호스트 PC)**
+
+1. [VirtualBox 공식 사이트](https://www.virtualbox.org/) → **[Download]** → 자신의 OS(예: Windows hosts) 설치 파일을 받아 모두 기본값(Next)으로 설치한다.
+
+**(2) Kali Linux — 미리 만들어진 가상머신 이미지로 가장 쉽게 (권장)**
+
+직접 OS를 설치할 필요 없이, 칼리가 배포하는 VirtualBox용 이미지를 가져오기만 하면 모든 도구가 준비된 상태로 시작한다.
+
+1. [Kali Get 페이지](https://www.kali.org/get-kali/) → **[Virtual Machines]** → **VirtualBox 64-bit** 항목의 `.7z` 파일을 받는다.
+2. [7-Zip](https://www.7-zip.org/)으로 압축을 풀면 `.vbox` 파일이 나온다.
+3. VirtualBox에서 상단 **[추가(Add)]** → 그 `.vbox` 파일 선택 → 목록에 Kali가 등록된다.
+4. Kali를 시작하고 기본 계정으로 로그인한다: **`kali` / `kali`**
+
+**(3) Ubuntu Server 22.04 — DVWA를 올릴 피해 서버**
+
+1. [Ubuntu Server 다운로드](https://ubuntu.com/download/server)에서 **22.04 LTS** ISO를 받는다.
+2. VirtualBox **[새로 만들기]** → 이름 `DVWA-Ubuntu`, 메모리 `2048` MB, 디스크 `25` GB로 생성한다.
+3. **[설정] → [저장소]** 에서 비어 있는 광학 드라이브에 위 ISO를 넣고 시작하여 설치한다.  
+   설치 중 사용자명은 `dvwa`(원하는 이름 가능), **OpenSSH server 설치에 체크**한다.
+
+> 호스트가 RAM 8GB라면 Kali 2~4GB + Ubuntu 2GB로 충분하다. 실습 중에는 두 VM을 함께 켜 둔다.
+{: .prompt-tip }
+
+---
+
+### 1.4 두 가상머신을 같은 내부망으로 연결하고 고정 IP 주기
+
+목표: Kali(`192.168.0.10`)와 Ubuntu(`192.168.0.30`)가 **같은 사설망**에서 서로 통신하면서, 동시에 **인터넷(패키지 설치)** 도 되게 한다. 그래서 각 VM에 네트워크 카드를 **2개** 둔다.
+
+**(1) 두 VM 모두 어댑터 2개 설정 — VM 전원을 끈 상태에서**
+
+각 VM의 **[설정] → [네트워크]** 에서:
+
+- **어댑터 1**: `NAT` (인터넷용 — apt·도구 업데이트)
+- **어댑터 2**: `내부 네트워크(Internal Network)` → 이름 **`labnet`** *(Kali·Ubuntu 둘 다 똑같이 `labnet`!)*
+
+> 두 VM의 내부 네트워크 **이름이 글자까지 정확히 같아야** 서로 통신된다.
+{: .prompt-warning }
+
+**(2) Kali에 고정 IP `192.168.0.10` 부여** 
+
+```bash
+IFACE2=$(ls /sys/class/net | grep -v lo | sed -n '2p')   # 두 번째(내부망) 카드 자동 탐지
+sudo nmcli con add type ethernet ifname "$IFACE2" con-name labnet ip4 192.168.0.10/24
+sudo nmcli con up labnet
+ip addr | grep 192.168.0.10        # 이 줄이 출력되면 성공
+```
+
+**(3) Ubuntu에 고정 IP `192.168.0.30` 부여 
+
+```bash
+IF_NAT=$(ls /sys/class/net | grep -v lo | sed -n '1p')   # 첫 번째 = NAT(인터넷)
+IF_LAB=$(ls /sys/class/net | grep -v lo | sed -n '2p')   # 두 번째 = 내부망(labnet)
+sudo rm -f /etc/netplan/00-installer-config.yaml /etc/netplan/50-cloud-init.yaml
+sudo tee /etc/netplan/99-lab.yaml > /dev/null <<EOF
+network:
+  version: 2
+  ethernets:
+    $IF_NAT:
+      dhcp4: true
+    $IF_LAB:
+      dhcp4: false
+      addresses: [192.168.0.30/24]
+EOF
+sudo chmod 600 /etc/netplan/99-lab.yaml
+sudo netplan apply
+ip addr | grep 192.168.0.30        # 이 줄이 출력되면 성공
+```
+
+---
+
+### 1.5 통신 확인 (다음 단계 전 필수 체크)
+
+```bash
+# Kali에서 실행
+ping -c 3 192.168.0.30     # Ubuntu까지 응답 → 내부망 연결 성공
+ping -c 3 8.8.8.8          # 인터넷 응답 → NAT 정상
+
+# Ubuntu에서 실행
+ping -c 3 192.168.0.10     # Kali까지 응답 → 내부망 연결 성공
+ping -c 3 8.8.8.8          # 인터넷 응답 → apt 설치 가능
+```
+
+- [ ] Kali ↔ Ubuntu 양방향 `ping` 성공
+- [ ] 두 VM 모두 인터넷(`8.8.8.8`) `ping` 성공
+
+위 4가지가 모두 성공하면, 아래 **2장**에서 Ubuntu에 DVWA를 설치한다.  
+(만약 내부망 ping이 안 되면 → 두 VM의 어댑터 2 내부 네트워크 이름이 모두 `labnet`인지, 고정 IP가 `.10`/`.30`으로 들어갔는지 다시 확인한다.)
 
 ---
 
@@ -175,50 +271,28 @@ allow_url_include = On
 > 반드시 인터넷과 격리된 실습 전용 서버에서만 적용한다.
 {: .prompt-warning }
 
-### 2.7 Apache 가상 호스트 설정
+### 2.7 접근 경로 확인 (기본 설정 그대로 사용)
 
-기본 설정으로도 접근 가능하지만, 루트 경로에서 바로 접속하고 싶다면 심볼릭 링크를 추가한다.
+별도의 가상 호스트 설정은 필요 없다. Ubuntu Apache의 기본 DocumentRoot(`/var/www/html`)를 그대로 사용하므로, `/var/www/html/DVWA`에 클론한 DVWA는 **`http://192.168.0.30/DVWA/`** 경로로 접근된다.
 
-```bash
-# 기본 Apache DocumentRoot에서 DVWA 접근 허용
-sudo ln -s /var/www/html/DVWA /var/www/html/dvwa_link
-```
+> **★ 전 실습 공통 경로 규칙 ★**  
+> - DVWA 모듈: **`http://192.168.0.30/DVWA/...`** (예: `/DVWA/login.php`, `/DVWA/vulnerabilities/sqli/`)  
+> - SSRF·IDOR 실습에서 직접 만드는 보조 페이지(`fetch.php`, `profile.php` 등)는 `/var/www/html/`에 두고 **`http://192.168.0.30/파일명.php`** 로 접근한다.  
+>
+> 기본 `000-default` 가상호스트를 비활성화하거나 별도 vhost로 DocumentRoot를 `/DVWA`로 바꾸면, 위 보조 페이지 경로와 `/DVWA/` 접두어가 어긋나므로 **기본 설정을 그대로 둔다.**
+{: .prompt-tip }
 
-또는 별도의 가상 호스트 파일을 작성한다.
-
-```bash
-sudo nano /etc/apache2/sites-available/dvwa.conf
-```
-
-```apache
-<VirtualHost *:80>
-    ServerName 192.168.0.30
-    DocumentRoot /var/www/html/DVWA
-
-    <Directory /var/www/html/DVWA>
-        Options Indexes FollowSymLinks
-        AllowOverride All
-        Require all granted
-    </Directory>
-
-    ErrorLog ${APACHE_LOG_DIR}/dvwa_error.log
-    CustomLog ${APACHE_LOG_DIR}/dvwa_access.log combined
-</VirtualHost>
-```
-
-가상 호스트를 활성화하고 Apache를 재시작한다.
+PHP 설정을 바꿨으므로 Apache를 재시작한다.
 
 ```bash
-sudo a2ensite dvwa.conf
-sudo a2dissite 000-default.conf
-sudo systemctl reload apache2
+sudo systemctl restart apache2
 ```
 
 ### 2.8 DVWA Setup 페이지에서 DB 초기화
 
-1. Kali Linux 브라우저에서 `http://192.168.0.30/setup.php` 에 접속한다.
+1. Kali Linux 브라우저에서 `http://192.168.0.30/DVWA/setup.php` 에 접속한다.
 2. 페이지 하단의 **[Create / Reset Database]** 버튼을 클릭한다.
-3. 정상적으로 완료되면 로그인 페이지(`http://192.168.0.30/login.php`)로 이동된다.
+3. 정상적으로 완료되면 로그인 페이지(`http://192.168.0.30/DVWA/login.php`)로 이동된다.
 
 > Setup 페이지에서 빨간색으로 표시된 항목이 있다면 PHP 설정이나 파일 권한 문제다.  
 > `allow_url_include`, `config.inc.php` 권한, MariaDB 연결 정보를 다시 확인한다.
@@ -282,7 +356,7 @@ DVWA는 HTTP이므로 이 단계는 생략 가능하지만, 이후 실습을 위
 
 ### 3.5 DVWA 접속 및 Burp 트래픽 확인
 
-1. 브라우저에서 `http://192.168.0.30/login.php` 에 접속
+1. 브라우저에서 `http://192.168.0.30/DVWA/login.php` 에 접속
 2. Burp Suite **Proxy** 탭 → **Intercept** 탭에서 요청이 가로채졌는지 확인
 3. **[Forward]** 를 눌러 요청을 전달하거나, **[Intercept is off]** 로 설정해 자동 통과시킨다.
 
@@ -366,7 +440,7 @@ sudo apt install -y sqlmap nikto gobuster dirb hydra wfuzz
 ```bash
 # DVWA SQL Injection 페이지에 대한 기본 스캔
 # (Burp Suite에서 가로챈 요청을 파일로 저장한 후 사용)
-sqlmap -u "http://192.168.0.30/vulnerabilities/sqli/?id=1&Submit=Submit" \
+sqlmap -u "http://192.168.0.30/DVWA/vulnerabilities/sqli/?id=1&Submit=Submit" \
        --cookie="PHPSESSID=<세션값>; security=low" \
        --dbs
 ```
@@ -398,7 +472,7 @@ gobuster dir -u http://192.168.0.30 \
 실습을 시작하기 전에 다음 항목을 확인한다.
 
 - [ ] Ubuntu 서버(192.168.0.30)에서 Apache2 서비스가 실행 중인가
-- [ ] `http://192.168.0.30/login.php` 에 Kali Linux 브라우저에서 접근 가능한가
+- [ ] `http://192.168.0.30/DVWA/login.php` 에 Kali Linux 브라우저에서 접근 가능한가
 - [ ] `admin` / `password` 로 DVWA 로그인이 되는가
 - [ ] Burp Suite가 `127.0.0.1:8080` 에서 리스닝 중인가
 - [ ] 브라우저 프록시가 Burp Suite를 가리키고 있는가
@@ -409,14 +483,28 @@ gobuster dir -u http://192.168.0.30 \
 
 ---
 
-## 7. 다음 실습 예고
+## 7. 이 시리즈와 OWASP Top 10 (2021) 매핑
 
-환경 구축이 완료되면 다음 단계로 넘어간다.
+이 실습 시리즈의 각 포스트는 **OWASP Top 10 2021** 카테고리와 직접 연결된다.  
+실습 전, 자신이 다루는 취약점이 OWASP의 어느 항목·CWE에 해당하는지 먼저 인지하고 시작한다.
 
-| 포스트 | 내용 |
-|---|---|
-| **01. SQL Injection** | DVWA SQLi 실습 — Low/Medium/High 레벨 공략 |
-| **02. XSS** | Reflected / Stored XSS 실습 |
-| **03. CSRF** | CSRF 토큰 없는 환경에서의 공격 시나리오 |
-| **04. File Upload** | 웹쉘 업로드를 통한 RCE 실습 |
-| **05. Command Injection** | OS 명령 삽입 공격 실습 |
+| 포스트 | 취약점 | OWASP Top 10 (2021) | CWE |
+|---|---|---|---|
+| **01. SQL Injection** | SQL 주입 | **A03 – Injection** | CWE-89 |
+| **02. XSS** | 크로스 사이트 스크립팅 | **A03 – Injection** | CWE-79 |
+| **03. CSRF** | 사이트 간 요청 위조 | **A01 – Broken Access Control** | CWE-352 |
+| **04. SSRF** | 서버 측 요청 위조 | **A10 – SSRF** | CWE-918 |
+| **05. Authentication** | 무차별 대입·취약 인증 | **A07 – Identification & Authentication Failures** | CWE-307 |
+| **06. Session Security** | 세션 관리 취약점 | **A07 – Identification & Authentication Failures** | CWE-384 / CWE-330 |
+| **07. IDOR** | 접근 통제 실패 | **A01 – Broken Access Control** | CWE-639 |
+| **08. Command Injection** | OS 명령 삽입 | **A03 – Injection** | CWE-78 |
+| **09. File Inclusion** | LFI / RFI · 경로 조작 | **A03 – Injection** (경로 조작은 A01) | CWE-98 / CWE-22 |
+| **10. File Upload** | 무제한 파일 업로드 → RCE | **A05 – Security Misconfiguration / A04 – Insecure Design** | CWE-434 |
+
+> **학습 포인트**: OWASP Top 10은 "발생 빈도 + 영향도"로 묶은 **취약점 카테고리**다.  
+> 개별 취약점(예: SQLi)이 어느 카테고리(A03 Injection)에 속하는지 함께 기억하면,  
+> 실무에서 새로운 취약점을 만났을 때도 "어떤 부류의 문제인지" 빠르게 분류할 수 있다.
+{: .prompt-tip }
+
+각 포스트는 **DVWA Security Level(Low → Medium → High → Impossible)** 순서로  
+"레벨별 공격 기법"과 "그 레벨에서 막는 방어 기법"을 함께 다룬다.

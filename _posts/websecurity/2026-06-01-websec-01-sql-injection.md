@@ -26,6 +26,21 @@ mermaid: true
 
 ---
 
+## OWASP Top 10 매핑
+
+| 항목 | 내용 |
+|---|---|
+| OWASP 카테고리 | **A03:2021 – Injection** |
+| CWE | CWE-89 (SQL 명령에 사용되는 특수 요소의 부적절한 처리) |
+| 영향 | 인증 우회, 전체 DB 열람·변조·삭제, 경우에 따라 OS 명령 실행(RCE) |
+| 한 줄 핵심 | 사용자 입력이 "데이터"가 아니라 **"SQL 명령의 일부"** 로 해석될 때 발생한다 |
+
+> SQL Injection은 XSS(02)·Command Injection(08)·File Inclusion(09)과 함께 **A03 Injection** 군에 속한다.  
+> Injection 계열의 근본 방어 원리는 모두 동일하다 — **입력(데이터)과 코드(명령)를 분리**하는 것.
+{: .prompt-info }
+
+---
+
 ## 1. SQL Injection이란
 
 웹 애플리케이션은 사용자 입력을 받아 데이터베이스에 전달하는 경우가 많다.  
@@ -227,6 +242,19 @@ WHERE table_name='users'--
 
 ## 5. DVWA 실습
 
+### 5.0 레벨별 공격·방어 한눈에
+
+| 레벨 | 서버 측 방어 | 공격(우회) 방안 | 그 레벨의 방어 한계 |
+|---|---|---|---|
+| **Low** | 없음 (입력 그대로 결합) | `1' OR '1'='1`, `UNION SELECT` 로 직접 덤프 | 검증 자체가 없음 |
+| **Medium** | `mysqli_real_escape_string()` 로 따옴표 차단 + 드롭다운 입력 | 숫자형 파라미터라 **따옴표 없이** `1 OR 1=1#`, Burp로 POST 변조 | 따옴표만 막아 **숫자형엔 무력** |
+| **High** | 입력을 별도 팝업/세션으로 분리 + `LIMIT 1` | `#`로 `LIMIT 1` 주석 처리해 다중 행 추출 | 입력 위치만 숨길 뿐 주입 자체는 가능 |
+| **Impossible** | **PDO Prepared Statement** + `is_numeric()` + Anti-CSRF 토큰 | 주입 불가 (입력이 항상 데이터로 바인딩됨) | — (근본 방어) |
+
+> 핵심: Low→High의 방어는 모두 **"입력을 걸러내려는" 우회 가능한 시도**다.  
+> Impossible 레벨의 **Prepared Statement(파라미터 바인딩)** 만이 주입을 원천 차단한다(8장 참고).
+{: .prompt-tip }
+
 ### 5.1 Security Level 설정
 
 1. `http://192.168.0.30/DVWA/` 접속
@@ -326,6 +354,81 @@ Surname: e99a18c428cb38d5f260853678922e03
 ```
 
 MD5 해시값이 덤프되었다. `5f4dcc3b5aa765d61d8327deb882cf99`는 `password`의 MD5 값이다.
+
+---
+
+### 5.5 Security Level: Medium 공략 (따옴표 없는 숫자형 주입)
+
+DVWA Security를 **Medium**으로 바꾸면 두 가지가 달라진다.
+
+1. 입력칸이 **드롭다운(선택 박스)** 으로 바뀐다 → 브라우저에서 직접 타이핑할 수 없다.
+2. 서버가 `mysqli_real_escape_string()`으로 **따옴표(`'`)를 막는다** → Low의 `1' OR '1'='1`은 통하지 않는다.
+
+**핵심 우회 원리**: Medium의 쿼리는 `... WHERE user_id = $id` 로, **id가 따옴표로 감싸이지 않은 숫자**다.  
+따라서 **따옴표 없이** 숫자 자리에 SQL을 바로 이어 붙이면 된다.
+
+**1단계 — 드롭다운이라 Burp Suite로 변조**
+
+1. Burp Suite Proxy의 **Intercept**를 **ON**으로 둔다. (00번 설정 참고)
+2. DVWA SQLi(Medium) 페이지에서 드롭다운 값 하나를 고르고 **Submit**.
+3. 가로채진 **POST 요청**에서 `id=1` 부분을 아래 페이로드로 바꾸고 **Forward**한다.
+
+**2단계 — 따옴표 없는 페이로드 (그대로 `id=` 값에 사용)**
+
+```
+1 OR 1=1#
+```
+→ 모든 사용자 출력
+
+```
+1 UNION SELECT user, password FROM users#
+```
+→ 계정·해시 덤프
+
+```
+1 UNION SELECT table_name, 2 FROM information_schema.tables WHERE table_schema=database()#
+```
+→ 테이블 목록 (따옴표 불필요)
+
+- 문자열을 꼭 비교해야 할 때는 따옴표 대신 **16진수**를 쓴다.  
+  예: `... WHERE table_name = 0x7573657273` (`0x7573657273` = `users`의 16진수)
+- 끝의 `#`은 MySQL 주석이라 뒤따르는 구문을 무시시킨다.  
+  (`-- `는 뒤에 공백이 필요해 URL/폼에서는 `#`이 편하다.)
+
+> **Medium의 교훈**: 따옴표만 막는 필터는 **숫자형 파라미터에서는 무력**하다.  
+> 근본 방어는 8장의 **Prepared Statement**다.
+{: .prompt-warning }
+
+---
+
+### 5.6 Security Level: High 공략 (LIMIT 주석 우회)
+
+**High**는 자동화를 어렵게 만들도록 두 가지를 추가한다.
+
+1. 입력을 **별도의 팝업 창**에서 받아 세션에 저장한다 → 같은 페이지에 입력칸이 없어 SQLmap 자동화가 까다롭다.
+2. 쿼리에 `LIMIT 1`을 붙인다: `... WHERE user_id = '$id' LIMIT 1;`
+
+하지만 **수동 주입은 여전히 가능**하다. 핵심은 `#`로 뒤의 `LIMIT 1`을 **주석 처리**하는 것.
+
+**진행 절차**
+
+1. SQL Injection (High) 페이지에서 **[Click here to change your ID]** 링크 클릭 → 팝업 입력창이 열린다.
+2. 팝업 입력창에 아래를 입력하고 제출한다.
+
+   ```
+   ' UNION SELECT user, password FROM users #
+   ```
+
+3. 원래 페이지로 돌아오면 전체 계정·해시가 출력된다.  
+   `#`가 뒤의 `' LIMIT 1`을 주석 처리해, 한 행만 반환하던 제한이 풀리고 여러 행이 나온다.
+
+> **High의 한계**: "입력 위치를 숨기고 LIMIT을 거는" 정도라 **수동 공격은 막지 못한다.**  
+> 진짜 해결책은 Impossible 레벨(8장)의 Prepared Statement뿐이다.
+{: .prompt-tip }
+
+> SQLmap으로 High를 자동화하려면 입력 페이지와 결과 페이지가 분리돼 있어  
+> `-r 요청파일 --second-url=결과URL` 같은 고급 옵션이 필요하다. **수동 학습을 먼저 권장**한다.
+{: .prompt-info }
 
 ---
 
