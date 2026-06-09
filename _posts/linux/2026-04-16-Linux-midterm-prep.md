@@ -3,7 +3,7 @@ title: 2026-1학기 중간고사준비 - setup-script.sh 실습 환경 20문제
 date: 2026-04-15 09:00:00 +0900
 categories:
   - 강의
-  - 보안시스템구축실습
+  - 리눅스(Ubuntu)실습
 tags:
   - 리눅스
   - Ubuntu
