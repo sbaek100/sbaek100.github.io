@@ -2,6 +2,7 @@
 title: "[Web Security Lab] 08. Command Injection"
 date: 2026-06-01 17:00:00 +0900
 categories:
+  - 강의
   - 웹보안
   - 인젝션
 tags:

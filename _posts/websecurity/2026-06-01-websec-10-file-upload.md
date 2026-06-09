@@ -2,6 +2,7 @@
 title: "[Web Security Lab] 10. File Upload Vulnerabilities"
 date: 2026-06-01 19:00:00 +0900
 categories:
+  - 강의
   - 웹보안
   - 파일업로드
 tags:

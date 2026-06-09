@@ -2,6 +2,7 @@
 title: "[Web Security Lab] 09. File Inclusion (LFI / RFI)"
 date: 2026-06-01 18:00:00 +0900
 categories:
+  - 강의
   - 웹보안
   - 파일인클루전
 tags:

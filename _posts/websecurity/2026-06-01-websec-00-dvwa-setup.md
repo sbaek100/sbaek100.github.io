@@ -2,6 +2,7 @@
 title: "[Web Security Lab] 00. DVWA 실습 환경 구축"
 date: 2026-06-01 09:00:00 +0900
 categories:
+  - 강의
   - 웹보안
   - 실습환경
 tags:

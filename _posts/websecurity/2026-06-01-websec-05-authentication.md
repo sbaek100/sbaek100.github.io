@@ -2,6 +2,7 @@
 title: "[Web Security Lab] 05. Authentication Attacks"
 date: 2026-06-01 14:00:00 +0900
 categories:
+  - 강의
   - 웹보안
   - 인증공격
 tags:

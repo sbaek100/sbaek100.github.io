@@ -2,6 +2,7 @@
 title: "[애플리케이션 보안] 06-1. SSL/TLS 이론 — 암호화 통신과 Handshake"
 date: 2026-06-05 20:02:00 +0900
 categories:
+  - 강의
   - 애플리케이션보안
   - 전자상거래보안
 tags:

@@ -2,6 +2,7 @@
 title: "[Web Security Lab] 01. SQL Injection"
 date: 2026-06-01 10:00:00 +0900
 categories:
+  - 강의
   - 웹보안
   - SQL Injection
 tags:

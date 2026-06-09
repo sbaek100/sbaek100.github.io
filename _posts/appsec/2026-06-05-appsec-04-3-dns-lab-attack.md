@@ -2,6 +2,7 @@
 title: "[애플리케이션 보안] 04-3. 실습 — Zone Transfer 취약점과 DNS 스푸핑"
 date: 2026-06-05 18:00:00 +0900
 categories:
+  - 강의
   - 애플리케이션보안
   - DNS보안
 tags:
