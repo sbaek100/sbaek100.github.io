@@ -11,6 +11,9 @@ lang: ko
 # Change to your timezone › https://zones.arilyn.cc
 timezone: Asia/Seoul
 
+# Publish posts even if their date is in the future (so posts show regardless of date)
+future: true
+
 # jekyll-seo-tag settings › https://github.com/jekyll/jekyll-seo-tag/blob/master/docs/usage.md
 # ↓ --------------------------
 
