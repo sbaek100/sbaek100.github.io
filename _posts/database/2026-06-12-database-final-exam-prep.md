@@ -428,7 +428,7 @@ WHERE (product = '노트북' OR product = '모니터')
 SELECT customers.name    AS 고객이름,
        orders.product    AS 상품,
        orders.amount     AS 금액
-FROM orders
+FROM orders, customers
 WHERE orders.customer_id = customers.id;
 ```
 
@@ -460,7 +460,7 @@ WHERE orders.customer_id = customers.id;
 SELECT customers.name    AS 고객이름,
        orders.product    AS 상품,
        orders.amount     AS 금액
-FROM orders
+FROM orders, customers
 WHERE orders.customer_id = customers.id
   AND customers.name = '김민준';
 ```
