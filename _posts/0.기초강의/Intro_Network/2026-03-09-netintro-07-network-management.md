@@ -3,7 +3,7 @@ title: 네트워크 기초 7장 - 네트워크 관리 (FCAPS·SNMP·SSH)
 date: 2026-03-09 20:00:00 +0900
 categories:
   - 0.기초강의
-  - 네트워크
+  - 컴퓨터 네트워크 기초
 tags:
   - 네트워크관리
   - FCAPS
