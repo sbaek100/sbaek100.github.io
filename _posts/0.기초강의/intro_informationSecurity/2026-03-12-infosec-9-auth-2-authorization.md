@@ -1,5 +1,5 @@
 ---
-title: "(9주차) 접근통제 ② 인가(Authorization)"
+title: "5장 ③ 접근통제 - 인가(Authorization)"
 date: 2026-03-12 13:00:00 +0900
 categories:
   - 0.기초강의

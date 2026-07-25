@@ -1,5 +1,5 @@
 ---
-title: "(9주차) 접근통제 ① 인증 — 지식 기반(Something You Know)"
+title: "5장 ① 접근통제 - 인증(지식 기반, Something You Know)"
 date: 2026-03-12 12:00:00 +0900
 categories:
   - 0.기초강의

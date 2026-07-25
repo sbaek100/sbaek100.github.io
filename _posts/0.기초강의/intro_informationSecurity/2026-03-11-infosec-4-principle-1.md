@@ -1,5 +1,5 @@
 ---
-title: (4주차) 정보보안의 원칙 - 위협 모델부터 Security by Design까지
+title: "3장. 정보보안의 원칙 - 위협 모델부터 Security by Design까지"
 date: 2026-03-11 18:30:00 +0900
 categories:
   - 0.기초강의

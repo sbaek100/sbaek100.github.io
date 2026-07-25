@@ -1,5 +1,5 @@
 ---
-title: (3주차) Windows 11 네트워크 기초 실습
+title: "2장 ② Windows 11 네트워크 기초 실습"
 date: 2026-03-11 10:30:00 +0900
 categories:
   - 0.기초강의
