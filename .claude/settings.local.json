@@ -1,7 +1,46 @@
 {
   "permissions": {
     "allow": [
-      "Bash(ls \"C:\\\\work\\\\Obsidian\\\\sbaek100.github.io\\\\_posts\"\" | grep \"2026-03-26-SecuritySystem \")"
+      "Bash(ls \"C:\\\\work\\\\Obsidian\\\\sbaek100.github.io\\\\_posts\"\" | grep \"2026-03-26-SecuritySystem \")",
+      "WebFetch(domain:www.gpters.org)",
+      "Bash(gh repo:*)",
+      "WebFetch(domain:api.github.com)",
+      "WebFetch(domain:raw.githubusercontent.com)",
+      "WebFetch(domain:github.com)",
+      "WebFetch(domain:bcho.tistory.com)",
+      "Bash(git add:*)",
+      "Bash(git commit -m ':*)",
+      "Bash(git push:*)",
+      "WebFetch(domain:www.anthropic.com)",
+      "WebSearch",
+      "WebFetch(domain:red.anthropic.com)",
+      "WebFetch(domain:techcrunch.com)",
+      "WebFetch(domain:www.youtube.com)",
+      "WebFetch(domain:www.franksworld.com)",
+      "WebFetch(domain:futurist.com)",
+      "WebFetch(domain:asksurf.ai)",
+      "WebFetch(domain:securitycryptographywhatever.com)",
+      "WebFetch(domain:www.danilchenko.dev)",
+      "WebFetch(domain:snow.runbear.io)",
+      "WebFetch(domain:colinmcnamara.com)",
+      "WebFetch(domain:stormy.ai)",
+      "WebFetch(domain:blog.highoutputclub.com)",
+      "WebFetch(domain:claude.com)",
+      "Bash(echo \"exit: $?\")",
+      "Bash(git reset:*)",
+      "WebFetch(domain:chanschool.tistory.com)",
+      "Bash(pip install *)",
+      "Bash(python -c ' *)",
+      "Bash(claude mcp *)",
+      "Bash(git commit -m ' *)",
+      "Bash(git fetch *)",
+      "Bash(wsl.exe -l -v)",
+      "Bash(wsl.exe --version)",
+      "Bash(tasklist.exe)",
+      "Bash(git ls-tree *)",
+      "Bash(gh run *)",
+      "PowerShell(gh run list --limit 3)",
+      "PowerShell(try { $r = Invoke-RestMethod \"https://api.github.com/repos/sbaek100/sbaek100.github.io/actions/runs?per_page=3\" -Headers @{ 'User-Agent'='ps' }; $r.workflow_runs | Select-Object name,status,conclusion,head_sha,@{n='created';e={$_.created_at}} | Format-List } catch { \"API error: $\\($_.Exception.Message\\)\" })"
     ]
   }
 }
