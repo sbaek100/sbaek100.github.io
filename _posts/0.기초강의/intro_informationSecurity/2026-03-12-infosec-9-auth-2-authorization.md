@@ -23,7 +23,7 @@ mermaid: true
 
 # 인가(Authorization)
 
-> 앞 글 인증 **[① 지식 기반](/posts/infosec-9-auth-1-authentication/)** · **[② 소유·생체 기반](/posts/infosec-9-auth-1-2-possession-biometric/)** 에서 "당신이 누구인지"를 확인했다면, 이 글은 인증을 통과한 사용자가 **"무엇을 할 수 있는가"**를 정하는 **인가(Authorization)**를 다룬다.
+> 앞 글 인증 **[① 지식 기반](/posts/infosec-9-auth-1-1-authentication/)** · **[② 소유·생체 기반](/posts/infosec-9-auth-1-2-possession-biometric/)** 에서 "당신이 누구인지"를 확인했다면, 이 글은 인증을 통과한 사용자가 **"무엇을 할 수 있는가"**를 정하는 **인가(Authorization)**를 다룬다.
 {: .prompt-info }
 
 접근통제 4단계(식별 → 인증 → **인가** → 책임추적성) 중 세 번째 단계다.

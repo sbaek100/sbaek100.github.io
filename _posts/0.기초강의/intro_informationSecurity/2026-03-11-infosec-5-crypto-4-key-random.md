@@ -24,7 +24,7 @@ mermaid: true
 # 현대 암호 #3: 키 관리와 난수
 
 > 아무리 강한 알고리즘(AES·RSA)이라도 **키를 잘못 만들고·나누고·보관하면** 보안은 무너진다. 또 키·IV·nonce·솔트는 모두 **좋은 난수**에서 출발한다. 이 글은 암호학의 마지막 퍼즐인 **키 관리와 난수**를 다룬다.  
-> 관련 글: **[대칭키 암호(키·IV·nonce)](/posts/infosec-5-crypto-2/)**, **[해시 함수와 응용](/posts/infosec-5-crypto-3-2-hash/)**, **[접근통제 ① 인증(패스워드·솔트·PBKDF)](/posts/infosec-9-auth-1-authentication/)**.
+> 관련 글: **[대칭키 암호(키·IV·nonce)](/posts/infosec-5-crypto-2/)**, **[해시 함수와 응용](/posts/infosec-5-crypto-3-2-hash/)**, **[접근통제 ① 인증(패스워드·솔트·PBKDF)](/posts/infosec-9-auth-1-1-authentication/)**.
 {: .prompt-info }
 
 ---
@@ -89,7 +89,7 @@ mermaid: true
    생성할 비밀키 길이(klen) ┘
 ```
 
-> **⚠️ 주의**: 취약한 해시(MD2·MD5·SHA-1)를 쓰는 표준 변형은 **사용하지 말 것**을 권고한다. 또한 PBKDF는 일부러 **느리게**(반복횟수↑) 만들어 대량 대입을 막는다 — 이는 [인증 글의 bcrypt/Argon2](/posts/infosec-9-auth-1-authentication/)와 같은 철학이다.
+> **⚠️ 주의**: 취약한 해시(MD2·MD5·SHA-1)를 쓰는 표준 변형은 **사용하지 말 것**을 권고한다. 또한 PBKDF는 일부러 **느리게**(반복횟수↑) 만들어 대량 대입을 막는다 — 이는 [인증 글의 bcrypt/Argon2](/posts/infosec-9-auth-1-1-authentication/)와 같은 철학이다.
 {: .prompt-warning }
 
 ### 3.2 PBE(패스워드 기반 암호)에서 솔트의 역할
@@ -115,7 +115,7 @@ mermaid: true
 > - 솔트 노출 위협을 줄이려 서버 프로그램은 솔트를 **외부에서 호출**해 쓰는 형태로 구현하기도 한다.
 {: .prompt-info }
 
-> 솔트가 레인보우 테이블을 어떻게 무력화하는지의 자세한 예시는 [인증 글 §6.4 Salt](/posts/infosec-9-auth-1-authentication/)에서도 다룬다.
+> 솔트가 레인보우 테이블을 어떻게 무력화하는지의 자세한 예시는 [인증 글 §6.4 Salt](/posts/infosec-9-auth-1-1-authentication/)에서도 다룬다.
 {: .prompt-tip }
 
 ---

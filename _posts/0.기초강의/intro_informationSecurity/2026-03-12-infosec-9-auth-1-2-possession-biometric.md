@@ -25,7 +25,7 @@ mermaid: true
 
 # 인증(Authentication) — 소유·생체 기반
 
-> 앞 글 **[접근통제 ① 인증 — 지식 기반](/posts/infosec-9-auth-1-authentication/)** 에서 "내가 아는 것(패스워드)"을 다뤘다면,  
+> 앞 글 **[접근통제 ① 인증 — 지식 기반](/posts/infosec-9-auth-1-1-authentication/)** 에서 "내가 아는 것(패스워드)"을 다뤘다면,  
 > 이 글은 "내가 **가진 것**(OTP·토큰)"과 "**나 자신**인 것(생체)"으로 인증하는 방법을 다룬다.
 {: .prompt-info }
 
@@ -167,7 +167,7 @@ OTP·생체인증·FIDO·MFA·SSO·웹 인증까지 이어서 살펴본다.
   
   ![](/assets/img/posts/2026-06-01-infosec-9-auth-1-1780903636648.png)
 
-> 질의-응답의 일반 원리(비밀을 노출하지 않고 증명)는 **[지식 기반 편 §11 개인 식별 프로토콜](/posts/infosec-9-auth-1-authentication/)** 에서 Challenge-Response·영지식과 함께 다뤘다.
+> 질의-응답의 일반 원리(비밀을 노출하지 않고 증명)는 **[지식 기반 편 §11 개인 식별 프로토콜](/posts/infosec-9-auth-1-1-authentication/)** 에서 Challenge-Response·영지식과 함께 다뤘다.
 {: .prompt-info }
 
 ### 2.4 S/KEY 방식 (해시 체인)
@@ -293,7 +293,7 @@ FIDO는 **온라인 인증을 보다 안전하고 편리하게 만드는 표준*
 ![468](/assets/img/posts/2026-06-01-infosec-9-auth-1-1780301392961.png)
 
 > FIDO는 **소유(기기의 개인키) + 존재/지식(기기 잠금 해제용 생체·PIN)** 을 결합한다.  
-> 챌린지에 개인키로 서명하는 부분은 **[지식 기반 편 §11.1 Challenge-Response](/posts/infosec-9-auth-1-authentication/)** 의 공개키 방식과 같은 원리다.
+> 챌린지에 개인키로 서명하는 부분은 **[지식 기반 편 §11.1 Challenge-Response](/posts/infosec-9-auth-1-1-authentication/)** 의 공개키 방식과 같은 원리다.
 {: .prompt-info }
 
 ### 4.1 FIDO의 장점과 극복한 단점
@@ -663,6 +663,6 @@ HTTP는 원래 **무상태(Stateless)** 프로토콜이다.
 
 ---
 
-> **이전 글**: **[접근통제 ① 인증 — 지식 기반](/posts/infosec-9-auth-1-authentication/)** (패스워드·솔트·PBKDF·메시지 인증·영지식·i-PIN)  
+> **이전 글**: **[접근통제 ① 인증 — 지식 기반](/posts/infosec-9-auth-1-1-authentication/)** (패스워드·솔트·PBKDF·메시지 인증·영지식·i-PIN)  
 > **다음 글**: 인증을 통과한 사용자가 "무엇을 할 수 있는가"를 정하는 **[접근통제 ② 인가(Authorization)](/posts/infosec-9-auth-2-authorization/)** — 접근제어 행렬·ACL·BLP/Biba·CAPTCHA 등.
 {: .prompt-tip }
