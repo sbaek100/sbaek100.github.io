@@ -36,3 +36,6 @@ id_rsa.pub
 secrets.json`r`n`r`n# Local Obsidian workspace/config should not be published`r`n.obsidian/`r`n
 # Local Obsidian workspace/config should not be published
 .obsidian/
+bfg.jar
+*.jar
+.claude/settings.local.json
