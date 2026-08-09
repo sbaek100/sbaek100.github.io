@@ -1,5 +1,5 @@
 ---
-title: "[AI 보안 자동화 Lab] 17. 이상징후 탐지 — Baseline·Triage·IoC"
+title: "[AI 보안 자동화 Lab] 05-01. 이상징후 탐지 — Baseline·Triage·IoC"
 date: 2026-10-25 09:00:00 +0900
 categories:
   - 1.응용강의

@@ -1,5 +1,5 @@
 ---
-title: "[AI 보안 자동화 Lab] 12. XSS·명령 삽입 자동 점검 — CWE-79와 CWE-78"
+title: "[AI 보안 자동화 Lab] 03-02. XSS·명령 삽입 자동 점검 — CWE-79와 CWE-78"
 date: 2026-10-05 09:00:00 +0900
 categories:
   - 1.응용강의

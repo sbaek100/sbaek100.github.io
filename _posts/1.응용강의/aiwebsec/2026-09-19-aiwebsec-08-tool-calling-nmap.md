@@ -1,5 +1,5 @@
 ---
-title: "[AI 보안 자동화 Lab] 08. 첫 도구 연결 — AI가 nmap을 호출하다"
+title: "[AI 보안 자동화 Lab] 02-02. 첫 도구 연결 — AI가 nmap을 호출하다"
 date: 2026-09-19 09:00:00 +0900
 categories:
   - 1.응용강의

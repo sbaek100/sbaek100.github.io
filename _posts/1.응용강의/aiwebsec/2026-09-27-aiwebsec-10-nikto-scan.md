@@ -1,5 +1,5 @@
 ---
-title: "[AI 보안 자동화 Lab] 10. 웹 취약점 스캔 — nikto 통합과 CWE 매핑"
+title: "[AI 보안 자동화 Lab] 03-00. 웹 취약점 스캔 — nikto 통합과 CWE 매핑"
 date: 2026-09-27 09:00:00 +0900
 categories:
   - 1.응용강의

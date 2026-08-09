@@ -1,5 +1,5 @@
 ---
-title: "[AI 보안 자동화 Lab] 06. Ollama로 로컬 LLM 실행하기"
+title: "[AI 보안 자동화 Lab] 02-00. Ollama로 로컬 LLM 실행하기"
 date: 2026-09-11 09:00:00 +0900
 categories:
   - 1.응용강의

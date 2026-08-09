@@ -1,5 +1,5 @@
 ---
-title: "[AI 보안 자동화 Lab] 31. SIEM 실전 관제 실습 ④ — 중앙 관제실(SIEM/Wazuh) 문 열고 센서 연결하기"
+title: "[AI 보안 자동화 Lab] 09-03. SIEM 실전 관제 실습 ④ — 중앙 관제실(SIEM/Wazuh) 문 열고 센서 연결하기"
 date: 2026-12-20 09:00:00 +0900
 categories:
   - 1.응용강의

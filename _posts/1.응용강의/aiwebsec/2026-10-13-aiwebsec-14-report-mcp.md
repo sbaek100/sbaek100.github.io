@@ -1,5 +1,5 @@
 ---
-title: "[AI 보안 자동화 Lab] 14. 자동 리포트 — CVE/CVSS 보강과 MCP 패키징"
+title: "[AI 보안 자동화 Lab] 04-01. 자동 리포트 — CVE/CVSS 보강과 MCP 패키징"
 date: 2026-10-13 09:00:00 +0900
 categories:
   - 1.응용강의

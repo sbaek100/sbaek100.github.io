@@ -1,5 +1,5 @@
 ---
-title: "[AI 보안 자동화 Lab] 34. SIEM 실전 관제 실습 ⑦ — 로컬 AI 비서와 SOAR로 자동 차단"
+title: "[AI 보안 자동화 Lab] 09-06. SIEM 실전 관제 실습 ⑦ — 로컬 AI 비서와 SOAR로 자동 차단"
 date: 2027-01-01 09:00:00 +0900
 categories:
   - 1.응용강의

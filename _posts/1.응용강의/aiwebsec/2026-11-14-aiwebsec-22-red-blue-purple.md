@@ -1,5 +1,5 @@
 ---
-title: "[AI 보안 자동화 Lab] 22. Red·Blue·Purple 팀과 책임 — RoE·윤리·법"
+title: "[AI 보안 자동화 Lab] 07-02. Red·Blue·Purple 팀과 책임 — RoE·윤리·법"
 date: 2026-11-14 09:00:00 +0900
 categories:
   - 1.응용강의

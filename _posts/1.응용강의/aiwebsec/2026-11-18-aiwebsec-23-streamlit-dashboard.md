@@ -1,5 +1,5 @@
 ---
-title: "[AI 보안 자동화 Lab] 23. Streamlit 대시보드 — 점검·탐지·리포트를 화면에"
+title: "[AI 보안 자동화 Lab] 08-00. Streamlit 대시보드 — 점검·탐지·리포트를 화면에"
 date: 2026-11-18 09:00:00 +0900
 categories:
   - 1.응용강의

@@ -1,5 +1,5 @@
 ---
-title: "[AI 보안 자동화 Lab] 11. SQL Injection 자동 점검 — sqlmap과 CWE-89"
+title: "[AI 보안 자동화 Lab] 03-01. SQL Injection 자동 점검 — sqlmap과 CWE-89"
 date: 2026-10-01 09:00:00 +0900
 categories:
   - 1.응용강의
