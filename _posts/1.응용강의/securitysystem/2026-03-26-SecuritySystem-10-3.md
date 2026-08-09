@@ -25,8 +25,8 @@ description: Snort를 IDS 모드에서 IPS(침입 차단) 모드로 전환하여
 
 | 역할 | OS | IP / 인터페이스 |
 |------|----|----|
-| 공격자 | Kali Linux | `192.168.0.10` |
-| 차단 서버 (IPS) | Ubuntu | `192.168.0.30` (기본 인터페이스: `ens33` / 실습에 따라 추가 인터페이스 `ens34` 사용) |
+| 공격자 | Kali Linux | `192.168.61.10` |
+| 차단 서버 (IPS) | Ubuntu | `192.168.61.30` (기본 인터페이스: `ens33` / 실습에 따라 추가 인터페이스 `ens34` 사용) |
 
 ---
 
@@ -100,11 +100,11 @@ sudo nano /etc/snort/rules/local.rules
 
 *아래 룰을 추가합니다:*
 ```bash
-# 192.168.0.10(Kali)에서 오는 모든 ICMP Ping 요청(itype:8)을 강제로 드롭(drop)함
+# 192.168.61.10(Kali)에서 오는 모든 ICMP Ping 요청(itype:8)을 강제로 드롭(drop)함
 #   - drop : 차단 및 경보 기록 액션
 #   - itype:8 : ICMP Echo Request 패킷 필터링
 #   - sid:1000008 : 커스텀 룰 고유 번호 설정
-drop icmp 192.168.0.10 any -> 192.168.0.30 any (msg:"[IPS DROP] ICMP Ping Blocked"; itype:8; sid:1000008; rev:1;)
+drop icmp 192.168.61.10 any -> 192.168.61.30 any (msg:"[IPS DROP] ICMP Ping Blocked"; itype:8; sid:1000008; rev:1;)
 ```
 
 ### 3.3 Step 3. Snort IPS 모드로 실행
@@ -120,9 +120,9 @@ sudo snort -Q --daq nfq --daq-var queue=1 -c /etc/snort/snort.conf -A console
 ### 3.4 Step 4. 차단 테스트 및 로그 확인
 
 **공격자(Kali Linux) 터미널:**
-Ubuntu 서버(`192.168.0.30`)로 Ping을 날려봅니다.
+Ubuntu 서버(`192.168.61.30`)로 Ping을 날려봅니다.
 ```bash
-ping -c 5 192.168.0.30
+ping -c 5 192.168.61.30
 ```
 * **결과:** 패킷 송신은 되나 Ubuntu 측으로부터 어떠한 응답(Reply)도 오지 않고 전부 **100% 패킷 손실(Packet Loss)** 처리됩니다.
 
@@ -131,7 +131,7 @@ ping -c 5 192.168.0.30
 ```text
 03/26-14:15:22.123456  [**] [1:1000008:1] [IPS DROP] ICMP Ping Blocked [**]
 [Priority: 0]
-ICMP 192.168.0.10 -> 192.168.0.30
+ICMP 192.168.61.10 -> 192.168.61.30
 ```
 
 ### 3.5 Step 5. 실습 종료 후 방화벽 초기화

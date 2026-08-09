@@ -40,8 +40,22 @@ description: Ubuntu에 OpenSSH 서버를 설치한 뒤 비밀번호 로그인 �
 
 | 역할 | OS | IP 주소 |
 |------|----|---------|
-| 공격자/접속 시도 PC | Kali Linux | `192.168.0.10` |
-| SSH 서버 | Ubuntu | `192.168.0.30` |
+| 공격자/접속 시도 PC | Kali Linux | `192.168.61.10` |
+| SSH 서버 | Ubuntu | `192.168.61.30` |
+
+> **왜 `192.168.61` 대역인가 — 다른 과정과의 주소 분리**
+> 이 과정은 방화벽·접근통제·IDS 설정으로 **서버의 통신 정책을 직접 바꾸므로**, 다른 과정의 가상 머신과 주소가 겹치지 않도록 전용 대역을 배정하였다. 여러 과정의 VM을 같은 PC에 두어도 서로 간섭하지 않는다.
+>
+> | 대역 | 과정 |
+> |---|---|
+> | `192.168.56.0/24` | 리눅스 기초 · 애플리케이션 보안 · 웹 보안 |
+> | `192.168.57~59.0/24` | AI 웹보안(랩 / SIEM LAN / SIEM DMZ) |
+> | `192.168.60.0/24` | 네트워크 보안 |
+> | **`192.168.61.0/24`** | **보안시스템(본 과정)** |
+> | `192.168.62.0/24` | DevSecOps |
+>
+> 모두 VirtualBox가 호스트 전용 네트워크에 허용하는 범위(`192.168.56.0/21`) 안이며, 가정용 공유기가 흔히 쓰는 `192.168.0.x`·`192.168.1.x`를 피하였다.
+{: .prompt-info }
 
 ---
 
@@ -87,13 +101,13 @@ ip addr show
 예시:
 
 ```text
-inet 192.168.0.30/24 brd 192.168.0.255 scope global ens33
+inet 192.168.61.30/24 brd 192.168.61.255 scope global ens33
 ```
 
 Kali에서 Ubuntu로 핑을 보내 통신을 확인한다.
 
 ```bash
-ping -c 3 192.168.0.30
+ping -c 3 192.168.61.30
 ```
 
 ### 2.2 OpenSSH 서버 설치
@@ -182,13 +196,13 @@ whoami
 예를 들어 사용자 이름이 `student` 라고 가정하면, Kali에서 아래처럼 접속할 수 있다.
 
 ```bash
-ssh student@192.168.0.30
+ssh student@192.168.61.30
 ```
 
 처음 접속 시 아래 메시지가 나올 수 있다.
 
 ```text
-The authenticity of host '192.168.0.30 (192.168.0.30)' can't be established.
+The authenticity of host '192.168.61.30 (192.168.61.30)' can't be established.
 Are you sure you want to continue connecting (yes/no/[fingerprint])?
 ```
 
@@ -213,13 +227,13 @@ student@ubuntu:~$
 Kali에서 대상 서버의 22번 포트가 보이는지 확인한다.
 
 ```bash
-nc -zv 192.168.0.30 22
+nc -zv 192.168.61.30 22
 ```
 
 또는:
 
 ```bash
-nmap -Pn -p 22 192.168.0.30
+nmap -Pn -p 22 192.168.61.30
 ```
 
 `22/tcp open ssh` 와 비슷한 결과가 보이면, 공격자는 "SSH가 열려 있다"는 사실을 바로 알 수 있다.
@@ -227,7 +241,7 @@ nmap -Pn -p 22 192.168.0.30
 ### 5.2 잘못된 비밀번호로 접속 시도
 
 ```bash
-ssh student@192.168.0.30
+ssh student@192.168.61.30
 ```
 
 비밀번호를 일부러 틀리게 입력해 본다. 여러 번 틀리면 로그인은 실패하지만, 중요한 것은 **시도 자체가 가능했다**는 점이다.
@@ -235,8 +249,8 @@ ssh student@192.168.0.30
 ### 5.3 존재하지 않는 계정으로 시도
 
 ```bash
-ssh admin@192.168.0.30
-ssh test@192.168.0.30
+ssh admin@192.168.61.30
+ssh test@192.168.61.30
 ```
 
 자동화된 공격은 흔한 계정 이름을 자주 시도한다. 서버 입장에서는 이런 시도가 로그에 계속 남는다.
@@ -262,14 +276,14 @@ sudo journalctl -u ssh.service -u ssh.socket -f
 예시:
 
 ```text
-sshd[1234]: Accepted password for student from 192.168.0.10 port 54321 ssh2
+sshd[1234]: Accepted password for student from 192.168.61.10 port 54321 ssh2
 ```
 
 이 줄은 다음 뜻이다.
 
 - `Accepted password`: 비밀번호 인증으로 로그인 성공
 - `for student`: `student` 계정으로 접속
-- `from 192.168.0.10`: Kali에서 접속
+- `from 192.168.61.10`: Kali에서 접속
 
 즉, **공격자 또는 사용자가 비밀번호만 맞추면 실제로 접속 성공이 가능하다**는 의미다.
 
@@ -278,7 +292,7 @@ sshd[1234]: Accepted password for student from 192.168.0.10 port 54321 ssh2
 예시:
 
 ```text
-sshd[1240]: Failed password for invalid user admin from 192.168.0.10 port 54330 ssh2
+sshd[1240]: Failed password for invalid user admin from 192.168.61.10 port 54330 ssh2
 ```
 
 이 줄은 존재하지 않는 계정 이름으로 로그인 시도했다는 뜻이다.

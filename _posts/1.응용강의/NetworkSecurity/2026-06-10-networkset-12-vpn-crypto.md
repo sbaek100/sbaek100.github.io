@@ -19,7 +19,7 @@ mermaid: true
 > VPN은 이 세 가지를 이용해 안전한 통신 구간을 만드는 기술입니다.
 {: .prompt-info }
 
-> **이번 대상**: Ubuntu `192.168.0.30` (방어 호스트)
+> **이번 대상**: Ubuntu `192.168.60.30` (방어 호스트)
 {: .prompt-info }
 
 ## 상황
@@ -81,14 +81,14 @@ HTTP 요청 관찰:
 
 ```bash
 sudo tcpdump -i eth1 -nn -A port 80
-curl http://192.168.0.30
+curl http://192.168.60.30
 ```
 
 SSH 접속 관찰:
 
 ```bash
 sudo tcpdump -i eth1 -nn -A port 22
-ssh user@192.168.0.30
+ssh user@192.168.60.30
 ```
 
 HTTP는 일부 내용이 보일 수 있지만, SSH는 암호화되어 사람이 읽기 어렵습니다.
@@ -123,7 +123,7 @@ sudo systemctl status ssh
 Kali:
 
 ```bash
-ssh user@192.168.0.30
+ssh user@192.168.60.30
 ```
 
 OpenVPN이나 strongSwan은 수업 시간에 환경에 따라 시연 중심으로 진행할 수 있습니다. 비전공자 수업에서는 “터널이 어떤 구간을 보호하는가”를 먼저 이해하는 것이 더 중요합니다.

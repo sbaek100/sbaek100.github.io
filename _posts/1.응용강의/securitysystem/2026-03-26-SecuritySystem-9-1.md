@@ -24,8 +24,8 @@ description: Ubuntu에 DVWA를 설치하고, Kali의 Burp Suite로 SQL Injection
 
 | 역할 | OS | IP |
 |------|----|----|
-| 공격자 | Kali Linux | `192.168.0.10` |
-| 웹 서버 | Ubuntu | `192.168.0.30` |
+| 공격자 | Kali Linux | `192.168.61.10` |
+| 웹 서버 | Ubuntu | `192.168.61.30` |
 
 > **주의:** DVWA는 의도적으로 취약하게 만들어진 실습용 웹 애플리케이션입니다. 외부 인터넷에 절대 노출하지 마세요.
 {: .prompt-danger }
@@ -148,7 +148,7 @@ sudo systemctl restart apache2
 Kali의 브라우저에서 접속:
 
 ```
-http://192.168.0.30/dvwa/setup.php
+http://192.168.61.30/dvwa/setup.php
 ```
 
 페이지 하단의 **"Create / Reset Database"** 버튼 클릭 → 초기화 완료.
@@ -252,7 +252,7 @@ Burp Suite Intercept를 켜고 DVWA에서 ID를 입력하면 HTTP 요청을 가�
 
 ```
 GET /dvwa/vulnerabilities/sqli/?id=1&Submit=Submit HTTP/1.1
-Host: 192.168.0.30
+Host: 192.168.61.30
 ...
 ```
 

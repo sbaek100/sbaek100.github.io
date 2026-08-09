@@ -40,8 +40,8 @@ mermaid: true
 
 | 구분 | 내용 |
 |---|---|
-| 공격자 | Kali Linux (192.168.0.10) — 브라우저, curl, gobuster, dirb, nikto, tcpdump, nmap |
-| 대상 | Ubuntu + Apache/PHP (192.168.0.30) |
+| 공격자 | Kali Linux (192.168.56.10) — 브라우저, curl, gobuster, dirb, nikto, tcpdump, nmap |
+| 대상 | Ubuntu + Apache/PHP (192.168.56.30) |
 
 ---
 
@@ -84,10 +84,10 @@ sudo a2enconf indexing-lab && sudo systemctl restart apache2
 
 ```bash
 # 디렉터리 경로 직접 접근 → 파일 목록이 나오면 취약
-curl -s http://192.168.0.30/kisa/
+curl -s http://192.168.56.30/kisa/
 # 자동 탐지
-nikto -h http://192.168.0.30        # "Directory indexing found" 보고
-gobuster dir -u http://192.168.0.30 -w /usr/share/wordlists/dirb/common.txt
+nikto -h http://192.168.56.30        # "Directory indexing found" 보고
+gobuster dir -u http://192.168.56.30 -w /usr/share/wordlists/dirb/common.txt
 ```
 
 목록에 `db_backup.sql`, `old_login.asp.bak` 등이 보이면 취약입니다.
@@ -113,10 +113,10 @@ gobuster dir -u http://192.168.0.30 -w /usr/share/wordlists/dirb/common.txt
 
 ```bash
 # 응답 헤더의 Server 배너 + 404 본문 확인
-curl -I http://192.168.0.30/없는경로
+curl -I http://192.168.56.30/없는경로
 # → Server: Apache/2.4.52 (Ubuntu)
-curl -s http://192.168.0.30/test_404_$RANDOM
-# → "Apache/2.4.52 (Ubuntu) Server at 192.168.0.30 Port 80"
+curl -s http://192.168.56.30/test_404_$RANDOM
+# → "Apache/2.4.52 (Ubuntu) Server at 192.168.56.30 Port 80"
 ```
 
 응답에 버전·경로·스택이 보이면 취약입니다.
@@ -135,7 +135,7 @@ ErrorDocument 500 /errors/500.html
 
 ```bash
 sudo systemctl reload apache2
-curl -I http://192.168.0.30/없는경로   # Server: Apache (버전 사라짐)
+curl -I http://192.168.56.30/없는경로   # Server: Apache (버전 사라짐)
 ```
 
 | 서버 | 버전 은닉 | 사용자 에러 페이지 |
@@ -171,11 +171,11 @@ sudo bash -c 'echo "<?php \$db=\"p@ssw0rd\"; ?>" > /var/www/html/config.php.bak'
 ```bash
 # Step 1) 중요 정보 평문 노출 — 페이지 응답에서 주민번호/카드번호/계좌 확인(육안)
 # Step 2) 샘플/백업/초기 페이지
-curl -s http://192.168.0.30/info.php | grep -i "PHP Version"
-curl -s http://192.168.0.30/config.php.bak
-nikto -h http://192.168.0.30        # phpinfo, 백업파일 자동 보고
+curl -s http://192.168.56.30/info.php | grep -i "PHP Version"
+curl -s http://192.168.56.30/config.php.bak
+nikto -h http://192.168.56.30        # phpinfo, 백업파일 자동 보고
 # Step 3) HTML 소스/주석 내 정보
-curl -s http://192.168.0.30/login_leak.html   # 주석에 admin/admin 노출
+curl -s http://192.168.56.30/login_leak.html   # 주석에 admin/admin 노출
 ```
 
 ### 3.4 조치
@@ -215,7 +215,7 @@ sudo tcpdump -i eth0 -A 'tcp port 80' | grep -iE 'pass|pwd|id='
 # → id=admin&password=... 처럼 자격증명이 평문으로 보이면 취약
 
 # Step 3) 취약 프로토콜(SSLv2/3) 사용 여부 (HTTPS 운영 시)
-nmap --script ssl-enum-ciphers -p 443 192.168.0.30
+nmap --script ssl-enum-ciphers -p 443 192.168.56.30
 # → SSLv3 / TLSv1.0 / 약한 cipher 노출 시 취약 (예: CVE-2014-3566 POODLE)
 ```
 
@@ -259,11 +259,11 @@ sudo systemctl reload apache2
 
 ```bash
 # Step 1) 추측 쉬운 경로/포트 탐색
-gobuster dir -u http://192.168.0.30 \
+gobuster dir -u http://192.168.56.30 \
   -w /usr/share/wordlists/dirb/common.txt | grep -iE 'admin|manage|console'
-nmap -p- --open 192.168.0.30          # 비표준 관리 포트 탐색
+nmap -p- --open 192.168.56.30          # 비표준 관리 포트 탐색
 # Step 2) 약한 관리자 계정 로그인 시도
-curl -s -X POST http://192.168.0.30/admin/ -d "id=admin&pw=admin"
+curl -s -X POST http://192.168.56.30/admin/ -d "id=admin&pw=admin"
 ```
 
 `/admin`이 발견되고 `admin/admin`으로 진입되면 취약입니다.
@@ -275,7 +275,7 @@ curl -s -X POST http://192.168.0.30/admin/ -d "id=admin&pw=admin"
 
 ```apache
 <Location "/admin">
-    Require ip 192.168.0.0/24      # 지정 대역만 허용
+    Require ip 192.168.56.0/24      # 지정 대역만 허용
 </Location>
 ```
 

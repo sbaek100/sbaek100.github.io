@@ -35,7 +35,7 @@ DVWA는 "일부러 보안 구멍을 잔뜩 뚫어 둔" 웹 애플리케이션입
 
 ```mermaid
 flowchart LR
-    A["공격자<br/>Kali 192.168.0.10"] -->|"HTTP 공격"| B["Victim<br/>Ubuntu 192.168.0.30"]
+    A["공격자<br/>Kali 192.168.57.10"] -->|"HTTP 공격"| B["Victim<br/>Ubuntu 192.168.57.30"]
     B --> C["DVWA<br/>취약 웹앱"]
     B --> D["로그<br/>access/error/auth"]
     D -.->|"5부 탐지 · 7부 보안관제"| E["관측 · 분석"]
@@ -58,7 +58,7 @@ flowchart LR
 ## 1. 대상 서버에 LAMP(Linux, Apache, MariaDB, PHP) 설치하기
 
 DVWA는 PHP로 작성된 웹앱이며, 데이터를 데이터베이스에 저장합니다.
-따라서 표적 서버(Ubuntu 24.04, `192.168.0.30`)에는 **L**inux + **A**pache + **M**ariaDB + **P**HP, 즉 LAMP 스택이 필요합니다.
+따라서 표적 서버(Ubuntu 24.04, `192.168.57.30`)에는 **L**inux + **A**pache + **M**ariaDB + **P**HP, 즉 LAMP 스택이 필요합니다.
 
 먼저 패키지 목록을 최신화합니다.
 
@@ -192,7 +192,7 @@ sudo systemctl restart apache2
 이제 사람이 직접 한 번 손을 댑니다. **Victim 안의 브라우저** 또는 같은 랩 네트워크의 브라우저에서 다음 주소로 접속합니다.
 
 ```text
-http://192.168.0.30/DVWA/setup.php
+http://192.168.57.30/DVWA/setup.php
 ```
 
 화면 아래쪽의 **`Create / Reset Database`** 버튼을 누릅니다. 그러면 DVWA가 필요한 테이블을 자동으로 만들고 로그인 페이지로 넘어갑니다.
@@ -217,7 +217,7 @@ http://192.168.0.30/DVWA/setup.php
 
 본격적으로 통신을 확인하기 전에, 두 VM의 IP가 **재부팅 후에도 그대로 유지되는지** 먼저 짚고 넘어가겠습니다.
 
-> 만약 `ip addr add 192.168.0.30/24 dev enp0s3` 같은 명령으로 IP를 직접 붙였다면, 그 설정은 **임시**입니다. 재부팅하면 사라져서 표적이 다른 IP로 떠 버리고, 그러면 공격 스크립트가 전부 표적을 못 찾게 됩니다.
+> 만약 `ip addr add 192.168.57.30/24 dev enp0s3` 같은 명령으로 IP를 직접 붙였다면, 그 설정은 **임시**입니다. 재부팅하면 사라져서 표적이 다른 IP로 떠 버리고, 그러면 공격 스크립트가 전부 표적을 못 찾게 됩니다.
 {: .prompt-warning }
 
 Ubuntu 24.04에서 고정 IP를 **영구**로 박아 두려면 `/etc/netplan/` 아래에 YAML 설정을 둡니다. 먼저 인터페이스 이름을 확인합니다.
@@ -235,7 +235,7 @@ network:
   ethernets:
     enp0s3:                 # 실제 인터페이스명은 `ip a`로 확인
       dhcp4: no
-      addresses: [192.168.0.30/24]
+      addresses: [192.168.57.30/24]
 ```
 
 저장한 뒤 설정을 적용합니다.
@@ -244,30 +244,30 @@ network:
 sudo netplan apply
 ```
 
-> 공격자(Kali)도 같은 내부망 대역의 고정 IP(`192.168.0.10`)를 쓰도록 맞춰 둡니다. Kali는 보통 **NetworkManager** GUI에서 수동(Manual) 주소를 지정하거나, `/etc/network/interfaces` 또는 netplan으로 동일하게 고정합니다.
+> 공격자(Kali)도 같은 내부망 대역의 고정 IP(`192.168.57.10`)를 쓰도록 맞춰 둡니다. Kali는 보통 **NetworkManager** GUI에서 수동(Manual) 주소를 지정하거나, `/etc/network/interfaces` 또는 netplan으로 동일하게 고정합니다.
 {: .prompt-tip }
 
-> **재부팅 후 재확인**: 두 VM을 각각 재부팅한 뒤, Kali에서 `ping -c 3 192.168.0.30`이 여전히 응답하는지 확인하세요. 재부팅 후에도 같은 대역에서 통신되면 고정 IP가 제대로 박힌 것입니다.
+> **재부팅 후 재확인**: 두 VM을 각각 재부팅한 뒤, Kali에서 `ping -c 3 192.168.57.30`이 여전히 응답하는지 확인하세요. 재부팅 후에도 같은 대역에서 통신되면 고정 IP가 제대로 박힌 것입니다.
 {: .prompt-tip }
 
 ### 4-1. 표적에 닿는지 확인하기
 
-표적이 준비됐으니, 공격자 자리(Kali, `192.168.0.10`)에서 표적에 닿는지 확인합니다.
+표적이 준비됐으니, 공격자 자리(Kali, `192.168.57.10`)에서 표적에 닿는지 확인합니다.
 가장 먼저 네트워크 연결 자체를 점검합니다.
 
 ```bash
-ping -c 3 192.168.0.30
+ping -c 3 192.168.57.30
 ```
 
 예상 출력:
 
 ```text
-PING 192.168.0.30 (192.168.0.30) 56(84) bytes of data.
-64 bytes from 192.168.0.30: icmp_seq=1 ttl=64 time=0.412 ms
-64 bytes from 192.168.0.30: icmp_seq=2 ttl=64 time=0.387 ms
-64 bytes from 192.168.0.30: icmp_seq=3 ttl=64 time=0.401 ms
+PING 192.168.57.30 (192.168.57.30) 56(84) bytes of data.
+64 bytes from 192.168.57.30: icmp_seq=1 ttl=64 time=0.412 ms
+64 bytes from 192.168.57.30: icmp_seq=2 ttl=64 time=0.387 ms
+64 bytes from 192.168.57.30: icmp_seq=3 ttl=64 time=0.401 ms
 
---- 192.168.0.30 ping statistics ---
+--- 192.168.57.30 ping statistics ---
 3 packets transmitted, 3 received, 0% packet loss, time 2003ms
 ```
 
@@ -276,7 +276,7 @@ PING 192.168.0.30 (192.168.0.30) 56(84) bytes of data.
 다음으로 웹 서버가 실제로 응답하는지, HTTP 헤더만 가볍게 받아 봅니다.
 
 ```bash
-curl -I http://192.168.0.30/DVWA/login.php
+curl -I http://192.168.57.30/DVWA/login.php
 ```
 
 예상 출력:
@@ -333,7 +333,7 @@ Successfully installed certifi-... charset-normalizer-... idna-... requests-... 
 import requests
 
 # 표적 DVWA 로그인 페이지 주소
-url = "http://192.168.0.30/DVWA/login.php"
+url = "http://192.168.57.30/DVWA/login.php"
 
 # GET 요청을 보내고 응답을 받습니다.
 response = requests.get(url)
@@ -391,10 +391,10 @@ sudo tail -f /var/log/apache2/access.log
 이 상태에서 공격자(Kali)가 4단계의 `curl`을 다시 실행하면, 표적 화면에 그 요청이 실시간으로 한 줄씩 찍힙니다.
 
 ```text
-192.168.0.10 - - [10/Jun/2026:13:05:11 +0900] "HEAD /DVWA/login.php HTTP/1.1" 200 - "-" "curl/8.5.0"
+192.168.57.10 - - [10/Jun/2026:13:05:11 +0900] "HEAD /DVWA/login.php HTTP/1.1" 200 - "-" "curl/8.5.0"
 ```
 
-> 맨 앞의 `192.168.0.10`이 바로 **공격자의 IP**입니다. 누가, 언제, 무엇을 요청했는지가 한 줄에 모두 담깁니다. `tail -f`를 멈추려면 `Ctrl + C`를 누릅니다.
+> 맨 앞의 `192.168.57.10`이 바로 **공격자의 IP**입니다. 누가, 언제, 무엇을 요청했는지가 한 줄에 모두 담깁니다. `tail -f`를 멈추려면 `Ctrl + C`를 누릅니다.
 {: .prompt-tip }
 
 ### 6-2. 인증 로그
@@ -409,7 +409,7 @@ sudo tail -n 5 /var/log/auth.log
 
 ```text
 Jun 10 13:01:02 victim sudo:   user : COMMAND=/usr/bin/systemctl restart apache2
-Jun 10 13:02:44 victim sshd[1422]: Accepted password for user from 192.168.0.10 port 51234 ssh2
+Jun 10 13:02:44 victim sshd[1422]: Accepted password for user from 192.168.57.10 port 51234 ssh2
 ...
 ```
 

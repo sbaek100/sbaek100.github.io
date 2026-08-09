@@ -54,15 +54,15 @@ devops@prod:~$
 
 ```bash
 # build VM에서 실행
-ping -c2 192.168.56.20   # dev
-ping -c2 192.168.56.30   # prod
+ping -c2 192.168.62.20   # dev
+ping -c2 192.168.62.30   # prod
 ```
 
 양쪽 모두 `2 received` 가 나오면 내부망이 살아 있는 것입니다. 반대로 dev에서도 확인해 봅니다.
 
 ```bash
 # dev VM에서 실행
-ping -c2 192.168.56.10   # build
+ping -c2 192.168.62.10   # build
 ```
 
 > ping이 안 되면: 01-2의 netplan(고정 IP)과 **어댑터 2(호스트 전용)** 가 같은 네트워크에 연결됐는지 다시 확인하세요. 세 VM의 어댑터 2는 **동일한 호스트 전용 네트워크**여야 합니다.
@@ -81,9 +81,9 @@ sudo nano /etc/hosts
 파일 끝에 아래 3줄을 추가하고 저장합니다.
 
 ```
-192.168.56.10   build
-192.168.56.20   dev
-192.168.56.30   prod
+192.168.62.10   build
+192.168.62.20   dev
+192.168.62.30   prod
 ```
 
 이제 IP 대신 이름으로 통신할 수 있습니다.
@@ -93,7 +93,7 @@ ping -c2 dev
 ping -c2 prod
 ```
 
-> 자동화 스크립트에서 `192.168.56.20` 대신 `dev` 라고 쓸 수 있어 가독성이 좋아집니다.
+> 자동화 스크립트에서 `192.168.62.20` 대신 `dev` 라고 쓸 수 있어 가독성이 좋아집니다.
 {: .prompt-tip }
 
 ---
@@ -112,7 +112,7 @@ ssh devops@dev
 처음 접속하면 **호스트 키를 신뢰하겠냐**는 질문이 나옵니다. `yes` 를 입력하고, 비밀번호 `devops123` 을 칩니다.
 
 ```
-The authenticity of host 'dev (192.168.56.20)' can't be established.
+The authenticity of host 'dev (192.168.62.20)' can't be established.
 ...
 Are you sure you want to continue connecting (yes/no)? yes
 devops@dev's password:

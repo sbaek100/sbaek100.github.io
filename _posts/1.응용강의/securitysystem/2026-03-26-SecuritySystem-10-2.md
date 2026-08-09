@@ -24,8 +24,8 @@ description: 10주차 Snort 경보 로그 분석 과제, IDS 우회 기법 소�
 
 | 역할 | OS | IP |
 |------|----|----|
-| 공격자 | Kali Linux | `192.168.0.10` |
-| 탐지 서버 | Ubuntu | `192.168.0.30` |
+| 공격자 | Kali Linux | `192.168.61.10` |
+| 탐지 서버 | Ubuntu | `192.168.61.30` |
 
 ---
 
@@ -42,10 +42,10 @@ sudo snort -A console -c /etc/snort/snort.conf -i ens33 2>&1 | tee snort_log.txt
 
 ```bash
 # Kali에서 순서대로 실행
-ping -c 5 192.168.0.30
-sudo nmap -sS 192.168.0.30
-curl http://192.168.0.30/
-sudo nmap -sS -p- 192.168.0.30
+ping -c 5 192.168.61.30
+sudo nmap -sS 192.168.61.30
+curl http://192.168.61.30/
+sudo nmap -sS -p- 192.168.61.30
 ```
 
 Ubuntu에서 `Ctrl+C`로 Snort 종료 후 로그 저장.
@@ -68,8 +68,8 @@ grep "\[\*\*\]" snort_log.txt | grep -oP '\[ALERT\][^[]+' | sort | uniq -c | sor
 ```
 === Snort 탐지 보고서 ===
 분석 기간  : YYYY-MM-DD HH:MM ~ HH:MM
-탐지 서버  : Ubuntu (192.168.0.30)
-공격 출발지: Kali (192.168.0.10)
+탐지 서버  : Ubuntu (192.168.61.30)
+공격 출발지: Kali (192.168.61.10)
 
 [경보 유형별 통계]
 경보 메시지                 | 탐지 건수
@@ -101,7 +101,7 @@ IDS도 완벽하지 않다. 공격자는 다양한 방법으로 탐지를 피하
 
 ```bash
 # Kali에서 느린 스캔 (--scan-delay)
-sudo nmap -sS --scan-delay 5s 192.168.0.30
+sudo nmap -sS --scan-delay 5s 192.168.61.30
 ```
 
 **대응:** 임계치 시간 범위를 더 길게 설정하거나, 장기 통계 분석 도입.
@@ -118,7 +118,7 @@ sudo nmap -sS --scan-delay 5s 192.168.0.30
 
 ```bash
 # Kali에서 단편화 스캔
-sudo nmap -sS -f 192.168.0.30
+sudo nmap -sS -f 192.168.61.30
 ```
 
 **대응:** Snort의 스트림 재조합(Stream5 preprocessor) 기능 활성화.
@@ -149,7 +149,7 @@ flowchart LR
 
 ```mermaid
 flowchart TD
-    K["🐉 Kali Linux<br/>192.168.0.10"] -->|"7주차<br/>Nmap 정찰"| U["🖥️ Ubuntu<br/>192.168.0.30"]
+    K["🐉 Kali Linux<br/>192.168.61.10"] -->|"7주차<br/>Nmap 정찰"| U["🖥️ Ubuntu<br/>192.168.61.30"]
     U -->|"서비스 노출 확인"| K
 
     K -->|"9주차<br/>DVWA 웹 공격<br/>SQLi / XSS"| U

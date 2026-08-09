@@ -39,3 +39,6 @@ secrets.json`r`n`r`n# Local Obsidian workspace/config should not be published`r`
 bfg.jar
 *.jar
 .claude/settings.local.json
+
+# 강의 원본(대용량 바이너리) — 사이트 자산 아님
+assets/img/posts/*.pptx

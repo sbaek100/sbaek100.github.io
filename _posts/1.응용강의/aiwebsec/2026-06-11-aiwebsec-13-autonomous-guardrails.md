@@ -44,7 +44,7 @@ mermaid: true
 import subprocess, time
 
 # ── 가드레일 ① 대상 화이트리스트 ────────────────────────────
-ALLOWED_TARGETS = {"192.168.0.30"}
+ALLOWED_TARGETS = {"192.168.57.30"}
 def _guard(t: str) -> bool:
     return any(x in t for x in ALLOWED_TARGETS)
 
@@ -130,7 +130,7 @@ def _audit(msg: str):
 def autonomous_pentest(goal: str):
     messages = [
         {"role": "system", "content":
-         "너는 자율 웹 점검 에이전트다. 대상은 192.168.0.30(DVWA)뿐. "
+         "너는 자율 웹 점검 에이전트다. 대상은 192.168.57.30(DVWA)뿐. "
          "정찰→스캔→취약점 검증 순으로 도구를 사용하고, 끝나면 발견 사항을 요약하라. "
          "파괴적 작업은 절대 시도하지 마라."},
         {"role": "user", "content": goal},
@@ -191,7 +191,7 @@ def confirm_if_dangerous(cmd: list) -> bool:
 # ── 실행 진입점 ────────────────────────────────────────────
 # 이 파일을 직접 실행할 때만 점검을 시작합니다. (15강 오케스트레이션에서 import 할 때는 실행되지 않음)
 if __name__ == "__main__":
-    autonomous_pentest("192.168.0.30의 DVWA를 점검해줘.")
+    autonomous_pentest("192.168.57.30의 DVWA를 점검해줘.")
 ```
 
 > 자율성과 안전은 트레이드오프입니다. **점검(탐지)은 자동, 악용(추출/장악)은 수동 승인** — 이 경계를 분명히 하는 것이 책임 있는 자동화의 핵심입니다. 가드레일은 부가 기능이 아니라 **에이전트 보안 설계 그 자체**입니다.
@@ -206,8 +206,8 @@ python3 auto_pentest.py
 **예상 결과** (요지):
 
 ```text
-[09:02:11] step 1: run_nmap({'target': '192.168.0.30'})
-[09:02:31] step 2: run_nikto({'url': 'http://192.168.0.30/DVWA/'})
+[09:02:11] step 1: run_nmap({'target': '192.168.57.30'})
+[09:02:31] step 2: run_nikto({'url': 'http://192.168.57.30/DVWA/'})
 [09:03:50] step 3: run_sqlmap({'url': '.../sqli/?id=1&Submit=Submit'})
 [09:05:02] 에이전트 종료 — 최종 요약 생성
 

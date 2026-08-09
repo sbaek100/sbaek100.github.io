@@ -96,10 +96,26 @@ DVWA는 SQL Injection, XSS, CSRF, 파일 업로드 취약점 등 OWASP Top 10에
 
 | 역할         | OS               | IP 주소        | 주요 도구                               |
 | ---------- | ---------------- | ------------ | ----------------------------------- |
-| 공격자 머신     | Kali Linux       | 192.168.0.10 | Burp Suite, SQLmap, Nikto, gobuster |
-| 피해자(대상) 서버 | Ubuntu 22.04 LTS | 192.168.0.30 | Apache2, PHP, MariaDB, DVWA         |
+| 공격자 머신     | Kali Linux       | 192.168.56.10 | Burp Suite, SQLmap, Nikto, gobuster |
+| 피해자(대상) 서버 | Ubuntu 22.04 LTS | 192.168.56.30 | Apache2, PHP, MariaDB, DVWA         |
 
-두 머신은 동일한 내부 네트워크(192.168.0.0/24)에 연결되어 있으며, Kali Linux에서 Ubuntu 서버의 DVWA로 직접 접근합니다.
+두 머신은 동일한 내부 네트워크(192.168.56.0/24)에 연결되어 있으며, Kali Linux에서 Ubuntu 서버의 DVWA로 직접 접근합니다.
+
+> **다른 과정과의 실습망 배정**
+> 이 과정은 **[리눅스 기초] 0강**과 **[애플리케이션 보안]** 이 쓰는 `192.168.56.0/24`를 **그대로 공유합니다.** 세 과정 모두 "Kali(`.10`) → Ubuntu 서버(`.30`)" 구조가 같으므로, **가상 머신을 새로 만들 필요 없이 한 벌로 모두 수강**할 수 있습니다.
+>
+> 다른 과정은 대역이 서로 겹치지 않도록 다음과 같이 나누어 두었습니다. 여러 과정의 VM을 같은 PC에 두어도 주소가 부딪히지 않습니다.
+>
+> | 대역 | 과정 |
+> |---|---|
+> | **`192.168.56.0/24`** | **리눅스 기초 · 애플리케이션 보안 · 웹 보안(이 과정)** |
+> | `192.168.57~59.0/24` | AI 웹보안(랩 / SIEM LAN / SIEM DMZ) |
+> | `192.168.60.0/24` | 네트워크 보안 |
+> | `192.168.61.0/24` | 보안시스템 |
+> | `192.168.62.0/24` | DevSecOps |
+>
+> 모두 VirtualBox가 호스트 전용 네트워크에 허용하는 범위(`192.168.56.0/21`) 안에 있습니다.
+{: .prompt-info }
 
 > 실습은 반드시 본인이 소유하거나 허가받은 환경에서만 진행해야 합니다.  
 > 타인의 시스템을 허가 없이 공격하는 것은 정보통신망법 위반에 해당합니다.
@@ -109,9 +125,9 @@ DVWA는 SQL Injection, XSS, CSRF, 파일 업로드 취약점 등 OWASP Top 10에
 
 ```mermaid
 graph LR
-    subgraph "내부 네트워크 192.168.0.0/24"
-        K["Kali Linux</br>192.168.0.10</br>(공격자)"]
-        U["Ubuntu 22.04</br>192.168.0.30</br>(DVWA 서버)"]
+    subgraph "내부 네트워크 192.168.56.0/24"
+        K["Kali Linux</br>192.168.56.10</br>(공격자)"]
+        U["Ubuntu 22.04</br>192.168.56.30</br>(DVWA 서버)"]
         K -- "HTTP :80</br>Burp Proxy :8080" --> U
     end
 ```
@@ -150,7 +166,7 @@ graph LR
 
 ### 1.4 두 가상머신을 같은 내부망으로 연결하고 고정 IP 주기
 
-목표: Kali(`192.168.0.10`)와 Ubuntu(`192.168.0.30`)가 **같은 사설망**에서 서로 통신하면서, 동시에 **인터넷(패키지 설치)** 도 되게 하는 것입니다. 그래서 각 VM에 네트워크 카드를 **2개** 둡니다.
+목표: Kali(`192.168.56.10`)와 Ubuntu(`192.168.56.30`)가 **같은 사설망**에서 서로 통신하면서, 동시에 **인터넷(패키지 설치)** 도 되게 하는 것입니다. 그래서 각 VM에 네트워크 카드를 **2개** 둡니다.
 
 **(1) 두 VM 모두 어댑터 2개 설정 — VM 전원을 끈 상태에서**
 
@@ -162,16 +178,16 @@ graph LR
 > 두 VM의 내부 네트워크 **이름이 글자까지 정확히 같아야** 서로 통신됩니다.
 {: .prompt-warning }
 
-**(2) Kali에 고정 IP `192.168.0.10` 부여** 
+**(2) Kali에 고정 IP `192.168.56.10` 부여** 
 
 ```bash
 IFACE2=$(ls /sys/class/net | grep -v lo | sed -n '2p')   # 두 번째(내부망) 카드 자동 탐지
-sudo nmcli con add type ethernet ifname "$IFACE2" con-name labnet ip4 192.168.0.10/24
+sudo nmcli con add type ethernet ifname "$IFACE2" con-name labnet ip4 192.168.56.10/24
 sudo nmcli con up labnet
-ip addr | grep 192.168.0.10        # 이 줄이 출력되면 성공
+ip addr | grep 192.168.56.10        # 이 줄이 출력되면 성공
 ```
 
-**(3) Ubuntu에 고정 IP `192.168.0.30` 부여**
+**(3) Ubuntu에 고정 IP `192.168.56.30` 부여**
 
 ```bash
 IF_NAT=$(ls /sys/class/net | grep -v lo | sed -n '1p')   # 첫 번째 = NAT(인터넷)
@@ -185,11 +201,11 @@ network:
       dhcp4: true
     $IF_LAB:
       dhcp4: false
-      addresses: [192.168.0.30/24]
+      addresses: [192.168.56.30/24]
 EOF
 sudo chmod 600 /etc/netplan/99-lab.yaml
 sudo netplan apply
-ip addr | grep 192.168.0.30        # 이 줄이 출력되면 성공
+ip addr | grep 192.168.56.30        # 이 줄이 출력되면 성공
 ```
 
 ---
@@ -198,11 +214,11 @@ ip addr | grep 192.168.0.30        # 이 줄이 출력되면 성공
 
 ```bash
 # Kali에서 실행
-ping -c 3 192.168.0.30     # Ubuntu까지 응답 → 내부망 연결 성공
+ping -c 3 192.168.56.30     # Ubuntu까지 응답 → 내부망 연결 성공
 ping -c 3 8.8.8.8          # 인터넷 응답 → NAT 정상
 
 # Ubuntu에서 실행
-ping -c 3 192.168.0.10     # Kali까지 응답 → 내부망 연결 성공
+ping -c 3 192.168.56.10     # Kali까지 응답 → 내부망 연결 성공
 ping -c 3 8.8.8.8          # 인터넷 응답 → apt 설치 가능
 ```
 
@@ -218,7 +234,7 @@ ping -c 3 8.8.8.8          # 인터넷 응답 → apt 설치 가능
 
 ### 2.1 패키지 업데이트 및 Apache2 / PHP 설치
 
-Ubuntu 서버(192.168.0.30)에 SSH로 접속하거나 직접 터미널을 열어 다음을 실행합니다.
+Ubuntu 서버(192.168.56.30)에 SSH로 접속하거나 직접 터미널을 열어 다음을 실행합니다.
 
 ```bash
 sudo apt update && sudo apt upgrade -y
@@ -333,11 +349,11 @@ allow_url_include = On
 
 ### 2.7 접근 경로 확인 (기본 설정 그대로 사용)
 
-별도의 가상 호스트 설정은 필요 없습니다. Ubuntu Apache의 기본 DocumentRoot(`/var/www/html`)를 그대로 사용하므로, `/var/www/html/DVWA`에 클론한 DVWA는 **`http://192.168.0.30/DVWA/`** 경로로 접근됩니다.
+별도의 가상 호스트 설정은 필요 없습니다. Ubuntu Apache의 기본 DocumentRoot(`/var/www/html`)를 그대로 사용하므로, `/var/www/html/DVWA`에 클론한 DVWA는 **`http://192.168.56.30/DVWA/`** 경로로 접근됩니다.
 
 > **★ 전 실습 공통 경로 규칙 ★**  
-> - DVWA 모듈: **`http://192.168.0.30/DVWA/...`** (예: `/DVWA/login.php`, `/DVWA/vulnerabilities/sqli/`)  
-> - SSRF·IDOR 실습에서 직접 만드는 보조 페이지(`fetch.php`, `profile.php` 등)는 `/var/www/html/`에 두고 **`http://192.168.0.30/파일명.php`** 로 접근합니다.  
+> - DVWA 모듈: **`http://192.168.56.30/DVWA/...`** (예: `/DVWA/login.php`, `/DVWA/vulnerabilities/sqli/`)  
+> - SSRF·IDOR 실습에서 직접 만드는 보조 페이지(`fetch.php`, `profile.php` 등)는 `/var/www/html/`에 두고 **`http://192.168.56.30/파일명.php`** 로 접근합니다.  
 >
 > 기본 `000-default` 가상호스트를 비활성화하거나 별도 vhost로 DocumentRoot를 `/DVWA`로 바꾸면, 위 보조 페이지 경로와 `/DVWA/` 접두어가 어긋나므로 **기본 설정을 그대로 둡니다.**
 {: .prompt-tip }
@@ -350,9 +366,9 @@ sudo systemctl restart apache2
 
 ### 2.8 DVWA Setup 페이지에서 DB 초기화
 
-1. Kali Linux 브라우저에서 `http://192.168.0.30/DVWA/setup.php` 에 접속합니다.
+1. Kali Linux 브라우저에서 `http://192.168.56.30/DVWA/setup.php` 에 접속합니다.
 2. 페이지 하단의 **[Create / Reset Database]** 버튼을 클릭합니다.
-3. 정상적으로 완료되면 로그인 페이지(`http://192.168.0.30/DVWA/login.php`)로 이동됩니다.
+3. 정상적으로 완료되면 로그인 페이지(`http://192.168.56.30/DVWA/login.php`)로 이동됩니다.
 
 > Setup 페이지에서 빨간색으로 표시된 항목이 있다면 PHP 설정이나 파일 권한 문제입니다.  
 > `allow_url_include`, `config.inc.php` 권한, MariaDB 연결 정보를 다시 확인합니다.
@@ -423,7 +439,7 @@ DVWA는 HTTP이므로 이 단계는 생략 가능하지만, 이후 실습을 위
 
 ### 3.5 DVWA 접속 및 Burp 트래픽 확인
 
-1. 브라우저에서 `http://192.168.0.30/DVWA/login.php` 에 접속
+1. 브라우저에서 `http://192.168.56.30/DVWA/login.php` 에 접속
 2. Burp Suite **Proxy** 탭 → **Intercept** 탭에서 요청이 가로채졌는지 확인
 3. **[Forward]** 를 눌러 요청을 전달하거나, **[Intercept is off]** 로 설정해 자동 통과시킵니다.
 
@@ -511,7 +527,7 @@ sudo apt install -y sqlmap nikto gobuster dirb hydra wfuzz
 ```bash
 # DVWA SQL Injection 페이지에 대한 기본 스캔
 # (Burp Suite에서 가로챈 요청을 파일로 저장한 후 사용)
-sqlmap -u "http://192.168.0.30/DVWA/vulnerabilities/sqli/?id=1&Submit=Submit" \
+sqlmap -u "http://192.168.56.30/DVWA/vulnerabilities/sqli/?id=1&Submit=Submit" \
        --cookie="PHPSESSID=<세션값>; security=low" \
        --dbs
 ```
@@ -520,14 +536,14 @@ sqlmap -u "http://192.168.0.30/DVWA/vulnerabilities/sqli/?id=1&Submit=Submit" \
 
 ```bash
 # DVWA 서버 기본 취약점 스캔
-nikto -h http://192.168.0.30
+nikto -h http://192.168.56.30
 ```
 
 ### 5.5 gobuster 기본 사용법 예시
 
 ```bash
 # 디렉토리 브루트포스
-gobuster dir -u http://192.168.0.30 \
+gobuster dir -u http://192.168.56.30 \
              -w /usr/share/wordlists/dirb/common.txt \
              -t 50
 ```
@@ -542,8 +558,8 @@ gobuster dir -u http://192.168.0.30 \
 
 실습을 시작하기 전에 다음 항목을 확인합니다.
 
-- [ ] Ubuntu 서버(192.168.0.30)에서 Apache2 서비스가 실행 중인가
-- [ ] `http://192.168.0.30/DVWA/login.php` 에 Kali Linux 브라우저에서 접근 가능한가
+- [ ] Ubuntu 서버(192.168.56.30)에서 Apache2 서비스가 실행 중인가
+- [ ] `http://192.168.56.30/DVWA/login.php` 에 Kali Linux 브라우저에서 접근 가능한가
 - [ ] `admin` / `password` 로 DVWA 로그인이 되는가
 - [ ] Burp Suite가 `127.0.0.1:8080` 에서 리스닝 중인가
 - [ ] 브라우저 프록시가 Burp Suite를 가리키고 있는가

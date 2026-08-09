@@ -23,14 +23,14 @@ mermaid: true
 - **지난 강의 도달 상태**: Wazuh→Ollama(AI)→OPNsense 자동 차단 파이프라인 완성
 - **오늘의 목표**: **모의 공격(Red Team)**을 발사하고, 우리가 만든 **SOC 파이프라인(Blue Team)**이 탐지→AI판정→자동차단까지 실제로 막아내는지 **최종 검증**
 - **오늘 켜는 VM**: VM1 + VM2 + VM3 + VM-WEB (전부)
-- **공격자**: VM2 (`192.168.1.20`) / **표적**: VM-WEB (`192.168.10.10`)
+- **공격자**: VM2 (`192.168.58.20`) / **표적**: VM-WEB (`192.168.59.10`)
 
 ```mermaid
 graph LR
     R["🔴 Red Team<br/>VM2 공격 스크립트"] -->|"스캔→SQLi 연속"| WEB["VM-WEB"]
     WEB --> WZ["Wazuh 탐지"]
     WZ --> AI["Ollama 판정 High"]
-    AI --> FW["OPNsense 자동 차단<br/>192.168.1.20"]
+    AI --> FW["OPNsense 자동 차단<br/>192.168.58.20"]
     FW -.->|"이후 공격 차단됨"| R
 ```
 
@@ -60,7 +60,7 @@ nano ~/attack-sim.sh
 ```
 ```bash
 #!/usr/bin/env bash
-TARGET="http://192.168.10.10"
+TARGET="http://192.168.59.10"
 JAR=$(mktemp)   # 로그인 쿠키(세션)를 저장할 임시 파일
 
 echo "[*] 0. 로그인: DVWA 세션 획득 (admin/password)"
@@ -98,7 +98,7 @@ rm -f "$JAR"   # 임시 쿠키 파일 정리
 **스크립트 상세 설명** — 실제 해커의 공격 순서(로그인 → 정찰 → 침투 → 결과 확인)를 흉내 내는 자동 공격기입니다. DVWA 취약점 페이지는 **로그인이 필요**하므로, 맨 앞에서 세션을 먼저 얻는 것이 핵심입니다.
 - `nano ~/attack-sim.sh` : 텍스트 편집기 **nano**로 새 스크립트 파일을 엽니다. 위 내용을 붙여넣고 `Ctrl+O`(저장) → `Enter` → `Ctrl+X`(닫기).
 - `#!/usr/bin/env bash` : 이 파일을 **bash 셸로 실행**하라는 표시(맨 첫 줄 약속).
-- `TARGET="http://192.168.10.10"` : 공격 대상(웹서버) 주소를 변수에 저장해 아래에서 재사용합니다.
+- `TARGET="http://192.168.59.10"` : 공격 대상(웹서버) 주소를 변수에 저장해 아래에서 재사용합니다.
 - `JAR=$(mktemp)` : **로그인 쿠키(세션)를 보관할 임시 파일**을 하나 만들어 그 경로를 `JAR`에 저장합니다. curl이 이 파일에 쿠키를 쓰고(`-c`) 읽습니다(`-b`).
 - **0단계 로그인** — DVWA는 로그인 폼에 **CSRF 토큰(`user_token`)**을 요구하므로 두 번에 나눠 처리합니다.
   - `TOKEN=$(curl -s -c "$JAR" "$TARGET/login.php" | grep -oP "user_token' value='\K[0-9a-f]+")` : 로그인 페이지를 받아(`-c "$JAR"`로 세션 쿠키 저장) HTML 속 숨은 토큰 값만 **뽑아냅니다**. (`grep -oP ... \K`=일치한 부분 중 토큰 값만 출력)
@@ -131,9 +131,9 @@ chmod +x ~/attack-sim.sh
 
 ### [단계 3] Wazuh 탐지 확인 (VM2 다른 탭)
 
-1. `https://192.168.1.100` 대시보드 → **[Security events]**, 시간 `Last 15 minutes`.
+1. `https://192.168.58.100` 대시보드 → **[Security events]**, 시간 `Last 15 minutes`.
 2. 검색창에 `rule.groups:web OR rule.groups:attack` 입력.
-3. 빨간/주황 경보가 연쇄적으로 올라옵니다. 가장 높은 경보를 펼쳐 **`data.srcip = 192.168.1.20`** 을 확인합니다. (공격자 = VM2)
+3. 빨간/주황 경보가 연쇄적으로 올라옵니다. 가장 높은 경보를 펼쳐 **`data.srcip = 192.168.58.20`** 을 확인합니다. (공격자 = VM2)
 
 ### [단계 4] AI 자동 분석 & 차단 로그 확인 (VM3)
 
@@ -144,14 +144,14 @@ sudo tail -n 20 /var/ossec/logs/ai-soc.log
 
 다음과 같은 기록이 보입니다.
 ```text
-AI verdict for 192.168.1.20: High - SQL Injection 공격으로 판단, 즉시 차단 권고 ...
-BLOCKED 192.168.1.20 via OPNsense
+AI verdict for 192.168.58.20: High - SQL Injection 공격으로 판단, 즉시 차단 권고 ...
+BLOCKED 192.168.58.20 via OPNsense
 ```
 
 ### [단계 5] 방화벽 자동 차단 결과 확인 (VM2 브라우저)
 
-1. OPNsense `https://192.168.1.1` → **[Firewall] → [Aliases] → Blocked_Attackers** 편집.
-2. 사람이 타이핑하지 않았는데도 공격자 IP **`192.168.1.20`** 이 **자동 등재**되어 있습니다.
+1. OPNsense `https://192.168.58.1` → **[Firewall] → [Aliases] → Blocked_Attackers** 편집.
+2. 사람이 타이핑하지 않았는데도 공격자 IP **`192.168.58.20`** 이 **자동 등재**되어 있습니다.
 3. (선택) **[Firewall] → [Log Files] → [Live View]** 에서 해당 IP가 Block 규칙에 막히는 로그를 확인합니다.
 
 ### [단계 6] 종합 — 전체 파이프라인이 동작했는가?
@@ -162,7 +162,7 @@ graph TB
     B --> C["Wazuh 탐지 (Level↑)"]
     C --> D["Integrator 호출 (VM3)"]
     D --> E["Ollama: High 판정"]
-    E --> F["OPNsense: 192.168.1.20 차단"]
+    E --> F["OPNsense: 192.168.58.20 차단"]
     F --> G["attack-sim.sh 3단계 TIMEOUT"]
 ```
 공격 발사 → 탐지 → AI 분석 → 자동 차단 → 공격 무력화까지 **사람의 개입 없이** 이어졌다면, 여러분의 작은 보안관제센터는 완성입니다. 🎉
@@ -175,7 +175,7 @@ graph TB
 
 ### [단계 7] 보안 이벤트 대시보드 열기
 
-1. **VM2** Firefox → `https://192.168.1.100` 로그인(`admin`).
+1. **VM2** Firefox → `https://192.168.58.100` 로그인(`admin`).
 2. 좌측 메뉴(☰) → **[Security events]**. 우측 상단 시간 범위를 **`Today`** 로 맞춥니다.
 3. 화면 상단에 **차트들이 자동으로** 그려져 있습니다. 방금 공격을 발사했으므로:
    - **Alerts over time(시간별 경보 막대그래프)**: 공격한 시각에 막대가 **솟아오른** 것을 봅니다.
@@ -188,7 +188,7 @@ graph TB
 ### [단계 8] 공격자·공격유형 집계로 보기
 
 1. 상단 검색창에 `rule.groups:attack` 입력 → 웹 공격 경보만 필터링.
-2. 하단 **Top rule descriptions** 와 **Top srcip** 패널에서, 공격자 **`192.168.1.20`** 이 압도적으로 많은 것을 **시각적으로** 확인합니다. (텍스트 로그를 일일이 읽지 않아도 한눈에 파악)
+2. 하단 **Top rule descriptions** 와 **Top srcip** 패널에서, 공격자 **`192.168.58.20`** 이 압도적으로 많은 것을 **시각적으로** 확인합니다. (텍스트 로그를 일일이 읽지 않아도 한눈에 파악)
 
 ### [단계 9] MITRE ATT&CK 매트릭스로 보기
 
@@ -237,7 +237,7 @@ graph TB
 
 모든 검증이 끝났다면 4대 VM을 각각 **[스냅샷] → [찍기]** 로 "완성본"을 보관하세요. 이후 다른 공격을 실험하다 환경이 망가져도 언제든 완성 상태로 복원할 수 있습니다. (강사는 이 완성본을 `.ova`로 내보내 다음 기수 학생에게 안전망으로 배포할 수 있습니다.)
 
-> 실습 직후 본인 IP(192.168.1.20)가 차단 명단에 남아 인터넷·웹 접속이 안 될 수 있습니다. OPNsense **[Firewall] → [Aliases] → Blocked_Attackers**를 비우고 [Apply] 하세요.
+> 실습 직후 본인 IP(192.168.58.20)가 차단 명단에 남아 인터넷·웹 접속이 안 될 수 있습니다. OPNsense **[Firewall] → [Aliases] → Blocked_Attackers**를 비우고 [Apply] 하세요.
 {: .prompt-warning }
 
 ---

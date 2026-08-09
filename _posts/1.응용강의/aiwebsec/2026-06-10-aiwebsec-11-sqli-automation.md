@@ -65,7 +65,7 @@ DVWA의 취약점 페이지는 로그인 후에만 접근됩니다. 그래서 sq
 
 > DVWA의 SQLi 실습 URL 형태:
 > ```text
-> http://192.168.0.30/DVWA/vulnerabilities/sqli/?id=1&Submit=Submit
+> http://192.168.57.30/DVWA/vulnerabilities/sqli/?id=1&Submit=Submit
 > ```
 > 여기서 `id` 파라미터가 점검 대상입니다.
 {: .prompt-info }
@@ -80,7 +80,7 @@ DVWA의 취약점 페이지는 로그인 후에만 접근됩니다. 그래서 sq
 # sqli_agent.py (1/2) — sqlmap 도구
 import subprocess
 
-ALLOWED_TARGETS = {"192.168.0.30"}
+ALLOWED_TARGETS = {"192.168.57.30"}
 def _guard(t): return any(x in t for x in ALLOWED_TARGETS)
 
 def run_sqlmap(url: str, cookie: str) -> str:
@@ -113,7 +113,7 @@ import ollama
 
 MODEL = "qwen2.5:7b"
 
-TARGET = "http://192.168.0.30/DVWA/vulnerabilities/sqli/?id=1&Submit=Submit"
+TARGET = "http://192.168.57.30/DVWA/vulnerabilities/sqli/?id=1&Submit=Submit"
 COOKIE = "PHPSESSID=여기에_본인_세션값; security=low"   # 2단계에서 복사한 값
 
 ANALYST = """너는 SQL Injection 점검 분석가다. 아래는 sqlmap 실행 결과다.

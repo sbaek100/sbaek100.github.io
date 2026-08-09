@@ -19,8 +19,8 @@ description: Ubuntu를 처음 설치한 상태부터 시작해, 서비스를 올
 
 | 구분 | 운영체제 | IP 주소 | 역할 |
 |------|----------|---------|------|
-| 공격자 PC | Kali Linux | 192.168.0.10 | Nmap·ssh·curl 로 공격 시도 |
-| 서버 | Ubuntu | 192.168.0.30 | iptables 방화벽으로 방어 |
+| 공격자 PC | Kali Linux | 192.168.61.10 | Nmap·ssh·curl 로 공격 시도 |
+| 서버 | Ubuntu | 192.168.61.30 | iptables 방화벽으로 방어 |
 
 이 자료는 **Ubuntu를 막 설치한 상태부터** 시작해도 그대로 따라할 수 있도록 만들었습니다.
 
@@ -94,8 +94,8 @@ flowchart LR
 ip a
 # ip          : 네트워크 설정 명령어
 # a           : address (주소) 보기
-# 출력에서 inet 192.168.0.30/24 같은 줄을 찾으면 됨
-# 만약 다른 IP라면 가상머신 네트워크 설정에서 192.168.0.30으로 고정하세요
+# 출력에서 inet 192.168.61.30/24 같은 줄을 찾으면 됨
+# 만약 다른 IP라면 가상머신 네트워크 설정에서 192.168.61.30으로 고정하세요
 
 # 인터페이스 이름 확인 (이후 명령에서 사용)
 ip -br link
@@ -106,7 +106,7 @@ ip -br link
 
 ```bash
 # Kali와 연결되는지 확인
-ping -c 3 192.168.0.10
+ping -c 3 192.168.61.10
 # -c 3 : 3번만 보내고 종료
 # "3 packets transmitted, 3 received" 가 보이면 정상
 ```
@@ -150,7 +150,7 @@ sudo systemctl status ssh
 
 ```bash
 # Kali에서 SSH 연결 가능한지 확인
-ssh 사용자명@192.168.0.30
+ssh 사용자명@192.168.61.30
 # 처음 접속 시 "yes/no" 물으면 yes
 # 비밀번호 입력 후 접속되면 정상
 # exit 으로 빠져나오기
@@ -174,7 +174,7 @@ sudo systemctl status apache2
 
 ```bash
 # Kali에서 웹 페이지 요청
-curl -I http://192.168.0.30/
+curl -I http://192.168.61.30/
 # -I     : 응답의 헤더(HEAD)만 받기
 # HTTP/1.1 200 OK 가 나오면 Apache가 외부에서 보이는 상태
 ```
@@ -235,7 +235,7 @@ LISTEN 0  151  127.0.0.1:3306 0.0.0.0:*  users:(("mysqld",...))
 
 ```bash
 # Kali에서 실행
-nmap -p 22,80,443,3306 192.168.0.30
+nmap -p 22,80,443,3306 192.168.61.30
 # -p 22,80,443,3306 : 검사할 포트(콤마로 여러 개)
 ```
 
@@ -273,7 +273,7 @@ PORT     STATE  SERVICE
 
 ```mermaid
 flowchart LR
-    A["Kali<br/>192.168.0.10<br/>(공격자)"] -->|"패킷 전송"| FW["방화벽<br/>iptables 규칙"]
+    A["Kali<br/>192.168.61.10<br/>(공격자)"] -->|"패킷 전송"| FW["방화벽<br/>iptables 규칙"]
     FW -->|"규칙에 맞으면<br/>ACCEPT"| S["Ubuntu 서비스<br/>(SSH/Apache/MySQL)"]
     FW -->|"규칙에 안 맞으면<br/>DROP"| X["패킷을 그냥 버림"]
     style FW fill:#ff922b,color:#fff
@@ -545,18 +545,18 @@ Chain INPUT (policy ACCEPT 0 packets, 0 bytes)
 
 | 공격자 시점 | 방어 후 결과 |
 |-------------|-------------|
-| `nmap -p 80 192.168.0.30` 으로 웹 서비스 정찰 | 응답 없음, `filtered` 로 표시 |
-| `curl http://192.168.0.30/` 로 페이지 가져오기 | 타임아웃, 페이지 못 가져옴 |
+| `nmap -p 80 192.168.61.30` 으로 웹 서비스 정찰 | 응답 없음, `filtered` 로 표시 |
+| `curl http://192.168.61.30/` 로 페이지 가져오기 | 타임아웃, 페이지 못 가져옴 |
 | 웹 취약점 스캐너로 자동화 공격 | 패킷 자체가 도달하지 못함 |
 
 **Kali에서 효과 확인:**
 
 ```bash
 # Kali에서 실행
-nmap -p 80 192.168.0.30
+nmap -p 80 192.168.61.30
 # 결과: 80/tcp filtered http   ← 방화벽이 막고 있다는 증거
 
-curl -m 5 -I http://192.168.0.30/
+curl -m 5 -I http://192.168.61.30/
 # -m 5 : 5초만 기다리고 끝내기
 # 결과: curl: (28) Connection timed out
 ```
@@ -579,7 +579,7 @@ sudo iptables -L INPUT -n -v
 # DROP 줄이 없어졌으면 성공
 
 # Kali에서 다시 curl
-curl -I http://192.168.0.30/
+curl -I http://192.168.61.30/
 # HTTP/1.1 200 OK 가 다시 보이면 정상 복구
 ```
 
@@ -588,12 +588,12 @@ curl -I http://192.168.0.30/
 
 ### 4.4 출발지 IP 기준 차단 — Kali만 막아 보기
 
-이번엔 출발지 IP 조건을 추가합니다. **Kali(192.168.0.10)에서 오는 80번만 막고**, 다른 IP에서는 허용되는 규칙을 만듭니다. 만약 SSH가 아닌 콘솔에서 작업 중이라면 22번도 같은 방식으로 막아볼 수 있습니다.
+이번엔 출발지 IP 조건을 추가합니다. **Kali(192.168.61.10)에서 오는 80번만 막고**, 다른 IP에서는 허용되는 규칙을 만듭니다. 만약 SSH가 아닌 콘솔에서 작업 중이라면 22번도 같은 방식으로 막아볼 수 있습니다.
 
 ```bash
 # Ubuntu에서 실행
-sudo iptables -A INPUT -s 192.168.0.10 -p tcp --dport 80 -j DROP
-# -s 192.168.0.10 : 출발지가 Kali일 때만
+sudo iptables -A INPUT -s 192.168.61.10 -p tcp --dport 80 -j DROP
+# -s 192.168.61.10 : 출발지가 Kali일 때만
 ```
 
 **🎯 이 규칙이 막는 공격**
@@ -602,7 +602,7 @@ sudo iptables -A INPUT -s 192.168.0.10 -p tcp --dport 80 -j DROP
 
 ```bash
 # Kali에서 — 차단됨
-curl -m 5 -I http://192.168.0.30/
+curl -m 5 -I http://192.168.61.30/
 # Connection timed out
 ```
 
@@ -614,7 +614,7 @@ curl -I http://localhost/
 
 ```bash
 # 정리
-sudo iptables -D INPUT -s 192.168.0.10 -p tcp --dport 80 -j DROP
+sudo iptables -D INPUT -s 192.168.61.10 -p tcp --dport 80 -j DROP
 ```
 
 ### 4.5 모든 IP에서 MySQL 차단 — Defense in Depth
@@ -643,7 +643,7 @@ sudo iptables -A INPUT -p tcp --dport 3306 -j DROP
 
 ```bash
 # Kali에서 효과 확인
-nmap -p 3306 192.168.0.30
+nmap -p 3306 192.168.61.30
 # 3306/tcp filtered mysql   ← 방화벽이 막아서 정찰 자체가 어려워짐
 ```
 
@@ -656,7 +656,7 @@ nmap -p 3306 192.168.0.30
 
 ```bash
 # Kali에서 실행 — 차단 전
-ping -c 3 192.168.0.30
+ping -c 3 192.168.61.30
 # -c 3 : 3번만 보내고 끝내기
 # 정상이면 응답이 옵니다.
 ```
@@ -671,7 +671,7 @@ sudo iptables -A INPUT -p icmp --icmp-type echo-request -j DROP
 
 ```bash
 # Kali에서 다시 ping
-ping -c 3 192.168.0.30
+ping -c 3 192.168.61.30
 # 응답이 오지 않습니다 (요청 자체가 서버에 도착해도 버려져서 답을 안 함)
 ```
 
@@ -679,7 +679,7 @@ ping -c 3 192.168.0.30
 
 | 공격 시나리오 | 방화벽이 어떻게 막는가 |
 |---------------|----------------------|
-| 호스트 디스커버리 (대역 스윕) — `nmap -sn 192.168.0.0/24` | ping 응답이 없어 "이 IP 살아 있나?" 판단 어려워짐 |
+| 호스트 디스커버리 (대역 스윕) — `nmap -sn 192.168.61.0/24` | ping 응답이 없어 "이 IP 살아 있나?" 판단 어려워짐 |
 | Smurf 공격(과거형) 같은 ICMP 기반 DDoS | echo-request 자체를 받지 않음 |
 
 ```bash
@@ -809,7 +809,7 @@ Default Deny 정책을 적용했으니 Kali에서 다시 공격해 보면서 결
 
 ```bash
 # Kali에서 실행
-nmap -p 22,80,443,3306 192.168.0.30
+nmap -p 22,80,443,3306 192.168.61.30
 ```
 
 예상 출력 (방화벽 적용 후):
@@ -842,10 +842,10 @@ PORT     STATE    SERVICE
 
 ```bash
 # Kali에서 실행
-ssh 사용자명@192.168.0.30
+ssh 사용자명@192.168.61.30
 # 정상 로그인 화면이 떠야 함
 
-curl -I http://192.168.0.30/
+curl -I http://192.168.61.30/
 # HTTP/1.1 200 OK 가 나와야 함
 ```
 
@@ -855,13 +855,13 @@ curl -I http://192.168.0.30/
 
 ```bash
 # Kali에서 실행 (mysql 클라이언트가 있다면)
-mysql -h 192.168.0.30 -P 3306 -u root -p
+mysql -h 192.168.61.30 -P 3306 -u root -p
 # -h : 대상 서버
 # -P : 포트
 # 결과: ERROR ... Can't connect (timeout)
 
 # 또는 더 가벼운 검증
-nc -v -w 5 192.168.0.30 3306
+nc -v -w 5 192.168.61.30 3306
 # nc : netcat (TCP 연결 테스트 도구)
 # -v : 자세히
 # -w 5 : 5초 타임아웃
@@ -887,14 +887,14 @@ sudo tcpdump -n -i any 'dst port 3306' -c 5
 
 ```bash
 # Kali에서
-nmap -p 3306 192.168.0.30
+nmap -p 3306 192.168.61.30
 ```
 
 Ubuntu의 tcpdump 출력 예:
 
 ```
-12:34:56.789012 IP 192.168.0.10.45678 > 192.168.0.30.3306: Flags [S], seq 0
-12:34:57.123456 IP 192.168.0.10.45678 > 192.168.0.30.3306: Flags [S], seq 0
+12:34:56.789012 IP 192.168.61.10.45678 > 192.168.61.30.3306: Flags [S], seq 0
+12:34:57.123456 IP 192.168.61.10.45678 > 192.168.61.30.3306: Flags [S], seq 0
 ...
 ```
 
@@ -919,11 +919,11 @@ Kali에서 nmap·curl·mysql 시도를 한 만큼 `pkts` 가 늘어 있을 겁�
 
 | 공격자가 시도한 것 | 방어자(iptables)의 처리 | 결과 |
 |------------------|----------------------|------|
-| `nmap -p 22 192.168.0.30` | 규칙 ③ 일치 → ACCEPT | open으로 보임 (의도) |
-| `nmap -p 80 192.168.0.30` | 규칙 ④ 일치 → ACCEPT | open으로 보임 (의도) |
-| `nmap -p 3306 192.168.0.30` | 어떤 ACCEPT에도 안 맞음 → 정책 DROP | filtered (정찰 차단) |
-| `nmap -p 443 192.168.0.30` | 어떤 ACCEPT에도 안 맞음 → 정책 DROP | filtered (정찰 차단) |
-| `nmap -sn 192.168.0.30` (호스트 발견) | ICMP 정책 따라 처리 | 응답에 따라 결과 달라짐 |
+| `nmap -p 22 192.168.61.30` | 규칙 ③ 일치 → ACCEPT | open으로 보임 (의도) |
+| `nmap -p 80 192.168.61.30` | 규칙 ④ 일치 → ACCEPT | open으로 보임 (의도) |
+| `nmap -p 3306 192.168.61.30` | 어떤 ACCEPT에도 안 맞음 → 정책 DROP | filtered (정찰 차단) |
+| `nmap -p 443 192.168.61.30` | 어떤 ACCEPT에도 안 맞음 → 정책 DROP | filtered (정찰 차단) |
+| `nmap -sn 192.168.61.30` (호스트 발견) | ICMP 정책 따라 처리 | 응답에 따라 결과 달라짐 |
 | 무차별 MySQL 로그인 시도 | 정책 DROP으로 SYN 차단 | TCP 연결 자체가 안 됨 |
 
 ---

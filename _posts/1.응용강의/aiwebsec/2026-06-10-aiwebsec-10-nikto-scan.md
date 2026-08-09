@@ -50,7 +50,7 @@ which nikto
 수동으로 한번 돌려서 감을 잡아 보겠습니다(시간이 좀 걸립니다).
 
 ```bash
-nikto -h http://192.168.0.30/DVWA/ -maxtime 120s
+nikto -h http://192.168.57.30/DVWA/ -maxtime 120s
 ```
 
 **예상 결과** (요지):
@@ -75,7 +75,7 @@ nikto -h http://192.168.0.30/DVWA/ -maxtime 120s
 # scan_agent.py — nikto 도구 (앞 강의의 _guard, DISPATCH 구조 재사용)
 import subprocess
 
-ALLOWED_TARGETS = {"192.168.0.30"}
+ALLOWED_TARGETS = {"192.168.57.30"}
 def _guard(t): return any(x in t for x in ALLOWED_TARGETS)
 
 def run_nikto(url: str) -> str:
@@ -125,7 +125,7 @@ def triage(nikto_output: str) -> str:
     return resp["message"]["content"]
 
 if __name__ == "__main__":
-    raw = run_nikto("http://192.168.0.30/DVWA/")
+    raw = run_nikto("http://192.168.57.30/DVWA/")
     print("[*] AI 우선순위 선별 결과:\n" + triage(raw))
 ```
 

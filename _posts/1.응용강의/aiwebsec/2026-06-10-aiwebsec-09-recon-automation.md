@@ -55,7 +55,7 @@ which whatweb gobuster
 # recon_agent.py (1/4) — 세 개의 도구 함수
 import subprocess
 
-ALLOWED_TARGETS = {"192.168.0.30"}
+ALLOWED_TARGETS = {"192.168.57.30"}
 
 def _guard(target: str) -> bool:
     # IP 또는 URL 안에 허용 대상이 들어 있는지 확인합니다.
@@ -139,7 +139,7 @@ MAX_STEPS = 6   # 무한 루프 방지
 def run_agent(goal: str):
     messages = [
         {"role": "system", "content":
-         "너는 웹 정찰 에이전트다. 대상은 192.168.0.30(DVWA)뿐이다. "
+         "너는 웹 정찰 에이전트다. 대상은 192.168.57.30(DVWA)뿐이다. "
          "필요한 도구를 순서대로 사용해 정찰하라: 먼저 포트, 다음 웹 기술, 다음 디렉터리. "
          "충분히 정보를 모으면 도구 호출을 멈추고 결과를 요약하라."},
         {"role": "user", "content": goal},
@@ -168,7 +168,7 @@ def run_agent(goal: str):
     return messages
 
 if __name__ == "__main__":
-    run_agent("192.168.0.30의 DVWA를 정찰해줘. (URL은 http://192.168.0.30/DVWA/)")
+    run_agent("192.168.57.30의 DVWA를 정찰해줘. (URL은 http://192.168.57.30/DVWA/)")
 ```
 
 실행합니다.
@@ -180,9 +180,9 @@ python3 recon_agent.py
 **예상 결과** (요지):
 
 ```text
-[step 1] 도구 실행: run_nmap(192.168.0.30)
-[step 2] 도구 실행: run_whatweb(http://192.168.0.30/DVWA/)
-[step 3] 도구 실행: run_gobuster(http://192.168.0.30/DVWA/)
+[step 1] 도구 실행: run_nmap(192.168.57.30)
+[step 2] 도구 실행: run_whatweb(http://192.168.57.30/DVWA/)
+[step 3] 도구 실행: run_gobuster(http://192.168.57.30/DVWA/)
 [*] 최종 요약:
 - 포트: 22(ssh), 80(http, Apache 2.4.58), 3306(mysql)
 - 웹 기술: PHP, Apache, jQuery 사용. DVWA 확인됨
@@ -215,7 +215,7 @@ def summarize_as_json(messages):
 ```python
 # recon_agent.py — 실행 진입점 (4절의 if __name__ 블록을 이걸로 교체)
 if __name__ == "__main__":
-    history = run_agent("192.168.0.30의 DVWA를 정찰해줘. (URL은 http://192.168.0.30/DVWA/)")
+    history = run_agent("192.168.57.30의 DVWA를 정찰해줘. (URL은 http://192.168.57.30/DVWA/)")
     print("\n[*] 구조화 결과(JSON):")
     print(summarize_as_json(history))
 ```

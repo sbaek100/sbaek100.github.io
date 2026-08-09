@@ -19,8 +19,8 @@ description: 8-1에서 통했던 SQLi·XSS·Command Injection·Directory Travers
 
 | 구분 | 운영체제 | IP 주소 | 역할 |
 |------|----------|---------|------|
-| 공격자 PC | Kali Linux | 192.168.0.10 | 8-1과 동일한 웹 공격 재시도 |
-| 서버 | Ubuntu | 192.168.0.30 | Apache + DVWA + **ModSecurity (오늘 추가)** |
+| 공격자 PC | Kali Linux | 192.168.61.10 | 8-1과 동일한 웹 공격 재시도 |
+| 서버 | Ubuntu | 192.168.61.30 | Apache + DVWA + **ModSecurity (오늘 추가)** |
 
 8-1에서 우리는 다섯 가지 웹 공격이 모두 성공하는 모습을 봤습니다. 7주차 방화벽으로는 막을 수 없는 영역이었죠. 8-2에서는 그 공격들을 **WAF(Web Application Firewall)** 로 막아냅니다.
 
@@ -91,20 +91,20 @@ sudo systemctl is-active apache2 mysql
 
 ```bash
 # Kali에서 — DVWA 로그인 페이지 보이는지
-curl -I http://192.168.0.30/dvwa/login.php
+curl -I http://192.168.61.30/dvwa/login.php
 # HTTP/1.1 200 OK 또는 302 가 나오면 정상
 ```
 
 ```bash
 # (선택) Kali 브라우저에서 DVWA 접속해서 보안 레벨이 Low인지 확인
-# http://192.168.0.30/dvwa/security.php
+# http://192.168.61.30/dvwa/security.php
 ```
 
 확인 끝났으면 8-1에서 통한 공격을 한 번만 다시 보고 갑니다 — **WAF 적용 후와 비교** 하기 위해서.
 
 ```bash
 # Kali 브라우저에서
-# http://192.168.0.30/dvwa/vulnerabilities/sqli/?id=1' OR '1'='1&Submit=Submit
+# http://192.168.61.30/dvwa/vulnerabilities/sqli/?id=1' OR '1'='1&Submit=Submit
 # → 모든 사용자 데이터가 보여야 정상 (= 8-1 공격 그대로 통함)
 ```
 
@@ -304,7 +304,7 @@ sudo systemctl status apache2
 ```bash
 # Kali에서 실행 — UNION SELECT 패턴 (SQLi 룰 942.x 가 잡음)
 curl -s -o /dev/null -w "HTTP %{http_code}\n" \
-     "http://192.168.0.30/?id=1+UNION+SELECT+1,2,3"
+     "http://192.168.61.30/?id=1+UNION+SELECT+1,2,3"
 # -s          : 진행 표시 끄기
 # -o /dev/null : 응답 본문 버리기
 # -w          : 응답 코드만 출력
@@ -315,7 +315,7 @@ curl -s -o /dev/null -w "HTTP %{http_code}\n" \
 ```bash
 # 한 가지 더 — XSS 패턴
 curl -s -o /dev/null -w "HTTP %{http_code}\n" \
-     "http://192.168.0.30/?x=%3Cscript%3Ealert(1)%3C/script%3E"
+     "http://192.168.61.30/?x=%3Cscript%3Ealert(1)%3C/script%3E"
 # %3C : URL 인코딩된 <
 # %3E : URL 인코딩된 >
 # 예상 출력: HTTP 403
@@ -329,7 +329,7 @@ curl -s -o /dev/null -w "HTTP %{http_code}\n" \
 
 이제 본 무대입니다. 8-1에서 통했던 공격을 그대로 다시 시도합니다.
 
-> **공통 안내:** 아래 시도는 DVWA에 로그인된 상태여야 의미가 있습니다. 브라우저로 먼저 `http://192.168.0.30/dvwa/login.php` 에 admin/password로 로그인 후, 같은 브라우저에서 아래 URL을 주소창에 입력하세요. 빠른 검증을 원하면 8-1 §4.6의 curl 자동화를 응용해도 됩니다(403이면 차단 성공).
+> **공통 안내:** 아래 시도는 DVWA에 로그인된 상태여야 의미가 있습니다. 브라우저로 먼저 `http://192.168.61.30/dvwa/login.php` 에 admin/password로 로그인 후, 같은 브라우저에서 아래 URL을 주소창에 입력하세요. 빠른 검증을 원하면 8-1 §4.6의 curl 자동화를 응용해도 됩니다(403이면 차단 성공).
 {: .prompt-tip }
 
 ### 3.1 공격 ① SQL Injection 재시도
@@ -337,7 +337,7 @@ curl -s -o /dev/null -w "HTTP %{http_code}\n" \
 **Kali 브라우저 주소창에 입력:**
 
 ```
-http://192.168.0.30/dvwa/vulnerabilities/sqli/?id=1' OR '1'='1&Submit=Submit
+http://192.168.61.30/dvwa/vulnerabilities/sqli/?id=1' OR '1'='1&Submit=Submit
 ```
 
 브라우저가 자동으로 URL 인코딩하므로 실제로는 `?id=1%27+OR+%271%27%3D%271` 형태로 전송됩니다.
@@ -355,7 +355,7 @@ You don't have permission to access this resource.
 ```bash
 # Kali에서 curl로도 검증 (로그인 쿠키가 /tmp/cookie.txt 에 있다고 가정)
 curl -b /tmp/cookie.txt -s -o /dev/null -w "HTTP %{http_code}\n" \
-  "http://192.168.0.30/dvwa/vulnerabilities/sqli/?id=1%27+OR+%271%27%3D%271&Submit=Submit"
+  "http://192.168.61.30/dvwa/vulnerabilities/sqli/?id=1%27+OR+%271%27%3D%271&Submit=Submit"
 # 결과: HTTP 403
 ```
 
@@ -367,7 +367,7 @@ curl -b /tmp/cookie.txt -s -o /dev/null -w "HTTP %{http_code}\n" \
 브라우저 주소창에:
 
 ```
-http://192.168.0.30/dvwa/vulnerabilities/sqli/?id=1' UNION SELECT user,password FROM users-- &Submit=Submit
+http://192.168.61.30/dvwa/vulnerabilities/sqli/?id=1' UNION SELECT user,password FROM users-- &Submit=Submit
 ```
 
 → **403 Forbidden**. `UNION SELECT` 패턴 자체가 룰에 잡힙니다(942.x).
@@ -377,7 +377,7 @@ http://192.168.0.30/dvwa/vulnerabilities/sqli/?id=1' UNION SELECT user,password 
 브라우저 주소창에:
 
 ```
-http://192.168.0.30/dvwa/vulnerabilities/xss_r/?name=<script>alert('XSS!')</script>
+http://192.168.61.30/dvwa/vulnerabilities/xss_r/?name=<script>alert('XSS!')</script>
 ```
 
 → **403 Forbidden**. OWASP CRS의 XSS 룰셋(번호 941.x)이 잡습니다.
@@ -400,8 +400,8 @@ DVWA의 Command Injection 페이지(`/dvwa/vulnerabilities/exec/`)에 들어가�
 브라우저 주소창에 (8-1에서 본 두 가지 형태 모두 시도):
 
 ```
-http://192.168.0.30/dvwa/vulnerabilities/fi/?page=../../../../../../etc/passwd
-http://192.168.0.30/dvwa/vulnerabilities/fi/?page=/etc/passwd
+http://192.168.61.30/dvwa/vulnerabilities/fi/?page=../../../../../../etc/passwd
+http://192.168.61.30/dvwa/vulnerabilities/fi/?page=/etc/passwd
 ```
 
 → 둘 다 **403 Forbidden**. OWASP CRS의 LFI 룰셋(번호 930.x)이 `../` 패턴과 `/etc/passwd` 같은 의심 경로를 둘 다 잡습니다.
@@ -409,7 +409,7 @@ http://192.168.0.30/dvwa/vulnerabilities/fi/?page=/etc/passwd
 ```bash
 # curl로 검증
 curl -b /tmp/cookie.txt -s -o /dev/null -w "HTTP %{http_code}\n" \
-  "http://192.168.0.30/dvwa/vulnerabilities/fi/?page=../../../../../../etc/passwd"
+  "http://192.168.61.30/dvwa/vulnerabilities/fi/?page=../../../../../../etc/passwd"
 # 결과: HTTP 403
 ```
 
@@ -462,20 +462,20 @@ sudo tail -20 /var/log/apache2/error.log | grep ModSecurity
 
 ```
 [Mon Mar 26 ... ] [security2:error] [pid 1234]
-  [client 192.168.0.10] ModSecurity: Access denied with code 403
+  [client 192.168.61.10] ModSecurity: Access denied with code 403
   (phase 2). Matched "Operator `Rx' with parameter
   `(?i:(\bunion\b\s+\bselect\b))' against variable `ARGS:id'"
   [file "/usr/share/modsecurity-crs/rules/REQUEST-942-APPLICATION-ATTACK-SQLI.conf"]
   [line "47"] [id "942100"] [msg "SQL Injection Attack Detected"]
   ...
-  [hostname "192.168.0.30"] [uri "/dvwa/vulnerabilities/sqli/"]
+  [hostname "192.168.61.30"] [uri "/dvwa/vulnerabilities/sqli/"]
 ```
 
 읽는 법:
 
 | 항목 | 의미 |
 |------|------|
-| `client 192.168.0.10` | 공격 출발지 (Kali) |
+| `client 192.168.61.10` | 공격 출발지 (Kali) |
 | `Matched "Operator..."` | 어떤 정규식과 매칭되었는가 |
 | `against variable ARGS:id` | URL 파라미터 `id` 값에서 매칭됨 |
 | `file ".../REQUEST-942-...SQLI.conf"` | 어떤 룰 파일에서 잡혔는지 |
@@ -604,7 +604,7 @@ sudo systemctl reload apache2
 
 ```mermaid
 sequenceDiagram
-    participant K as Kali (192.168.0.10)
+    participant K as Kali (192.168.61.10)
     participant FW as UFW (포트 필터)
     participant WAF as ModSecurity + CRS
     participant APP as DVWA (Apache)

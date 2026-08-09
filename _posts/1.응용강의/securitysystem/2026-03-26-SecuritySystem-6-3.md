@@ -122,15 +122,15 @@ sudo fail2ban-client status sshd
 ### 4.1 존재하지 않는 계정 시도
 
 ```bash
-ssh -p 2222 admin@192.168.0.30
-ssh -p 2222 test@192.168.0.30
-ssh -p 2222 guest@192.168.0.30
+ssh -p 2222 admin@192.168.61.30
+ssh -p 2222 test@192.168.61.30
+ssh -p 2222 guest@192.168.61.30
 ```
 
 ### 4.2 공개키 없이 강제로 시도
 
 ```bash
-ssh -o PreferredAuthentications=password -o PubkeyAuthentication=no -p 2222 student@192.168.0.30
+ssh -o PreferredAuthentications=password -o PubkeyAuthentication=no -p 2222 student@192.168.61.30
 ```
 
 이런 시도를 몇 차례 반복하면 Fail2Ban 기준에 걸리게 된다.
@@ -157,10 +157,10 @@ Status for the jail: sshd
 `- Actions
    |- Currently banned: 1
    |- Total banned: 1
-   `- Banned IP list: 192.168.0.10
+   `- Banned IP list: 192.168.61.10
 ```
 
-`192.168.0.10` 이 보이면 Kali가 차단된 것이다.
+`192.168.61.10` 이 보이면 Kali가 차단된 것이다.
 
 ### 5.2 Fail2Ban 로그 확인
 
@@ -171,7 +171,7 @@ sudo journalctl -u fail2ban
 예를 들어 아래와 비슷한 줄이 보일 수 있다.
 
 ```text
-Ban 192.168.0.10
+Ban 192.168.61.10
 ```
 
 ### 5.3 SSH 로그와 함께 보기
@@ -193,13 +193,13 @@ sudo journalctl -u ssh.service -u ssh.socket -f
 아래와 같은 로그가 보이면 로그인 성공이다.
 
 ```text
-Accepted publickey for student from 192.168.0.10 ...
+Accepted publickey for student from 192.168.61.10 ...
 ```
 
 또는 6-1 같은 느슨한 상태에서는:
 
 ```text
-Accepted password for student from 192.168.0.10 ...
+Accepted password for student from 192.168.61.10 ...
 ```
 
 ### 6.2 공격 실패
@@ -207,7 +207,7 @@ Accepted password for student from 192.168.0.10 ...
 아래와 같은 로그는 실패 시도다.
 
 ```text
-Failed password for invalid user admin from 192.168.0.10 ...
+Failed password for invalid user admin from 192.168.61.10 ...
 ```
 
 ### 6.3 차단 성공
@@ -223,7 +223,7 @@ sudo journalctl -u fail2ban
 
 - `Accepted ...` 이면 로그인 성공
 - `Failed ...` 이면 로그인 실패
-- `Ban 192.168.0.10` 또는 `Banned IP list` 이면 자동 차단 성공
+- `Ban 192.168.61.10` 또는 `Banned IP list` 이면 자동 차단 성공
 
 ---
 
@@ -258,18 +258,18 @@ Ubuntu에서 실행한다.
 sudo fail2ban-client status sshd
 ```
 
-출력의 `Banned IP list` 에 `192.168.0.10` 이 보이면 현재 Kali가 차단된 상태다.
+출력의 `Banned IP list` 에 `192.168.61.10` 이 보이면 현재 Kali가 차단된 상태다.
 
 ### 2. 특정 IP 차단 해제
 
 ```bash
-sudo fail2ban-client set sshd unbanip 192.168.0.10
+sudo fail2ban-client set sshd unbanip 192.168.61.10
 ```
 
 설명:
 
 - `set sshd`: `sshd` jail에 대해 설정 변경
-- `unbanip 192.168.0.10`: 해당 IP의 차단 해제
+- `unbanip 192.168.61.10`: 해당 IP의 차단 해제
 
 ### 3. 해제 결과 다시 확인
 
@@ -277,7 +277,7 @@ sudo fail2ban-client set sshd unbanip 192.168.0.10
 sudo fail2ban-client status sshd
 ```
 
-`Banned IP list` 에서 `192.168.0.10` 이 사라졌다면 정상적으로 해제된 것이다.
+`Banned IP list` 에서 `192.168.61.10` 이 사라졌다면 정상적으로 해제된 것이다.
 
 ### 4. 참고
 

@@ -18,7 +18,7 @@ mermaid: true
 > 핵심은 용어를 외우는 것이 아니라, 문제의 상황을 보고 어느 계층, 어느 공격, 어느 방어인지 분류하는 것입니다.
 {: .prompt-info }
 
-> **이번 대상**: Ubuntu `192.168.0.30` (방어 호스트)
+> **이번 대상**: Ubuntu `192.168.60.30` (방어 호스트)
 {: .prompt-info }
 
 ## 상황
@@ -103,19 +103,19 @@ sudo tail -f /var/log/apache2/access.log
 ### 2. Kali에서 호스트 탐색
 
 ```bash
-nmap -sn 192.168.0.0/24
+nmap -sn 192.168.60.0/24
 ```
 
 ### 3. 포트 스캔
 
 ```bash
-nmap -sS -sV 192.168.0.30
+nmap -sS -sV 192.168.60.30
 ```
 
 ### 4. 패킷 캡처
 
 ```bash
-sudo tcpdump -i eth1 -nn host 192.168.0.30
+sudo tcpdump -i eth1 -nn host 192.168.60.30
 ```
 
 ### 5. 방화벽 정책 적용
@@ -124,7 +124,7 @@ Victim:
 
 ```bash
 sudo ufw default deny incoming
-sudo ufw allow from 192.168.0.10 to any port 22 proto tcp
+sudo ufw allow from 192.168.60.10 to any port 22 proto tcp
 sudo ufw allow 80/tcp
 sudo ufw enable
 ```
@@ -134,7 +134,7 @@ sudo ufw enable
 Kali:
 
 ```bash
-nmap -sS -sV 192.168.0.30
+nmap -sS -sV 192.168.60.30
 ```
 
 ### 7. 결과 해석

@@ -21,15 +21,15 @@ mermaid: true
 
 ## 0. 이번 강의 한눈에
 
-- **지난 강의 도달 상태**: 방화벽(VM1) 구축, VM2가 LAN(192.168.1.20)에서 인터넷·방화벽 접속 가능
-- **오늘의 목표**: **DMZ에 취약 웹서버 VM-WEB(192.168.10.10)**을 직접 만들고, **DVWA**를 띄운 뒤 VM2에서 첫 **SQL Injection** 공격 체험
+- **지난 강의 도달 상태**: 방화벽(VM1) 구축, VM2가 LAN(192.168.58.20)에서 인터넷·방화벽 접속 가능
+- **오늘의 목표**: **DMZ에 취약 웹서버 VM-WEB(192.168.59.10)**을 직접 만들고, **DVWA**를 띄운 뒤 VM2에서 첫 **SQL Injection** 공격 체험
 - **오늘 켜는 VM**: VM1 + VM2 + **VM-WEB(신규)**
-- **오늘 완성되는 연결**: `VM2(192.168.1.20) — [방화벽] — VM-WEB(192.168.10.10) 웹서비스`
+- **오늘 완성되는 연결**: `VM2(192.168.58.20) — [방화벽] — VM-WEB(192.168.59.10) 웹서비스`
 
 ```mermaid
 graph LR
-    VM2["VM2 공격자<br/>192.168.1.20"] -->|"LAN→DMZ 허용"| FW["방화벽"]
-    FW --> WEB["VM-WEB<br/>Nginx:80 → DVWA:80<br/>192.168.10.10"]
+    VM2["VM2 공격자<br/>192.168.58.20"] -->|"LAN→DMZ 허용"| FW["방화벽"]
+    FW --> WEB["VM-WEB<br/>Nginx:80 → DVWA:80<br/>192.168.59.10"]
 ```
 
 ---
@@ -74,7 +74,7 @@ SELECT * FROM users WHERE email = '입력한이메일' AND password = '입력한
 4. Featured snaps: 아무것도 고르지 말고 Done
 5. 설치 완료 후 **Reboot Now**. ISO 제거 후 Enter. 로그인 프롬프트가 뜨면 `student`/`student1234`로 로그인.
 
-### [단계 3] VM-WEB에 고정 IP(192.168.10.10) 부여
+### [단계 3] VM-WEB에 고정 IP(192.168.59.10) 부여
 
 서버는 화면 메뉴가 없으니 설정 파일로 IP를 고정합니다. (Netplan)
 
@@ -89,12 +89,12 @@ network:
   ethernets:
     $IFACE:
       dhcp4: false
-      addresses: [192.168.10.10/24]
+      addresses: [192.168.59.10/24]
       routes:
         - to: default
-          via: 192.168.10.1
+          via: 192.168.59.1
       nameservers:
-        addresses: [192.168.10.1, 8.8.8.8]
+        addresses: [192.168.59.1, 8.8.8.8]
 EOF
 sudo chmod 600 /etc/netplan/99-soc.yaml
 sudo netplan apply
@@ -103,25 +103,25 @@ sudo netplan apply
 **명령어 상세 설명** (위 한 덩어리가 하는 일을 한 줄씩)
 - `IFACE=$(ls /sys/class/net | grep -v lo | head -n1)` : 네트워크 카드 이름을 **자동으로 알아내** `IFACE` 변수에 저장합니다. `ls /sys/class/net`은 카드 목록을 나열하고, `grep -v lo`는 그중 가상 루프백(`lo`)을 제외하며, `head -n1`은 맨 첫 번째(우리 유선 카드)만 고릅니다. → 카드 이름이 PC마다 달라도(`enp0s3` 등) 그대로 동작하게 만드는 장치입니다.
 - `sudo rm -f /etc/netplan/00-installer-config.yaml /etc/netplan/50-cloud-init.yaml` : 설치 과정에서 자동 생성된 **기존 네트워크 설정 파일을 지웁니다**(`rm`=remove, `-f`=없어도 오류 안 냄). 우리가 만들 새 설정과 충돌하지 않도록 청소하는 단계입니다.
-- `sudo tee /etc/netplan/99-soc.yaml > /dev/null <<EOF ... EOF` : `<<EOF`부터 `EOF`까지의 **여러 줄 내용을 그대로 파일로 저장**합니다. `tee 파일명`은 입력을 파일에 쓰는 명령이고, `> /dev/null`은 화면에 중복 출력되는 것만 버린다는 뜻입니다. 저장되는 내용은 "이 카드(`$IFACE`)에 DHCP를 끄고(`dhcp4: false`) 고정 IP `192.168.10.10/24`를 주며, 기본 통로(게이트웨이)는 방화벽 `192.168.10.1`, 이름풀이(DNS)는 `192.168.10.1`과 구글 `8.8.8.8`을 쓴다"는 설정표입니다.
+- `sudo tee /etc/netplan/99-soc.yaml > /dev/null <<EOF ... EOF` : `<<EOF`부터 `EOF`까지의 **여러 줄 내용을 그대로 파일로 저장**합니다. `tee 파일명`은 입력을 파일에 쓰는 명령이고, `> /dev/null`은 화면에 중복 출력되는 것만 버린다는 뜻입니다. 저장되는 내용은 "이 카드(`$IFACE`)에 DHCP를 끄고(`dhcp4: false`) 고정 IP `192.168.59.10/24`를 주며, 기본 통로(게이트웨이)는 방화벽 `192.168.59.1`, 이름풀이(DNS)는 `192.168.59.1`과 구글 `8.8.8.8`을 쓴다"는 설정표입니다.
 - `sudo chmod 600 /etc/netplan/99-soc.yaml` : 설정 파일의 **권한을 소유자만 읽기·쓰기(600)**로 좁힙니다. Netplan은 이 파일이 너무 개방돼 있으면 경고를 내므로 미리 잠그는 것입니다.
-- `sudo netplan apply` : 위에서 만든 설정을 **실제 네트워크에 즉시 반영**합니다. 이 순간부터 VM-WEB의 IP가 `192.168.10.10`으로 고정됩니다.
+- `sudo netplan apply` : 위에서 만든 설정을 **실제 네트워크에 즉시 반영**합니다. 이 순간부터 VM-WEB의 IP가 `192.168.59.10`으로 고정됩니다.
 
 적용이 잘 됐는지 아래 세 명령으로 확인합니다.
 
 ```bash
-ip addr | grep 192.168.10.10
+ip addr | grep 192.168.59.10
 ```
 ```bash
-ping -c 3 192.168.10.1
+ping -c 3 192.168.59.1
 ```
 ```bash
 ping -c 3 8.8.8.8
 ```
 
 **명령어 상세 설명**
-- `ip addr | grep 192.168.10.10` : 전체 네트워크 정보(`ip addr`) 중 우리가 준 IP가 들어간 줄만 **걸러서(`grep`)** 보여줍니다. 한 줄이라도 출력되면 고정 IP가 정상 적용된 것입니다.
-- `ping -c 3 192.168.10.1` : DMZ 게이트웨이인 **방화벽까지 신호가 닿는지** 3번 확인합니다. 응답이 오면 VM-WEB이 `intnet_dmz`망에 올바로 연결된 것입니다.
+- `ip addr | grep 192.168.59.10` : 전체 네트워크 정보(`ip addr`) 중 우리가 준 IP가 들어간 줄만 **걸러서(`grep`)** 보여줍니다. 한 줄이라도 출력되면 고정 IP가 정상 적용된 것입니다.
+- `ping -c 3 192.168.59.1` : DMZ 게이트웨이인 **방화벽까지 신호가 닿는지** 3번 확인합니다. 응답이 오면 VM-WEB이 `intnet_dmz`망에 올바로 연결된 것입니다.
 - `ping -c 3 8.8.8.8` : 방화벽을 거쳐 **인터넷까지 나가는지** 확인합니다. 성공하면 29강에서 만든 **'DMZ→인터넷 허용' 규칙**이 작동하는 것이고, 다음 단계(Docker 이미지 다운로드)가 가능해집니다.
 
 > 인터넷이 안 되면 29강 [단계 9]의 **DMZ→인터넷 허용 규칙**이 적용됐는지 확인하세요.
@@ -203,7 +203,7 @@ sudo nginx -t && sudo systemctl restart nginx
   - `listen 80;` : 외부에서 들어오는 **80번 포트(웹 기본 포트)**를 받습니다.
   - `access_log /var/log/nginx/access.log;` : **모든 접속 요청을 이 로그 파일에 기록**합니다. ← 4·32강에서 Wazuh가 감시할 **공격 탐지의 재료**가 바로 이 파일입니다.
   - `proxy_pass http://127.0.0.1:8080;` : 받은 요청을 내부의 **DVWA(앞 단계에서 묶은 8080번)로 전달**합니다.
-  - `proxy_set_header X-Real-IP $remote_addr;` : 전달할 때 **진짜 공격자 IP(`192.168.1.20`)를 헤더에 실어** 함께 넘깁니다. 이게 있어야 로그·경보에 실제 출발지 IP가 남습니다.
+  - `proxy_set_header X-Real-IP $remote_addr;` : 전달할 때 **진짜 공격자 IP(`192.168.58.20`)를 헤더에 실어** 함께 넘깁니다. 이게 있어야 로그·경보에 실제 출발지 IP가 남습니다.
 - `sudo ln -sf .../sites-available/dvwa .../sites-enabled/dvwa` : 방금 만든 설정을 **'활성화' 폴더에 연결(`ln -s`=바로가기 생성)**합니다. Nginx는 `sites-enabled`에 있는 설정만 실제로 적용합니다.
 - `sudo rm -f /etc/nginx/sites-enabled/default` : 기본으로 깔려 있는 **샘플 사이트 설정을 제거**합니다. 그래야 80번 포트가 우리 DVWA 설정과 충돌하지 않습니다.
 - `sudo nginx -t && sudo systemctl restart nginx` : `nginx -t`로 **설정 문법에 오류가 없는지 먼저 검사**하고, 통과하면(`&&`) Nginx를 **재시작**해 변경을 적용합니다. (`&&`는 "앞 명령이 성공할 때만 뒤 명령 실행")
@@ -218,7 +218,7 @@ sudo nginx -t && sudo systemctl restart nginx
 
 DVWA는 처음 한 번 **데이터베이스를 만들고 로그인**해야 취약점 페이지를 쓸 수 있습니다.
 
-1. **VM2(Ubuntu Desktop)**에서 Firefox를 열고 주소창에 **`http://192.168.10.10/setup.php`** 입력. *(LAN→DMZ가 허용돼 있으니 접속됩니다.)*
+1. **VM2(Ubuntu Desktop)**에서 Firefox를 열고 주소창에 **`http://192.168.59.10/setup.php`** 입력. *(LAN→DMZ가 허용돼 있으니 접속됩니다.)*
 2. 페이지 맨 아래 **[Create / Reset Database]** 버튼 클릭 → DB가 생성되고 잠시 후 **로그인 화면**으로 넘어갑니다.
 3. 로그인합니다 — 아이디 **`admin`** / 비밀번호 **`password`** (DVWA 기본 계정).
 4. 좌측 메뉴 맨 아래 **[DVWA Security]** 클릭 → 보안 수준을 **`Low`** 로 선택 → **[Submit]**.
@@ -230,7 +230,7 @@ DVWA는 처음 한 번 **데이터베이스를 만들고 로그인**해야 취�
 
 ### [단계 8] 공격 A — SQL Injection으로 회원 정보 빼내기
 
-1. 좌측 메뉴 **[SQL Injection]** 클릭. (주소: `http://192.168.10.10/vulnerabilities/sqli/`)
+1. 좌측 메뉴 **[SQL Injection]** 클릭. (주소: `http://192.168.59.10/vulnerabilities/sqli/`)
 2. **User ID** 입력칸에 아래를 **정확히** 입력(따옴표 주의) → **[Submit]**:
    ```text
    1' OR '1'='1
@@ -259,15 +259,15 @@ DVWA의 SQLi 페이지는 **GET 방식**이라, 공격 구문이 **주소(URL)�
    sudo tail -n 5 /var/log/nginx/access.log
    ```
    - `tail` : 파일의 **맨 끝부분만** 보여주는 명령입니다. (`-n 5`=마지막 5줄) 로그는 계속 쌓이므로, 방금 보낸 공격이 들어간 **최신 줄**을 빠르게 확인할 때 씁니다.
-   - 출력 예시: `192.168.1.20 ... "GET /vulnerabilities/sqli/?id=1' UNION SELECT user, password FROM users-- -&Submit=Submit HTTP/1.1" ...` *(브라우저가 보내면 `'`는 `%27`, 공백은 `+`처럼 인코딩되어 기록됩니다.)*
+   - 출력 예시: `192.168.58.20 ... "GET /vulnerabilities/sqli/?id=1' UNION SELECT user, password FROM users-- -&Submit=Submit HTTP/1.1" ...` *(브라우저가 보내면 `'`는 `%27`, 공백은 `+`처럼 인코딩되어 기록됩니다.)*
 
-   → 공격자 IP가 **VM2의 192.168.1.20**으로, 공격 구문(`UNION SELECT … FROM users`)이 **URL에 그대로** 또렷이 기록됩니다. 이 흔적이 다음 강의 탐지의 재료입니다.
+   → 공격자 IP가 **VM2의 192.168.58.20**으로, 공격 구문(`UNION SELECT … FROM users`)이 **URL에 그대로** 또렷이 기록됩니다. 이 흔적이 다음 강의 탐지의 재료입니다.
 
 ---
 
 ## 5. 자주 나는 오류
 
-- **VM2에서 `192.168.10.10` 접속 안 됨**: VM-WEB 어댑터가 `intnet_dmz`인지, 29강의 **LAN→DMZ 허용(기본 LAN 규칙)**이 있는지 확인.
+- **VM2에서 `192.168.59.10` 접속 안 됨**: VM-WEB 어댑터가 `intnet_dmz`인지, 29강의 **LAN→DMZ 허용(기본 LAN 규칙)**이 있는지 확인.
 - **`docker: permission denied`**: [단계 4]의 `usermod -aG docker` 후 **재로그인**을 안 한 경우. 다시 로그인하세요.
 - **Nginx `502 Bad Gateway`**: DVWA 컨테이너가 아직 부팅 중(10~20초)이거나 꺼진 경우. `docker ps`로 `dvwa`가 Up인지 확인.
 - **취약점 페이지가 `login.php`로 튕김**: 로그인이 풀린 경우입니다. [단계 7]대로 다시 로그인하고 보안레벨을 `Low`로 맞추세요.
@@ -277,9 +277,9 @@ DVWA의 SQLi 페이지는 **GET 방식**이라, 공격 구문이 **주소(URL)�
 
 ## 6. 핵심 요약
 
-- 취약 웹서버를 **DMZ(192.168.10.10)**에 직접 구축하고, **Docker(DVWA) + Nginx(접근 로그)** 구조로 띄웠습니다.
+- 취약 웹서버를 **DMZ(192.168.59.10)**에 직접 구축하고, **Docker(DVWA) + Nginx(접근 로그)** 구조로 띄웠습니다.
 - **SQL Injection**은 입력창에 SQL 기호를 주입해 데이터를 탈취/우회하는 공격이며, DVWA의 GET 방식 SQLi는 공격 구문이 **URL에 그대로 남습니다**.
-- Nginx 접근 로그에 남은 공격 흔적(공격자 IP=192.168.1.20)이 **다음 강의 탐지 실습의 재료**입니다.
+- Nginx 접근 로그에 남은 공격 흔적(공격자 IP=192.168.58.20)이 **다음 강의 탐지 실습의 재료**입니다.
 
 ## 💾 안전망: 스냅샷 찍기 (꼭!)
 
@@ -289,4 +289,4 @@ DVWA의 SQLi 페이지는 **GET 방식**이라, 공격 구문이 **주소(URL)�
 
 ## 7. 다음 강의 예고
 
-31강에서는 **관제 서버 VM3(192.168.1.100)**에 **Wazuh(SIEM)**를 직접 설치하고, VM-WEB에 **센서(에이전트)**를 붙여 웹서버 로그를 관제실로 실시간 전송합니다.
+31강에서는 **관제 서버 VM3(192.168.58.100)**에 **Wazuh(SIEM)**를 직접 설치하고, VM-WEB에 **센서(에이전트)**를 붙여 웹서버 로그를 관제실로 실시간 전송합니다.

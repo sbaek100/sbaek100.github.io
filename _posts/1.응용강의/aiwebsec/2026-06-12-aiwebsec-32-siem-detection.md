@@ -23,11 +23,11 @@ mermaid: true
 - **지난 강의 도달 상태**: Wazuh 관제실(VM3) 가동, VM-WEB 센서가 Nginx 로그를 관제실로 전송 중
 - **오늘의 목표**: VM2에서 웹 공격을 날리고, **관제 화면에 뜬 경보를 분석**해 공격자 IP·공격 구문·위험도를 추적(Alert Triage)
 - **오늘 켜는 VM**: VM1 + VM2 + VM-WEB + VM3
-- **데이터 흐름**: `VM2 공격(192.168.1.20) → VM-WEB Nginx로그 → 센서 → Wazuh 경보`
+- **데이터 흐름**: `VM2 공격(192.168.58.20) → VM-WEB Nginx로그 → 센서 → Wazuh 경보`
 
 ```mermaid
 graph LR
-    A["VM2 공격자<br/>192.168.1.20"] -->|"SQLi 요청"| W["VM-WEB<br/>Nginx 로그 기록"]
+    A["VM2 공격자<br/>192.168.58.20"] -->|"SQLi 요청"| W["VM-WEB<br/>Nginx 로그 기록"]
     W -->|"센서 전송"| S["Wazuh 관제실<br/>경보 발생 (Level↑)"]
     S --> M["VM2 브라우저<br/>분석가 모니터"]
 ```
@@ -52,9 +52,9 @@ graph LR
 1. **VM2**에서 Firefox를 엽니다.
 2. 먼저 **DVWA에 로그인(보안레벨 Low)**되어 있어야 합니다(30강 [단계 7]). 그 상태로 아래 URL들을 주소창에 하나씩 입력하며 여러 번(5~10회) 보냅니다. (경보를 충분히 쌓기 위함)
    ```text
-   http://192.168.10.10/vulnerabilities/sqli/?id=1' OR '1'='1&Submit=Submit
-   http://192.168.10.10/vulnerabilities/sqli/?id=1' UNION SELECT user,password FROM users-- -&Submit=Submit
-   http://192.168.10.10/vulnerabilities/sqli/?id=1' AND 1=2 UNION SELECT null,@@version-- -&Submit=Submit
+   http://192.168.59.10/vulnerabilities/sqli/?id=1' OR '1'='1&Submit=Submit
+   http://192.168.59.10/vulnerabilities/sqli/?id=1' UNION SELECT user,password FROM users-- -&Submit=Submit
+   http://192.168.59.10/vulnerabilities/sqli/?id=1' AND 1=2 UNION SELECT null,@@version-- -&Submit=Submit
    ```
    > *UNION 기법은 데이터베이스의 다른 테이블 정보를 훔쳐보려는 전형적 SQL Injection 패턴입니다.*
    > *(브라우저가 자동으로 로그인 쿠키 `PHPSESSID`와 `security=low`를 함께 보내므로, 별도 설정 없이 공격이 전달됩니다.)*
@@ -65,7 +65,7 @@ graph LR
 
 ### [단계 2] 보안 이벤트 화면 열기
 
-1. Firefox **새 탭**에서 Wazuh 대시보드 **`https://192.168.1.100`** 접속(로그인: `admin`).
+1. Firefox **새 탭**에서 Wazuh 대시보드 **`https://192.168.58.100`** 접속(로그인: `admin`).
 2. 좌측 **메뉴(☰) → [Threat Hunting]** 또는 **[Security events]** 클릭.
 3. 우측 상단 시간 범위를 **`Last 15 minutes`** 로 맞춥니다.
 4. 잠시 후 방금 보낸 공격들로 인해 아래 이벤트 목록에 **경보 줄**이 채워집니다.
@@ -94,13 +94,13 @@ graph LR
    | `rule.description` | 탐지된 공격 이름 | `SQL injection attempt` 류 |
    | `rule.level` | 위험도 지수(높을수록 위험) | `7`~`12` |
    | `rule.id` | 규칙 번호 | `31103`(SQLi) 등 |
-   | `data.srcip` | **공격자 IP** | **`192.168.1.20`** (VM2!) |
+   | `data.srcip` | **공격자 IP** | **`192.168.58.20`** (VM2!) |
    | `data.url` | 주입된 공격 구문 | `/vulnerabilities/sqli/?id=1' UNION SELECT user,password...` |
    | `agent.name` | 피해 자산(센서) | `web-dmz` |
 
-3. 정리: **`192.168.1.20`(VM2)** 이(가) **`web-dmz`(VM-WEB)** 에 **SQL Injection**을 시도했고 위험도는 **Level 7~12** 라는 사실을, 사람이 웹서버에 직접 들어가지 않고도 **관제실 한 화면에서** 파악했습니다.
+3. 정리: **`192.168.58.20`(VM2)** 이(가) **`web-dmz`(VM-WEB)** 에 **SQL Injection**을 시도했고 위험도는 **Level 7~12** 라는 사실을, 사람이 웹서버에 직접 들어가지 않고도 **관제실 한 화면에서** 파악했습니다.
 
-> **연결 확인 포인트**: `data.srcip`가 `192.168.1.20`으로 찍힌다는 것은, 방화벽이 LAN→DMZ 트래픽을 **출발지 IP를 보존한 채** 전달한다는 뜻입니다. 이 IP가 35강에서 **자동 차단 대상**이 됩니다.
+> **연결 확인 포인트**: `data.srcip`가 `192.168.58.20`으로 찍힌다는 것은, 방화벽이 LAN→DMZ 트래픽을 **출발지 IP를 보존한 채** 전달한다는 뜻입니다. 이 IP가 35강에서 **자동 차단 대상**이 됩니다.
 {: .prompt-tip }
 
 ---
@@ -108,7 +108,7 @@ graph LR
 ## 4. 자주 나는 오류
 
 - **경보가 안 뜸**: ① VM-WEB 센서가 Active인지(31강), ② `ossec.conf`에 nginx access.log localfile이 있는지, ③ 공격을 **검색창(GET)** 형태로 보냈는지(로그인 폼은 POST라 URL에 안 남음) 확인.
-- **`srcip`가 192.168.1.20이 아님**: nginx 설정의 `proxy_set_header X-Real-IP $remote_addr;`(30강)와 LAN↔DMZ 라우팅을 확인.
+- **`srcip`가 192.168.58.20이 아님**: nginx 설정의 `proxy_set_header X-Real-IP $remote_addr;`(30강)와 LAN↔DMZ 라우팅을 확인.
 - **시간이 안 맞아 경보가 안 보임**: 시간 범위를 `Today`로 넓혀 보세요. (VM 시간 동기화 필요할 수 있음)
 
 ---

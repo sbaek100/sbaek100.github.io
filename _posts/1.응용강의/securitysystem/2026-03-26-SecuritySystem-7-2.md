@@ -19,8 +19,8 @@ description: 7-1 iptables 실습 위에서 UFW(Uncomplicated Firewall)로 동일
 
 | 구분 | 운영체제 | IP 주소 | 역할 |
 |------|----------|---------|------|
-| 공격자 PC | Kali Linux | 192.168.0.10 | Nmap·ssh·curl·nc로 공격 시도 |
-| 서버 | Ubuntu | 192.168.0.30 | UFW 방화벽으로 방어 |
+| 공격자 PC | Kali Linux | 192.168.61.10 | Nmap·ssh·curl·nc로 공격 시도 |
+| 서버 | Ubuntu | 192.168.61.30 | UFW 방화벽으로 방어 |
 
 7-1에서는 iptables 명령어를 직접 다뤘습니다. 강력하지만 옵션이 많아 쓰기가 까다롭죠. 7-2에서는 더 간단한 도구인 **UFW(Uncomplicated Firewall)** 를 배웁니다.
 
@@ -121,7 +121,7 @@ sudo systemctl is-active ssh apache2 mysql
 
 ```bash
 # Kali에서 — 방어 전 사진 (방화벽 다 풀린 상태)
-nmap -p 22,80,443,3306 192.168.0.30
+nmap -p 22,80,443,3306 192.168.61.30
 # 예상: 22 open, 80 open, 443 closed, 3306 closed
 # 7-1 첫 스캔과 같은 모양이 나오면 정상
 ```
@@ -165,11 +165,11 @@ sudo ufw allow 22/tcp
 ```
 
 ```bash
-# iptables로 192.168.0.10 의 80번 차단
-sudo iptables -A INPUT -s 192.168.0.10 -p tcp --dport 80 -j DROP
+# iptables로 192.168.61.10 의 80번 차단
+sudo iptables -A INPUT -s 192.168.61.10 -p tcp --dport 80 -j DROP
 
 # UFW로 같은 규칙
-sudo ufw deny from 192.168.0.10 to any port 80 proto tcp
+sudo ufw deny from 192.168.61.10 to any port 80 proto tcp
 ```
 
 > UFW가 간단해 보여도 결국 만들어 주는 건 iptables 규칙입니다. 7-1에서 배운 iptables 개념(체인, 타겟, 순서)이 UFW를 이해하는 데 그대로 도움이 됩니다.
@@ -290,15 +290,15 @@ sudo ufw allow https         # 443/tcp 허용
 
 ```bash
 # 특정 IP에서만 SSH 허용 (관리자 PC만 SSH 가능 시나리오)
-sudo ufw allow from 192.168.0.1 to any port 22 proto tcp
-# from 192.168.0.1   : 출발지 IP가 이 주소일 때만
+sudo ufw allow from 192.168.61.1 to any port 22 proto tcp
+# from 192.168.61.1   : 출발지 IP가 이 주소일 때만
 # to any             : 어떤 목적지든 (= 우리 서버 자신)
 # port 22            : 목적지 포트 22
 # proto tcp          : TCP만
 
 # 특정 IP에서 오는 모든 트래픽 차단
-sudo ufw deny from 192.168.0.10
-# Kali(192.168.0.10) 가 우리 서버에 접근 시도하는 걸 전부 막음
+sudo ufw deny from 192.168.61.10
+# Kali(192.168.61.10) 가 우리 서버에 접근 시도하는 걸 전부 막음
 ```
 
 **🎯 어떤 공격을 막아주는가**
@@ -311,8 +311,8 @@ sudo ufw deny from 192.168.0.10
 ### 3.5 IP 대역(서브넷)으로 허용
 
 ```bash
-# 192.168.0.0/24 = 192.168.0.0 ~ 192.168.0.255 대역
-sudo ufw allow from 192.168.0.0/24 to any port 80 proto tcp
+# 192.168.61.0/24 = 192.168.61.0 ~ 192.168.61.255 대역
+sudo ufw allow from 192.168.61.0/24 to any port 80 proto tcp
 # 사내망에서만 80 허용 같은 시나리오
 ```
 
@@ -498,7 +498,7 @@ sudo ufw reset
 
 ```bash
 # Kali에서 실행
-nmap -p 22,80,443,3306 192.168.0.30
+nmap -p 22,80,443,3306 192.168.61.30
 ```
 
 예상 출력 (방화벽 적용 전):
@@ -580,7 +580,7 @@ sudo ufw allow 80/tcp
 
 ```bash
 # Kali에서 확인
-curl -I http://192.168.0.30/
+curl -I http://192.168.61.30/
 # HTTP/1.1 200 OK 가 보이면 정상 허용 상태
 ```
 
@@ -597,14 +597,14 @@ sudo ufw deny 3306/tcp
 
 ### 5.7 (선택) 특정 IP만 SSH 허용 시나리오
 
-만약 "관리자 PC(예: 192.168.0.1)에서만 SSH 가능, 나머지 IP는 차단" 정책을 만들고 싶다면:
+만약 "관리자 PC(예: 192.168.61.1)에서만 SSH 가능, 나머지 IP는 차단" 정책을 만들고 싶다면:
 
 ```bash
 # 1) 기존 SSH 허용 규칙 삭제
 sudo ufw delete allow 22/tcp
 
 # 2) 관리자 IP만 허용하는 규칙 추가
-sudo ufw allow from 192.168.0.1 to any port 22 proto tcp
+sudo ufw allow from 192.168.61.1 to any port 22 proto tcp
 ```
 
 > 이 시나리오를 실습 환경에 그대로 적용하면 본인 PC가 들어가지 않은 한 SSH가 막혀 버립니다. **여기서는 "이렇게 쓸 수 있다" 정도만 보고 실제로는 5.5 상태에서 멈춥니다.**
@@ -646,7 +646,7 @@ Status: active
 
 ```bash
 # Kali에서 실행
-nmap -p 22,80,443,3306 192.168.0.30
+nmap -p 22,80,443,3306 192.168.61.30
 ```
 
 예상 출력:
@@ -674,7 +674,7 @@ PORT     STATE    SERVICE
 
 ```bash
 # Kali에서 실행
-ssh 사용자명@192.168.0.30
+ssh 사용자명@192.168.61.30
 # 정상적으로 로그인 프롬프트가 떠야 함
 ```
 
@@ -682,7 +682,7 @@ ssh 사용자명@192.168.0.30
 
 ```bash
 # Kali에서 실행
-curl -I http://192.168.0.30/
+curl -I http://192.168.61.30/
 # HTTP/1.1 200 OK
 ```
 
@@ -690,7 +690,7 @@ curl -I http://192.168.0.30/
 
 ```bash
 # Kali에서 실행
-nc -v -w 5 192.168.0.30 3306
+nc -v -w 5 192.168.61.30 3306
 # nc       : netcat (TCP 연결 테스트)
 # -v       : 자세히
 # -w 5     : 5초 타임아웃
@@ -699,7 +699,7 @@ nc -v -w 5 192.168.0.30 3306
 
 ```bash
 # 또는 mysql 클라이언트가 있다면
-mysql -h 192.168.0.30 -P 3306 -u root -p
+mysql -h 192.168.61.30 -P 3306 -u root -p
 # 결과: ERROR ... Can't connect (timeout)
 ```
 
@@ -707,10 +707,10 @@ mysql -h 192.168.0.30 -P 3306 -u root -p
 
 | 공격자가 시도한 것 | UFW의 처리 | 결과 |
 |------------------|-----------|------|
-| `nmap -p 22 192.168.0.30` | 22/tcp ALLOW 일치 | open으로 보임 (의도) |
-| `nmap -p 80 192.168.0.30` | 80/tcp ALLOW 일치 | open으로 보임 (의도) |
-| `nmap -p 443 192.168.0.30` | 어떤 ALLOW에도 안 맞음 → 기본 deny | filtered (정찰 차단) |
-| `nmap -p 3306 192.168.0.30` | 3306/tcp DENY 일치 | filtered (DB 노출 차단) |
+| `nmap -p 22 192.168.61.30` | 22/tcp ALLOW 일치 | open으로 보임 (의도) |
+| `nmap -p 80 192.168.61.30` | 80/tcp ALLOW 일치 | open으로 보임 (의도) |
+| `nmap -p 443 192.168.61.30` | 어떤 ALLOW에도 안 맞음 → 기본 deny | filtered (정찰 차단) |
+| `nmap -p 3306 192.168.61.30` | 3306/tcp DENY 일치 | filtered (DB 노출 차단) |
 | 무차별 SSH 비밀번호 시도 | 22는 허용 → **방화벽이 못 막는 영역** | SSH 키·Fail2Ban이 막아야 함 |
 | 외부에서 MySQL 데이터 덤프 시도 | TCP 연결 자체가 차단 | 접근 불가 |
 
@@ -743,7 +743,7 @@ sudo ufw logging high
 
 ```bash
 # Kali에서 실행
-nmap -p 3306 192.168.0.30
+nmap -p 3306 192.168.61.30
 # 차단되는 시도를 의도적으로 발생시킴
 ```
 
@@ -761,15 +761,15 @@ sudo grep "UFW" /var/log/syslog | tail -20
 로그 한 줄 예시:
 
 ```
-... kernel: [UFW BLOCK] IN=ens33 OUT= MAC=... SRC=192.168.0.10 DST=192.168.0.30
+... kernel: [UFW BLOCK] IN=ens33 OUT= MAC=... SRC=192.168.61.10 DST=192.168.61.30
    LEN=44 ... PROTO=TCP SPT=53122 DPT=3306 WINDOW=1024 ...
 ```
 
 | 항목 | 의미 |
 |------|------|
 | `IN=ens33` | 들어온 인터페이스 이름 |
-| `SRC=192.168.0.10` | 출발지 IP (Kali) |
-| `DST=192.168.0.30` | 목적지 IP (Ubuntu) |
+| `SRC=192.168.61.10` | 출발지 IP (Kali) |
+| `DST=192.168.61.30` | 목적지 IP (Ubuntu) |
 | `PROTO=TCP` | 프로토콜 |
 | `SPT=53122` | 출발지 포트 |
 | `DPT=3306` | 목적지 포트 |
@@ -793,7 +793,7 @@ sudo ufw logging low
 
 ```mermaid
 flowchart TD
-    K["Kali (192.168.0.10)"] -->|"패킷 전송"| FW["Ubuntu UFW"]
+    K["Kali (192.168.61.10)"] -->|"패킷 전송"| FW["Ubuntu UFW"]
     FW --> Q1{"포트 = 22<br/>(SSH)?"}
     Q1 -->|"예"| ALLOW1["ALLOW<br/>SSH 서비스로 전달"]
     Q1 -->|"아니오"| Q2{"포트 = 80<br/>(HTTP)?"}
@@ -807,7 +807,7 @@ flowchart TD
 
 ```mermaid
 sequenceDiagram
-    participant K as Kali (192.168.0.10)
+    participant K as Kali (192.168.61.10)
     participant U as Ubuntu UFW
     participant A as Apache (80)
     participant S as SSH (22)
@@ -1020,7 +1020,7 @@ AWS·GCP·Azure 등에서는 방화벽이 **두 겹**으로 동작합니다.
 
 ---
 
-**Q10.** UFW에서 192.168.0.0/24 대역의 PC만 80번 포트에 접속할 수 있도록 허용하는 명령어를 작성하시오.
+**Q10.** UFW에서 192.168.61.0/24 대역의 PC만 80번 포트에 접속할 수 있도록 허용하는 명령어를 작성하시오.
 
 ---
 
@@ -1045,7 +1045,7 @@ AWS·GCP·Azure 등에서는 방화벽이 **두 겹**으로 동작합니다.
 | Q7 | `sudo ufw reset` | UFW 비활성 + 모든 규칙 삭제 + 정책 초기화 |
 | Q8 | `/var/log/ufw.log` | (또는 `/var/log/syslog` 에서도 확인 가능) |
 | Q9 | closed: 포트는 있으나 그 포트에 서비스 없음. filtered: 방화벽이 막고 있어 상태를 알 수 없음 |
-| Q10 | `sudo ufw allow from 192.168.0.0/24 to any port 80 proto tcp` |
+| Q10 | `sudo ufw allow from 192.168.61.0/24 to any port 80 proto tcp` |
 | Q11 | `sudo ufw allow 443/tcp` |
 | Q12 | 방화벽은 출입구만 통제하므로 허용된 포트 안에서 일어나는 공격(SSH 무차별 대입, 웹 취약점 등)은 못 막는다. 인증·WAF·로그 분석 같은 다른 계층의 방어가 함께 있어야 한다 |
 

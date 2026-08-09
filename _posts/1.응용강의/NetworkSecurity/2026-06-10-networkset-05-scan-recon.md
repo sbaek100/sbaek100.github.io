@@ -23,7 +23,7 @@ mermaid: true
 > 4. Nmap의 스캔 기법(SYN·UDP·NULL·FIN·XMAS)을 구분하고 방어할 수 있다.
 {: .prompt-info }
 
-> **이번 실습 대상**: Metasploitable2 `192.168.0.100`, 외부 도메인은 조회(정보수집)만. 공격자는 Kali `192.168.0.10`.
+> **이번 실습 대상**: Metasploitable2 `192.168.60.100`, 외부 도메인은 조회(정보수집)만. 공격자는 Kali `192.168.60.10`.
 {: .prompt-info }
 
 숙련된 침입자일수록 공격 그 자체보다 그 앞의 “살펴보기”에 더 많은 시간을 쏟습니다. 상대를 모르는 채 무작정 도구부터 들이대면, 문이 어디 있는지도 모르고 벽만 두드리는 꼴이 되기 때문입니다. 이 준비 단계가 **정보 수집(정찰)**입니다. 방어자 입장에서는 “우리가 밖에 무엇을 노출하고 있는가”를 똑같은 도구로 확인하는 과정이기도 합니다.
@@ -57,19 +57,19 @@ flowchart LR
 - **Traceroute**: 패킷의 수명값(TTL)을 1, 2, 3으로 늘려 보내면 첫 번째·두 번째 라우터가 차례로 “수명이 다했다”는 오류를 되돌려 주어, 대상까지의 경로가 지도처럼 그려집니다.
 
 > **실습 5-1. 실습망의 활성 호스트 찾기**  
-> **목표** Nmap으로 `192.168.0.0/24`의 살아 있는 호스트를 찾고, 결과를 파일로 정리해 다음 단계의 대상 목록으로 만든다. **대상** Kali → 실습망.
+> **목표** Nmap으로 `192.168.60.0/24`의 살아 있는 호스트를 찾고, 결과를 파일로 정리해 다음 단계의 대상 목록으로 만든다. **대상** Kali → 실습망.
 {: .prompt-tip }
 
 **1단계 — 내 위치 확인** (Kali)
 
 ```bash
-ip addr show eth0        # inet 192.168.0.10/24 → 스캔 대역은 192.168.0.0/24
+ip addr show eth0        # inet 192.168.60.10/24 → 스캔 대역은 192.168.60.0/24
 ```
 
 **2단계 — 기본 Ping 스윕**
 
 ```bash
-sudo nmap -sn 192.168.0.0/24     # -sn: 포트는 건드리지 않고 "살아 있는가"만 확인
+sudo nmap -sn 192.168.60.0/24     # -sn: 포트는 건드리지 않고 "살아 있는가"만 확인
 ```
 
 > **왜?** `-sn`은 “호스트 탐색만(no port scan)”입니다. 같은 랜에서는 Nmap이 ARP 패킷을 직접 만들어 보내는데, 이런 날것의 패킷을 내보내려면 관리자 권한(`sudo`)이 필요합니다. `Host is up`과 `MAC Address:` 줄이 보이면 그 주소는 살아 있는 것입니다.
@@ -77,16 +77,16 @@ sudo nmap -sn 192.168.0.0/24     # -sn: 포트는 건드리지 않고 "살아 �
 **3단계 — 무엇을 보내는지 눈으로 확인**
 
 ```bash
-sudo nmap -sn -PR 192.168.0.100 --packet-trace   # -PR: ARP 핑, --packet-trace: 패킷 표시
+sudo nmap -sn -PR 192.168.60.100 --packet-trace   # -PR: ARP 핑, --packet-trace: 패킷 표시
 ```
 
-> **왜?** 출력에서 `ARP who-has 192.168.0.100 tell 192.168.0.10`(“.100이 누구야? .10이 물음”)과 그 응답을 확인합니다. “스캔이란 결국 패킷을 주고받는 일”임을 눈으로 익히기 위해서입니다.
+> **왜?** 출력에서 `ARP who-has 192.168.60.100 tell 192.168.60.10`(“.100이 누구야? .10이 물음”)과 그 응답을 확인합니다. “스캔이란 결국 패킷을 주고받는 일”임을 눈으로 익히기 위해서입니다.
 
 **4단계 — ICMP가 막힌 호스트까지 놓치지 않기**
 
 ```bash
-sudo nmap -sn -PE 192.168.0.0/24          # -PE: 표준 ICMP 에코 핑
-sudo nmap -sn -PS22,80,443 192.168.0.100  # -PS: 지정 포트로 TCP SYN 핑
+sudo nmap -sn -PE 192.168.60.0/24          # -PE: 표준 ICMP 에코 핑
+sudo nmap -sn -PS22,80,443 192.168.60.100  # -PS: 지정 포트로 TCP SYN 핑
 ```
 
 > **왜?** 방화벽마다 막는 신호가 다르므로, 한 방법이 막히면 다른 방법으로 우회해 확인합니다.
@@ -94,7 +94,7 @@ sudo nmap -sn -PS22,80,443 192.168.0.100  # -PS: 지정 포트로 TCP SYN 핑
 **5단계 — 결과를 파일로 저장해 다음 단계 입력으로**
 
 ```bash
-sudo nmap -sn 192.168.0.0/24 -oG - | awk '/Up/{print $2}' > live_hosts.txt
+sudo nmap -sn 192.168.60.0/24 -oG - | awk '/Up/{print $2}' > live_hosts.txt
 cat live_hosts.txt
 ```
 
@@ -143,7 +143,7 @@ dig amazon.com NS         # 네임서버
 dig ict.ac.kr TXT         # SPF 등 텍스트 정책
 dig google.com +short     # 결과만 간결히
 dig @8.8.8.8 ict.ac.kr    # 특정 DNS 서버로 질의
-dig -x 192.168.0.100      # 역방향(IP → 도메인)
+dig -x 192.168.60.100      # 역방향(IP → 도메인)
 ```
 
 > **왜?** TXT의 SPF 레코드는 허용된 발신 메일 서버를 드러냅니다. `+short`는 핵심만, `@`는 질의할 DNS 서버 지정, `-x`는 역방향 조회입니다. 내부망에서는 역방향이 설정돼 있지 않을 수 있습니다.
@@ -174,9 +174,9 @@ amass enum -d example.com -o subdomains.txt # 결과를 파일로
 대상에 직접 붙어 서비스 버전과 노출된 경로를 확인하는 단계입니다.
 
 ```bash
-nmap -sV -p 80,443,8080 192.168.0.100   # 웹 서비스 버전
-nikto -h 192.168.0.100                    # 웹 서버 취약점 스캔
-gobuster dir -u http://192.168.0.100 -w /usr/share/wordlists/dirb/common.txt
+nmap -sV -p 80,443,8080 192.168.60.100   # 웹 서비스 버전
+nikto -h 192.168.60.100                    # 웹 서버 취약점 스캔
+gobuster dir -u http://192.168.60.100 -w /usr/share/wordlists/dirb/common.txt
 ```
 
 <div style="display:flex;gap:8px;flex-wrap:wrap">
@@ -210,9 +210,9 @@ gobuster dir -u http://192.168.0.100 -w /usr/share/wordlists/dirb/common.txt
 세 스캔은 “열린 포트는 무응답, 닫힌 포트는 RST+ACK”라는 RFC 규칙을 이용합니다. Windows처럼 RFC를 엄격히 따르지 않는 OS는 항상 RST로 응답해, 그 자체가 **OS 식별 단서**가 됩니다.
 
 ```bash
-sudo nmap -sN 192.168.0.100     # NULL: 모든 플래그 0
-sudo nmap -sF 192.168.0.100     # FIN: FIN만
-sudo nmap -sX 192.168.0.100     # XMAS: FIN+PSH+URG(0x29)
+sudo nmap -sN 192.168.60.100     # NULL: 모든 플래그 0
+sudo nmap -sF 192.168.60.100     # FIN: FIN만
+sudo nmap -sX 192.168.60.100     # XMAS: FIN+PSH+URG(0x29)
 ```
 
 <div style="display:flex;gap:8px;flex-wrap:wrap">
@@ -234,8 +234,8 @@ Wireshark 필터로 각 스캔을 식별합니다: `tcp.flags == 0`(NULL), `tcp.
 SYN+FIN, SYN+RST처럼 정상 통신에 없는 조합은 OS마다 응답이 달라 OS 지문 수집에 쓰이고, SYN만 검사하는 방화벽을 우회하기도 합니다.
 
 ```bash
-sudo hping3 --syn --fin -p 80 -c 5 192.168.0.100   # SYN-FIN(0x03)
-sudo hping3 --syn --rst -p 80 -c 5 192.168.0.100   # SYN-RST(0x06)
+sudo hping3 --syn --fin -p 80 -c 5 192.168.60.100   # SYN-FIN(0x03)
+sudo hping3 --syn --rst -p 80 -c 5 192.168.60.100   # SYN-RST(0x06)
 ```
 
 <div style="display:flex;gap:8px;flex-wrap:wrap">
@@ -249,8 +249,8 @@ sudo hping3 --syn --rst -p 80 -c 5 192.168.0.100   # SYN-RST(0x06)
 UDP는 비연결성이라 **닫힌 포트의 ICMP 오류(Type 3/Code 3)** 유무로 상태를 유추합니다. 그래서 TCP 스캔보다 느리고 결과가 모호하며, 그만큼 탐지도 어렵습니다.
 
 ```bash
-sudo nmap -sU --top-ports 20 192.168.0.100    # 상위 20개 포트(빠름)
-sudo nmap -sU -f -f --mtu 8 -p 53,161 192.168.0.100   # 조각화로 IDS 우회
+sudo nmap -sU --top-ports 20 192.168.60.100    # 상위 20개 포트(빠름)
+sudo nmap -sU -f -f --mtu 8 -p 53,161 192.168.60.100   # 조각화로 IDS 우회
 ```
 
 주요 UDP 서비스: `53`(DNS), `67/68`(DHCP), `69`(TFTP), `123`(NTP), `161/162`(SNMP). 변형으로 **UDP 핑 스캔**(`-PU`), **Idle 스캔**(제3자 경유로 출발지 은닉), **Fragmented 스캔**이 있습니다.

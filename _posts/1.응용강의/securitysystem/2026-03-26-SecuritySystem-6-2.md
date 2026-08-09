@@ -143,7 +143,7 @@ ssh-keygen -t ed25519 -C "kali-to-ubuntu-2222"
 Ubuntu 사용자 이름이 `student` 라고 가정하면:
 
 ```bash
-ssh-copy-id -i ~/.ssh/id_ed25519.pub -p 2222 student@192.168.0.30
+ssh-copy-id -i ~/.ssh/id_ed25519.pub -p 2222 student@192.168.61.30
 ```
 
 `student` 부분은 실제 Ubuntu 사용자 이름으로 바꿔서 사용한다.
@@ -153,7 +153,7 @@ ssh-copy-id -i ~/.ssh/id_ed25519.pub -p 2222 student@192.168.0.30
 ### 3.3 키 기반 로그인 확인
 
 ```bash
-ssh -i ~/.ssh/id_ed25519 -p 2222 student@192.168.0.30
+ssh -i ~/.ssh/id_ed25519 -p 2222 student@192.168.61.30
 ```
 
 성공하면 비밀번호 없이 접속되거나, 최소한 공개키 인증으로 로그인되는 것을 확인할 수 있다.
@@ -161,7 +161,7 @@ ssh -i ~/.ssh/id_ed25519 -p 2222 student@192.168.0.30
 Ubuntu 로그에서는 다음과 같은 형태가 보인다.
 
 ```text
-Accepted publickey for student from 192.168.0.10 ...
+Accepted publickey for student from 192.168.61.10 ...
 ```
 
 ---
@@ -210,7 +210,7 @@ sudo ss -tlnp | grep -E '2222|ssh'
 ### 5.1 예전처럼 비밀번호 로그인 시도
 
 ```bash
-ssh -p 2222 student@192.168.0.30
+ssh -p 2222 student@192.168.61.30
 ```
 
 이제는 서버가 비밀번호 로그인을 허용하지 않으므로, 예전처럼 비밀번호를 맞춰서 들어가는 방식이 통하지 않는다.
@@ -218,7 +218,7 @@ ssh -p 2222 student@192.168.0.30
 ### 5.2 공개키 없이 접속 시도
 
 ```bash
-ssh -o PreferredAuthentications=password -o PubkeyAuthentication=no -p 2222 student@192.168.0.30
+ssh -o PreferredAuthentications=password -o PubkeyAuthentication=no -p 2222 student@192.168.61.30
 ```
 
 이 시도는 실패해야 정상이다.
@@ -226,7 +226,7 @@ ssh -o PreferredAuthentications=password -o PubkeyAuthentication=no -p 2222 stud
 ### 5.3 공개키로 접속
 
 ```bash
-ssh -i ~/.ssh/id_ed25519 -p 2222 student@192.168.0.30
+ssh -i ~/.ssh/id_ed25519 -p 2222 student@192.168.61.30
 ```
 
 이 시도는 성공해야 정상이다.
@@ -253,7 +253,7 @@ sudo journalctl -u ssh.service -u ssh.socket -f
 6-1에서는 이런 로그가 가능했다.
 
 ```text
-Accepted password for student from 192.168.0.10 ...
+Accepted password for student from 192.168.61.10 ...
 ```
 
 ### 6.2 강화 후 성공 로그
@@ -261,7 +261,7 @@ Accepted password for student from 192.168.0.10 ...
 6-2 이후에는 성공 로그가 이런 형태로 바뀌어야 한다.
 
 ```text
-Accepted publickey for student from 192.168.0.10 ...
+Accepted publickey for student from 192.168.61.10 ...
 ```
 
 ### 6.3 실패 로그 확인

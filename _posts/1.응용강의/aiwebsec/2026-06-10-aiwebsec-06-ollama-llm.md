@@ -184,10 +184,10 @@ ollama pull whiterabbitneo
 같은 질문을 보안 특화 모델에 하면, 랩 점검에 쓸 수 있는 구체적 답을 줍니다.
 
 ```bash
-ollama run whiterabbitneo "DVWA(192.168.0.30) 로그인 폼 점검용 SQL Injection 테스트 입력 예시를 알려줘"
+ollama run whiterabbitneo "DVWA(192.168.57.30) 로그인 폼 점검용 SQL Injection 테스트 입력 예시를 알려줘"
 ```
 
-> 보안 특화·무검열 모델은 **격리된 실습 랩(192.168.0.30)** 점검 용도로만 사용합니다.  
+> 보안 특화·무검열 모델은 **격리된 실습 랩(192.168.57.30)** 점검 용도로만 사용합니다.  
 > 동의 없는 외부 시스템에 사용하는 것은 불법이며, 모든 책임은 사용자에게 있습니다.
 {: .prompt-danger }
 

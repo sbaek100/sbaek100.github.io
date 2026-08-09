@@ -20,7 +20,7 @@ mermaid: true
 > 이 둘은 역할이 다르며, 함께 배치해야 방어가 완성됩니다.
 {: .prompt-info }
 
-> **이번 대상**: Ubuntu `192.168.0.30` (방어 호스트). 공격자는 Kali `192.168.0.10`.
+> **이번 대상**: Ubuntu `192.168.60.30` (방어 호스트). 공격자는 Kali `192.168.60.10`.
 {: .prompt-info }
 
 ---
@@ -33,7 +33,7 @@ Victim VM에서 웹 서비스는 외부에 공개해야 하지만, 관리용 SSH
 
 ```mermaid
 flowchart LR
-    K["Kali 관리자<br/>192.168.0.10"] -->|SSH 허용| V["Victim"]
+    K["Kali 관리자<br/>192.168.60.10"] -->|SSH 허용| V["Victim"]
     U["알 수 없는 사용자"] -->|SSH 차단| V
     U -->|HTTP 허용| V
 ```
@@ -44,8 +44,8 @@ flowchart LR
 
 | 기준 | 예시 |
 |---|---|
-| 출발지 IP | `192.168.0.10` |
-| 목적지 IP | `192.168.0.30` |
+| 출발지 IP | `192.168.60.10` |
+| 목적지 IP | `192.168.60.30` |
 | 프로토콜 | TCP, UDP, ICMP |
 | 포트 | 22, 80, 443 |
 | 연결 상태 | NEW, ESTABLISHED, RELATED |
@@ -66,7 +66,7 @@ flowchart LR
 공격자는 방화벽 정책을 확인하기 위해 스캔합니다(스캔 기법은 [05. 포트 스캐닝](/posts/networkset-05-scan-recon/) 참고).
 
 ```bash
-nmap -sS -Pn 192.168.0.30
+nmap -sS -Pn 192.168.60.30
 ```
 
 | nmap 결과 | 해석 |
@@ -85,7 +85,7 @@ nmap -sS -Pn 192.168.0.30
 sudo ufw reset
 sudo ufw default deny incoming
 sudo ufw default allow outgoing
-sudo ufw allow from 192.168.0.10 to any port 22 proto tcp
+sudo ufw allow from 192.168.60.10 to any port 22 proto tcp
 sudo ufw allow 80/tcp
 sudo ufw enable
 sudo ufw status verbose
@@ -105,7 +105,7 @@ sudo ufw reset
 ```bash
 sudo iptables -A INPUT -m conntrack --ctstate ESTABLISHED,RELATED -j ACCEPT
 sudo iptables -A INPUT -p tcp --dport 80 -j ACCEPT
-sudo iptables -A INPUT -p tcp -s 192.168.0.10 --dport 22 -j ACCEPT
+sudo iptables -A INPUT -p tcp -s 192.168.60.10 --dport 22 -j ACCEPT
 sudo iptables -A INPUT -j DROP
 ```
 
@@ -158,8 +158,8 @@ flowchart LR
 ## 공격 — HTTP에 숨은 문자열
 
 ```bash
-curl "http://192.168.0.30/?q=normal"
-curl "http://192.168.0.30/?q=%3Cscript%3Ealert(1)%3C/script%3E"
+curl "http://192.168.60.30/?q=normal"
+curl "http://192.168.60.30/?q=%3Cscript%3Ealert(1)%3C/script%3E"
 ```
 
 Victim 또는 별도 센서에서 패킷을 캡처해 공격 문자열이 HTTP 요청 안에 들어 있는지 확인합니다.
@@ -173,7 +173,7 @@ sudo tcpdump -i enp0s8 -nn -A port 80
 ### 1. Snort rule 구조
 
 ```text
-alert tcp any any -> 192.168.0.30 80 (msg:"Example XSS"; content:"<script>"; sid:1000001; rev:1;)
+alert tcp any any -> 192.168.60.30 80 (msg:"Example XSS"; content:"<script>"; sid:1000001; rev:1;)
 ```
 
 | 부분 | 의미 |
@@ -181,7 +181,7 @@ alert tcp any any -> 192.168.0.30 80 (msg:"Example XSS"; content:"<script>"; sid
 | alert | 탐지 시 경고 |
 | tcp | 프로토콜 |
 | any any | 출발지 IP와 포트 |
-| `192.168.0.30 80` | 목적지 IP와 포트 |
+| `192.168.60.30 80` | 목적지 IP와 포트 |
 | msg | 경고 메시지 |
 | content | 탐지할 내용 |
 | sid / rev | 규칙 ID / 버전 |
@@ -207,7 +207,7 @@ alert ip any any -> $HOME_NET any (msg:"IP Fragmentation Overlap"; fragbits:M; d
 
 ```bash
 sudo apt install -y suricata
-echo 'alert http any any -> 192.168.0.30 any (msg:"NETSEC test script keyword"; content:"<script>"; nocase; sid:1000001; rev:1;)' | sudo tee /etc/suricata/rules/local.rules
+echo 'alert http any any -> 192.168.60.30 any (msg:"NETSEC test script keyword"; content:"<script>"; nocase; sid:1000001; rev:1;)' | sudo tee /etc/suricata/rules/local.rules
 ```
 
 `suricata.yaml`에 `local.rules`가 로드되는지 확인하고 테스트합니다.
@@ -222,7 +222,7 @@ sudo suricata -i enp0s8 -c /etc/suricata/suricata.yaml
 
 ```bash
 sudo tail -f /var/log/suricata/fast.log
-curl "http://192.168.0.30/?q=%3Cscript%3Ealert(1)%3C/script%3E"
+curl "http://192.168.60.30/?q=%3Cscript%3Ealert(1)%3C/script%3E"
 ```
 
 ---

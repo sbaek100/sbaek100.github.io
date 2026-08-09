@@ -182,7 +182,7 @@ print(response["message"]["content"])
 import ollama
 
 SYSTEM_PROMPT = """너는 웹 모의해킹 실습을 돕는 보안 점검 분석가다.
-- 대상은 격리된 실습 랩(192.168.0.30)의 DVWA뿐이다.
+- 대상은 격리된 실습 랩(192.168.57.30)의 DVWA뿐이다.
 - 답변은 간결하게 하고, 근거가 되는 관찰 사실을 함께 제시한다.
 - 모르는 것은 추측하지 말고 모른다고 말한다."""
 
@@ -265,9 +265,9 @@ graph LR
 import requests
 import ollama
 
-TARGET = "http://192.168.0.30/DVWA/login.php"
+TARGET = "http://192.168.57.30/DVWA/login.php"
 
-SYSTEM_PROMPT = """너는 웹 보안 점검 분석가다. 대상은 실습 랩 192.168.0.30의 DVWA다.
+SYSTEM_PROMPT = """너는 웹 보안 점검 분석가다. 대상은 실습 랩 192.168.57.30의 DVWA다.
 주어진 HTTP 응답 헤더를 보고 (1) 파악되는 기술 스택, (2) 정보 노출 위험,
 (3) 다음 점검 단계를 각각 한 줄로 제시하라."""
 

@@ -159,14 +159,14 @@ LLM 자체는 **글자를 생성하는 능력**만 있습니다. 인터넷에 �
 
 | 역할 | OS | IP 주소 | 용도 |
 |---|---|---|---|
-| 공격자(에이전트) 머신 | Kali Linux | **192.168.0.10** | LLM + 보안 도구 + 우리가 만들 코드 |
-| 점검 대상 서버(Victim) | Ubuntu 24.04 LTS | **192.168.0.30** | Apache2 + PHP + MariaDB + DVWA + **로그** |
+| 공격자(에이전트) 머신 | Kali Linux | **192.168.57.10** | LLM + 보안 도구 + 우리가 만들 코드 |
+| 점검 대상 서버(Victim) | Ubuntu 24.04 LTS | **192.168.57.30** | Apache2 + PHP + MariaDB + DVWA + **로그** |
 
 ```mermaid
 graph LR
-    subgraph "격리 내부 네트워크 192.168.0.0/24"
-        K["Kali Linux<br/>192.168.0.10<br/>(AI 에이전트)"]
-        U["Ubuntu 24.04<br/>192.168.0.30<br/>(Victim + 로그)"]
+    subgraph "격리 내부 네트워크 192.168.57.0/24"
+        K["Kali Linux<br/>192.168.57.10<br/>(AI 에이전트)"]
+        U["Ubuntu 24.04<br/>192.168.57.30<br/>(Victim + 로그)"]
         K -- "스캔 / HTTP 요청" --> U
         U -- "로그(흔적)" --> K
     end

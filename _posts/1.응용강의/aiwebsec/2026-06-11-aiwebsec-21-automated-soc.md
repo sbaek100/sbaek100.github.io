@@ -114,7 +114,7 @@ def load_jsonl(path: str) -> list[dict]:
             events.append(json.loads(line))
     return events
 
-# access.log 한 줄 예: 192.168.0.50 - - [11/Jun/2026:10:01:11 +0900] "GET /admin HTTP/1.1" 404 ...
+# access.log 한 줄 예: 192.168.57.50 - - [11/Jun/2026:10:01:11 +0900] "GET /admin HTTP/1.1" 404 ...
 ACCESS_RE = re.compile(
     r'(?P<ip>\d+\.\d+\.\d+\.\d+).+?\[(?P<time>[^\]]+)\]\s+'
     r'"(?P<method>\w+)\s+(?P<url>\S+)[^"]*"\s+(?P<status>\d+)'
@@ -296,9 +296,9 @@ def execute_with_approval(action: str, ctx: dict):
 > 차단 실습 시에는 정책을 **한쪽으로 통일**하세요.
 >
 > ```bash
-> sudo ufw deny from 192.168.0.50              # 방법 A: UFW로 차단
+> sudo ufw deny from 192.168.57.50              # 방법 A: UFW로 차단
 > # 또는
-> sudo iptables -A INPUT -s 192.168.0.50 -j DROP   # 방법 B: iptables 직접 차단
+> sudo iptables -A INPUT -s 192.168.57.50 -j DROP   # 방법 B: iptables 직접 차단
 > ```
 >
 > 실습이 끝나면 **반드시 리셋**하여 랩 환경을 원복합니다.

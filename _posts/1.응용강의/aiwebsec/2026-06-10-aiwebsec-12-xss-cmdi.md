@@ -69,14 +69,14 @@ DVWA의 XSS(Reflected) 페이지는 입력한 `name` 파라미터를 그대로 �
 import requests, ollama
 
 MODEL = "qwen2.5:7b"   # 거부 시 'whiterabbitneo'로 교체 (4절 참고)
-BASE = "http://192.168.0.30/DVWA/vulnerabilities/xss_r/"
+BASE = "http://192.168.57.30/DVWA/vulnerabilities/xss_r/"
 COOKIE = {"PHPSESSID": "본인_세션값", "security": "low"}
 
 # ① LLM에게 점검용 페이로드 목록을 받는다
 def get_payloads():
     resp = ollama.chat(model=MODEL, format="json", messages=[
         {"role": "system", "content":
-         "너는 실습 랩 192.168.0.30 DVWA의 Reflected XSS 점검을 돕는다. "
+         "너는 실습 랩 192.168.57.30 DVWA의 Reflected XSS 점검을 돕는다. "
          "탐지에 쓸 XSS 테스트 페이로드 5개를 JSON으로만 출력하라: "
          '{"payloads": ["...", "..."]}'},
         {"role": "user", "content": "Reflected XSS 점검용 페이로드를 만들어줘."},
@@ -129,7 +129,7 @@ DVWA의 Command Injection 페이지는 입력한 IP를 `ping` 명령에 그대�
 import requests, ollama, json
 
 MODEL = "qwen2.5:7b"
-BASE = "http://192.168.0.30/DVWA/vulnerabilities/exec/"
+BASE = "http://192.168.57.30/DVWA/vulnerabilities/exec/"
 COOKIE = {"PHPSESSID": "본인_세션값", "security": "low"}
 
 def get_payloads():
@@ -191,7 +191,7 @@ MODEL = "whiterabbitneo"
 > 우리가 처음부터 **모델 교체가 자유로운 구조**(MODEL 변수 하나만 바꾸면 됨)로 만든 이유가 여기 있습니다.
 {: .prompt-info }
 
-> 보안 특화·무검열 모델은 **격리 랩(192.168.0.30)** 점검에만 사용합니다. 외부 대상 사용은 불법입니다.
+> 보안 특화·무검열 모델은 **격리 랩(192.168.57.30)** 점검에만 사용합니다. 외부 대상 사용은 불법입니다.
 {: .prompt-danger }
 
 ---

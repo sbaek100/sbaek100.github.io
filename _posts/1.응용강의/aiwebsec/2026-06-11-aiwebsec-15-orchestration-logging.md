@@ -89,9 +89,9 @@ import time
 from auto_pentest import run_nmap, run_nikto, run_sqlmap
 from report_gen import generate_report
 
-TARGET_IP = "192.168.0.30"
-TARGET_URL = "http://192.168.0.30/DVWA/"
-SQLI_URL = "http://192.168.0.30/DVWA/vulnerabilities/sqli/?id=1&Submit=Submit"
+TARGET_IP = "192.168.57.30"
+TARGET_URL = "http://192.168.57.30/DVWA/"
+SQLI_URL = "http://192.168.57.30/DVWA/vulnerabilities/sqli/?id=1&Submit=Submit"
 # 세션 쿠키는 run_sqlmap 내부(auto_pentest.py의 DVWA_COOKIE)가 자동 주입한다
 
 LOG_FILE = "pentest_run.jsonl"   # 실행 로그 파일

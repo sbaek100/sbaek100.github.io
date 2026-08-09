@@ -167,9 +167,9 @@ NAT의 두 가지 효과:
 **🛡️ 방어 방법 (7-1 § 4.4 응용)**
 
 ```bash
-# 출발지 IP가 우리 서버 자신(192.168.0.30)인 패킷은 외부에서 들어올 수 없음
+# 출발지 IP가 우리 서버 자신(192.168.61.30)인 패킷은 외부에서 들어올 수 없음
 # 만약 외부에서 그런 패킷이 오면 위조된 것 → DROP
-sudo iptables -A INPUT -s 192.168.0.30 -j DROP
+sudo iptables -A INPUT -s 192.168.61.30 -j DROP
 ```
 
 > 이게 7-1 § 4.4 "출발지 IP 기준 차단" 의 실전 응용입니다. 강의에서 본 패턴이 시험에서 그대로 나옵니다.
@@ -367,7 +367,7 @@ NTP 증폭 공격은 우리 서버가 **반사판** 으로 악용됩니다. 우�
 
 | 요구사항 | 내용 |
 |---------|------|
-| ① | SSH(22)는 관리자 PC `192.168.0.1` 에서만 허용 |
+| ① | SSH(22)는 관리자 PC `192.168.61.1` 에서만 허용 |
 | ② | HTTP(80), HTTPS(443)는 모든 IP 허용 |
 | ③ | MySQL(3306)은 외부 차단 |
 | ④ | 출발지 IP가 우리 서버 자신인 위조 패킷 차단 (Land Attack 방어) |
@@ -386,10 +386,10 @@ sudo iptables -A INPUT -m conntrack --ctstate ESTABLISHED,RELATED -j ACCEPT
 sudo iptables -A INPUT -i lo -j ACCEPT
 
 # ④ Land Attack 방어 — 위조된 자기 IP 패킷 차단
-sudo iptables -A INPUT -s 192.168.0.30 -j DROP
+sudo iptables -A INPUT -s 192.168.61.30 -j DROP
 
 # ① 관리자만 SSH 허용
-sudo iptables -A INPUT -s 192.168.0.1 -p tcp --dport 22 -j ACCEPT
+sudo iptables -A INPUT -s 192.168.61.1 -p tcp --dport 22 -j ACCEPT
 
 # ② 웹 서비스 허용
 sudo iptables -A INPUT -p tcp --dport 80 -j ACCEPT
@@ -452,10 +452,10 @@ sudo netfilter-persistent save
 ### Q2. (단답형) 다음 iptables 규칙이 막는 공격의 이름은?
 
 ```bash
-sudo iptables -A INPUT -s 192.168.0.30 -j DROP
+sudo iptables -A INPUT -s 192.168.61.30 -j DROP
 ```
 
-(우리 서버 IP가 192.168.0.30 일 때)
+(우리 서버 IP가 192.168.61.30 일 때)
 
 → 정답: **Land Attack** (위조된 자기 IP 패킷 차단)
 
@@ -507,7 +507,7 @@ sudo iptables -P INPUT DROP
 sudo iptables -P INPUT DROP
 
 # 2. 특정 IP 허용
-sudo iptables -A INPUT -s 192.168.0.1 -j ACCEPT
+sudo iptables -A INPUT -s 192.168.61.1 -j ACCEPT
 
 # 3. 특정 포트 차단
 sudo iptables -A INPUT -p tcp --dport 23 -j DROP

@@ -50,8 +50,8 @@ description: Kali Linux에서 Nmap의 다양한 스캐닝 기법을 실습하고
 
 | 구분 | 운영체제 | IP 주소 | 역할 |
 |------|----------|---------|------|
-| 공격자 | Kali Linux | 192.168.0.10 | Nmap 스캔 수행 |
-| 대상 서버 | Ubuntu | 192.168.0.30 | SSH, Apache 등 서비스 운영 |
+| 공격자 | Kali Linux | 192.168.61.10 | Nmap 스캔 수행 |
+| 대상 서버 | Ubuntu | 192.168.61.30 | SSH, Apache 등 서비스 운영 |
 
 ---
 
@@ -102,7 +102,7 @@ ip link show
 예를 들어 인터페이스 이름이 `ens33` 이라면 다음과 같이 캡처를 시작한다.
 
 ```bash
-sudo tcpdump -i ens33 -nn host 192.168.0.10 -w /tmp/nmap_scans.pcap
+sudo tcpdump -i ens33 -nn host 192.168.61.10 -w /tmp/nmap_scans.pcap
 ```
 
 예상 화면:
@@ -169,14 +169,14 @@ TCP connect() scan은 운영체제의 일반 소켓 `connect()` 호출을 이용
 Nmap 옵션:
 
 ```bash
-nmap -sT 192.168.0.30
+nmap -sT 192.168.61.30
 ```
 
 예상 화면:
 
 ```text
 Starting Nmap 7.94SVN at 2026-03-26 10:10 KST
-Nmap scan report for 192.168.0.30
+Nmap scan report for 192.168.61.30
 Host is up (0.0012s latency).
 Not shown: 998 closed tcp ports (conn-refused)
 PORT     STATE SERVICE
@@ -190,14 +190,14 @@ Nmap done: 1 IP address (1 host up) scanned in 1.30 seconds
 특정 포트만 확인:
 
 ```bash
-nmap -sT -p 80,2222 192.168.0.30
+nmap -sT -p 80,2222 192.168.61.30
 ```
 
 예상 화면:
 
 ```text
 Starting Nmap 7.94SVN at 2026-03-26 10:12 KST
-Nmap scan report for 192.168.0.30
+Nmap scan report for 192.168.61.30
 Host is up (0.0010s latency).
 
 PORT     STATE SERVICE
@@ -208,14 +208,14 @@ PORT     STATE SERVICE
 전체 포트 확인:
 
 ```bash
-nmap -sT -p- 192.168.0.30
+nmap -sT -p- 192.168.61.30
 ```
 
 예상 화면:
 
 ```text
 Starting Nmap 7.94SVN at 2026-03-26 10:13 KST
-Nmap scan report for 192.168.0.30
+Nmap scan report for 192.168.61.30
 Host is up (0.0013s latency).
 Not shown: 65533 closed tcp ports (conn-refused)
 PORT     STATE SERVICE
@@ -228,7 +228,7 @@ PORT     STATE SERVICE
 추천 필터:
 
 ```text
-ip.addr == 192.168.0.10 && tcp
+ip.addr == 192.168.61.10 && tcp
 ```
 
 또는 연결 성립만 보고 싶다면:
@@ -284,14 +284,14 @@ SYN scan은 흔히 반개방 스캔이라고 부르며, 완전한 연결을 만�
 Nmap 옵션:
 
 ```bash
-sudo nmap -sS 192.168.0.30
+sudo nmap -sS 192.168.61.30
 ```
 
 예상 화면:
 
 ```text
 Starting Nmap 7.94SVN at 2026-03-26 10:20 KST
-Nmap scan report for 192.168.0.30
+Nmap scan report for 192.168.61.30
 Host is up (0.00098s latency).
 Not shown: 998 closed tcp ports (reset)
 PORT     STATE SERVICE
@@ -305,14 +305,14 @@ PORT     STATE SERVICE
 ### 2-2. 공격 방법
 
 ```bash
-sudo nmap -sS -p 80,2222 192.168.0.30
+sudo nmap -sS -p 80,2222 192.168.61.30
 ```
 
 예상 화면:
 
 ```text
 Starting Nmap 7.94SVN at 2026-03-26 10:21 KST
-Nmap scan report for 192.168.0.30
+Nmap scan report for 192.168.61.30
 Host is up (0.00090s latency).
 
 PORT     STATE SERVICE
@@ -323,14 +323,14 @@ PORT     STATE SERVICE
 속도 조절 예시:
 
 ```bash
-sudo nmap -sS -T3 -p 1-1024 192.168.0.30
+sudo nmap -sS -T3 -p 1-1024 192.168.61.30
 ```
 
 예상 화면:
 
 ```text
 Starting Nmap 7.94SVN at 2026-03-26 10:22 KST
-Nmap scan report for 192.168.0.30
+Nmap scan report for 192.168.61.30
 Host is up (0.0011s latency).
 Not shown: 1023 closed tcp ports
 PORT   STATE SERVICE
@@ -342,7 +342,7 @@ PORT   STATE SERVICE
 추천 필터:
 
 ```text
-ip.addr == 192.168.0.10 && tcp
+ip.addr == 192.168.61.10 && tcp
 ```
 
 SYN 패킷 중심 필터:
@@ -399,14 +399,14 @@ FIN scan은 SYN 대신 FIN 플래그가 켜진 패킷을 보내 포트 상태를
 Nmap 옵션:
 
 ```bash
-sudo nmap -sF 192.168.0.30
+sudo nmap -sF 192.168.61.30
 ```
 
 예상 화면:
 
 ```text
 Starting Nmap 7.94SVN at 2026-03-26 10:30 KST
-Nmap scan report for 192.168.0.30
+Nmap scan report for 192.168.61.30
 Host is up (0.0010s latency).
 Not shown: 998 closed tcp ports (reset)
 PORT     STATE         SERVICE
@@ -420,14 +420,14 @@ PORT     STATE         SERVICE
 ### 3-2. 공격 방법
 
 ```bash
-sudo nmap -sF -p 80,2222 192.168.0.30
+sudo nmap -sF -p 80,2222 192.168.61.30
 ```
 
 예상 화면:
 
 ```text
 Starting Nmap 7.94SVN at 2026-03-26 10:31 KST
-Nmap scan report for 192.168.0.30
+Nmap scan report for 192.168.61.30
 Host is up.
 
 PORT     STATE         SERVICE
@@ -489,14 +489,14 @@ RFC 기준 동작:
 Nmap 옵션:
 
 ```bash
-sudo nmap -sN 192.168.0.30
+sudo nmap -sN 192.168.61.30
 ```
 
 예상 화면:
 
 ```text
 Starting Nmap 7.94SVN at 2026-03-26 10:40 KST
-Nmap scan report for 192.168.0.30
+Nmap scan report for 192.168.61.30
 Host is up.
 Not shown: 998 closed tcp ports (reset)
 PORT     STATE         SERVICE
@@ -507,7 +507,7 @@ PORT     STATE         SERVICE
 ### 4-2. 공격 방법
 
 ```bash
-sudo nmap -sN -p 80,2222 192.168.0.30
+sudo nmap -sN -p 80,2222 192.168.61.30
 ```
 
 예상 화면:
@@ -568,14 +568,14 @@ RFC 기준 동작:
 Nmap 옵션:
 
 ```bash
-sudo nmap -sX 192.168.0.30
+sudo nmap -sX 192.168.61.30
 ```
 
 예상 화면:
 
 ```text
 Starting Nmap 7.94SVN at 2026-03-26 10:50 KST
-Nmap scan report for 192.168.0.30
+Nmap scan report for 192.168.61.30
 Host is up.
 Not shown: 998 closed tcp ports (reset)
 PORT     STATE         SERVICE
@@ -586,7 +586,7 @@ PORT     STATE         SERVICE
 ### 5-2. 공격 방법
 
 ```bash
-sudo nmap -sX -p 80,2222 192.168.0.30
+sudo nmap -sX -p 80,2222 192.168.61.30
 ```
 
 예상 화면:
@@ -640,14 +640,14 @@ TCP fragmentation은 스캔 패킷을 작은 조각으로 나누어 전송해 �
 Nmap 옵션:
 
 ```bash
-sudo nmap -f 192.168.0.30
+sudo nmap -f 192.168.61.30
 ```
 
 예상 화면:
 
 ```text
 Starting Nmap 7.94SVN at 2026-03-26 11:00 KST
-Nmap scan report for 192.168.0.30
+Nmap scan report for 192.168.61.30
 Host is up (0.0011s latency).
 Not shown: 998 closed tcp ports
 PORT     STATE SERVICE
@@ -658,14 +658,14 @@ PORT     STATE SERVICE
 또는 더 작은 단위 지정:
 
 ```bash
-sudo nmap --mtu 8 192.168.0.30
+sudo nmap --mtu 8 192.168.61.30
 ```
 
 예상 화면:
 
 ```text
 Starting Nmap 7.94SVN at 2026-03-26 11:01 KST
-Nmap scan report for 192.168.0.30
+Nmap scan report for 192.168.61.30
 Host is up.
 PORT     STATE SERVICE
 80/tcp   open  http
@@ -677,7 +677,7 @@ PORT     STATE SERVICE
 SYN scan과 함께 사용하는 예시:
 
 ```bash
-sudo nmap -sS -f -p 80,2222 192.168.0.30
+sudo nmap -sS -f -p 80,2222 192.168.61.30
 ```
 
 예상 화면:
@@ -691,7 +691,7 @@ PORT     STATE SERVICE
 조각 크기 지정 예시:
 
 ```bash
-sudo nmap -sS --mtu 8 -p 80,2222 192.168.0.30
+sudo nmap -sS --mtu 8 -p 80,2222 192.168.61.30
 ```
 
 예상 화면:

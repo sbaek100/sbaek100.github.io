@@ -382,7 +382,7 @@ flowchart LR
 
 ```
 # /etc/hosts.allow
-sshd : 192.168.0.1 192.168.0.0/24
+sshd : 192.168.61.1 192.168.61.0/24
 
 # /etc/hosts.deny
 ALL : ALL
@@ -580,13 +580,13 @@ password requisite pam_cracklib.so minlen=8 lcredit=-1
 
 ```
 # /etc/hosts.allow
-sshd : 192.168.0.0/24
+sshd : 192.168.61.0/24
 
 # /etc/hosts.deny
 ALL : ALL
 ```
 
-→ 정답: **`192.168.0.0/24` 대역의 IP만 SSH 가능, 그 외 모든 IP는 차단.** TCP Wrapper는 `hosts.allow` 를 먼저 평가하고, 거기서 일치하면 통과시킨 뒤 `hosts.deny` 는 검사하지 않음.
+→ 정답: **`192.168.61.0/24` 대역의 IP만 SSH 가능, 그 외 모든 IP는 차단.** TCP Wrapper는 `hosts.allow` 를 먼저 평가하고, 거기서 일치하면 통과시킨 뒤 `hosts.deny` 는 검사하지 않음.
 
 ---
 
@@ -668,7 +668,7 @@ PubkeyAuthentication yes        # 공개키 허용
 # (7) Fail2Ban
 sudo systemctl status fail2ban
 sudo fail2ban-client status sshd
-sudo fail2ban-client set sshd unbanip 192.168.0.10   # 차단 해제
+sudo fail2ban-client set sshd unbanip 192.168.61.10   # 차단 해제
 ```
 
 ### 🎯 자주 나오는 키워드 매칭

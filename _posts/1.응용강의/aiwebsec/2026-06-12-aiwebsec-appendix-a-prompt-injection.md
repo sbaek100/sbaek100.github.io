@@ -170,7 +170,7 @@ graph LR
 # pi_indirect.py — 간접 프롬프트 인젝션 체험
 import ollama
 
-SYSTEM_PROMPT = """너는 웹 보안 점검 분석가다. 대상은 실습 랩 192.168.0.30의 DVWA다.
+SYSTEM_PROMPT = """너는 웹 보안 점검 분석가다. 대상은 실습 랩 192.168.57.30의 DVWA다.
 주어진 HTTP 응답 헤더를 보고 (1) 기술 스택, (2) 정보 노출 위험을
 각각 한국어로 요약하라."""
 

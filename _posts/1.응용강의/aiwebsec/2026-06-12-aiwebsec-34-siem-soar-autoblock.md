@@ -33,7 +33,7 @@ graph LR
     AI -->|"High 판정 시"| API["OPNsense API<br/>공격자 IP 자동 차단"]
 ```
 
-> **이번 강의의 구현 방식 안내**: 현장에서는 **Shuffle** 같은 본격 SOAR 도구를 쓰지만, 그 도구는 자체 데이터베이스까지 띄워 메모리를 많이 차지합니다(16GB PC엔 부담). 그래서 우리는 **Wazuh에 내장된 Integrator(연동) 기능** + 작은 파이썬 스크립트로 **같은 자동화 개념을 더 가볍고 확실하게** 구현합니다. 이 스크립트는 **관제서버(VM3)에서 실행**되므로 로컬 AI(Ollama, localhost)와 방화벽 API(192.168.1.1)에 모두 접근할 수 있습니다. *(만약 에이전트 측 active-response로 만들면 DMZ→방화벽 차단 규칙 때문에 API 호출이 실패합니다 — 그래서 관제서버에서 도는 Integrator가 정답입니다.)* (32GB 이상이면 Shuffle로 확장 가능)
+> **이번 강의의 구현 방식 안내**: 현장에서는 **Shuffle** 같은 본격 SOAR 도구를 쓰지만, 그 도구는 자체 데이터베이스까지 띄워 메모리를 많이 차지합니다(16GB PC엔 부담). 그래서 우리는 **Wazuh에 내장된 Integrator(연동) 기능** + 작은 파이썬 스크립트로 **같은 자동화 개념을 더 가볍고 확실하게** 구현합니다. 이 스크립트는 **관제서버(VM3)에서 실행**되므로 로컬 AI(Ollama, localhost)와 방화벽 API(192.168.58.1)에 모두 접근할 수 있습니다. *(만약 에이전트 측 active-response로 만들면 DMZ→방화벽 차단 규칙 때문에 API 호출이 실패합니다 — 그래서 관제서버에서 도는 Integrator가 정답입니다.)* (32GB 이상이면 Shuffle로 확장 가능)
 {: .prompt-info }
 
 ---
@@ -105,7 +105,7 @@ curl -s http://localhost:11434/api/generate -d '{
 
 ## 3. 따라하기 실습 ② : 방화벽 자동 차단 준비 (OPNsense)
 
-자동 로봇이 차단할 **차단 명단(Alias)**과 **차단 규칙**, 그리고 명령을 받을 **API 열쇠**를 만듭니다. (VM2 브라우저에서 `https://192.168.1.1` 접속)
+자동 로봇이 차단할 **차단 명단(Alias)**과 **차단 규칙**, 그리고 명령을 받을 **API 열쇠**를 만듭니다. (VM2 브라우저에서 `https://192.168.58.1` 접속)
 
 ### [단계 4] 차단 명단(Alias) 만들기
 
@@ -123,7 +123,7 @@ curl -s http://localhost:11434/api/generate -d '{
    - **Destination**: `any`
 2. **[Save]** 후, 이 규칙을 **목록 맨 위로 드래그**합니다. (위에 있어야 먼저 적용됨) → **[Apply]**
 
-> 공격자(VM2, 192.168.1.20)는 LAN에 있고, 웹서버 공격은 LAN→DMZ로 방화벽을 통과합니다. 따라서 이 IP가 명단에 오르면 방화벽이 곧바로 막아 웹서버에 닿지 못합니다.
+> 공격자(VM2, 192.168.58.20)는 LAN에 있고, 웹서버 공격은 LAN→DMZ로 방화벽을 통과합니다. 따라서 이 IP가 명단에 오르면 방화벽이 곧바로 막아 웹서버에 닿지 못합니다.
 {: .prompt-tip }
 
 ### [단계 6] API 열쇠 발급
@@ -153,7 +153,7 @@ sudo tee /var/ossec/integrations/custom-ai-block > /dev/null <<'PYEOF'
 #!/usr/bin/env python3
 import sys, json, subprocess, datetime
 
-OPN    = "https://192.168.1.1"
+OPN    = "https://192.168.58.1"
 KEY    = "여기에_API_KEY"
 SECRET = "여기에_API_SECRET"
 LOG    = "/var/ossec/logs/ai-soc.log"
@@ -237,7 +237,7 @@ sudo systemctl restart wazuh-manager
 
 1. **VM2** 브라우저에서 **DVWA에 로그인(보안레벨 Low)**된 상태로 아래 웹 공격을 한 번 보냅니다. (브라우저가 로그인 쿠키를 자동으로 함께 보냅니다.)
    ```text
-   http://192.168.10.10/vulnerabilities/sqli/?id=1' UNION SELECT user,password FROM users-- -&Submit=Submit
+   http://192.168.59.10/vulnerabilities/sqli/?id=1' UNION SELECT user,password FROM users-- -&Submit=Submit
    ```
 2. 몇 초 뒤 **VM3**에서 로봇의 처리 기록을 확인합니다.
    ```bash
@@ -246,13 +246,13 @@ sudo systemctl restart wazuh-manager
    - `tail -f 파일` : 로그 파일의 끝을 **실시간으로 따라가며**(`-f`=follow) 보여줍니다. 공격을 보낸 뒤 이 화면을 켜 두면, 로봇이 처리하는 기록이 **즉시 한 줄씩 추가되는** 것을 볼 수 있습니다. (빠져나올 때는 `Ctrl + C`)
    - 출력 예시:
      ```text
-     AI verdict for 192.168.1.20: High ...
-     BLOCKED 192.168.1.20 via OPNsense
+     AI verdict for 192.168.58.20: High ...
+     BLOCKED 192.168.58.20 via OPNsense
      ```
      첫 줄은 **AI가 High로 판정**했다는 기록, 둘째 줄은 **방화벽에 차단을 지시**했다는 기록입니다.
-3. **VM2** 브라우저로 다시 `http://192.168.10.10` 접속을 시도하면 — 이제 **연결되지 않습니다(차단됨)!** 사람이 손대지 않았는데 AI가 판단해 방화벽이 막은 것입니다.
+3. **VM2** 브라우저로 다시 `http://192.168.59.10` 접속을 시도하면 — 이제 **연결되지 않습니다(차단됨)!** 사람이 손대지 않았는데 AI가 판단해 방화벽이 막은 것입니다.
 
-> 실습을 계속하려면 차단을 풀어야 합니다: OPNsense **[Firewall] → [Aliases] → Blocked_Attackers** 편집에서 `192.168.1.20`을 지우고 **[Apply]**.
+> 실습을 계속하려면 차단을 풀어야 합니다: OPNsense **[Firewall] → [Aliases] → Blocked_Attackers** 편집에서 `192.168.58.20`을 지우고 **[Apply]**.
 {: .prompt-warning }
 
 ---
@@ -260,7 +260,7 @@ sudo systemctl restart wazuh-manager
 ## 5. 자주 나는 오류
 
 - **`ai-soc.log`가 안 생김**: ① `<integration>` 블록 오타/들여쓰기 확인, ② 스크립트가 `/var/ossec/integrations/custom-ai-block` 경로에 **실행권한(750)·소유자(root:wazuh)**로 있는지 확인 후 `sudo systemctl restart wazuh-manager`. ③ 디버그: `echo "integrator.debug=2" | sudo tee -a /var/ossec/etc/local_internal_options.conf` 후 재시작하고 `/var/ossec/logs/integrations.log` 를 확인.
-- **AI 판정은 되는데 차단이 안 됨**: API key/secret 오타, 또는 OPNsense Alias 이름이 정확히 `Blocked_Attackers`인지 확인. `curl -k -u KEY:SECRET https://192.168.1.1/api/firewall/alias/get` 로 인증 테스트.
+- **AI 판정은 되는데 차단이 안 됨**: API key/secret 오타, 또는 OPNsense Alias 이름이 정확히 `Blocked_Attackers`인지 확인. `curl -k -u KEY:SECRET https://192.168.58.1/api/firewall/alias/get` 로 인증 테스트.
 - **Ollama 응답이 느림/타임아웃**: 1B 모델이라도 첫 호출은 모델 로딩에 시간이 걸립니다. 한 번 워밍업(단계3) 후 진행하세요.
 
 ---

