@@ -66,6 +66,15 @@ ARPANET(Advanced Research Projects Agency Network)은 현대 인터넷의 출발
 ---
 
 
+> **📜 역사 한 토막 — 인터넷의 첫 마디는 "LO"였다(1969)**
+>
+> 1969년 10월 29일 밤, UCLA의 학생 찰리 클라인은 560km 떨어진 스탠퍼드연구소(SRI) 컴퓨터에 원격 접속을 시도했다. "LOGIN"을 한 글자씩 입력하며 전화로 확인하던 중 — "L 갔나요?" "네" "O 갔나요?" "네" — **G를 치는 순간 시스템이 다운됐다.** 그래서 인류의 네트워크가 주고받은 첫 메시지는 얼떨결에 **"LO"** 가 되었다. 지도교수 클라인록은 훗날 "성경의 'Lo and behold(보라)'보다 더 함축적인 첫 마디는 없었을 것"이라고 즐겨 말했다.
+>
+> 그해 말 ARPANET의 노드는 겨우 4곳(UCLA·SRI·UCSB·유타대). 접속자 전원이 서로 아는 연구자였기에 **설계 어디에도 '보안'이라는 항목이 없었다.** 오늘날 인터넷 보안이 힘든 근본 이유 중 하나는, 신뢰를 전제로 설계된 이 구조 위에 불특정 다수가 올라탔기 때문이다(→ 1.4 "보안의 필수화"로 이어지는 배경).
+>
+> *근거: UCLA 클라인록 연구실의 IMP 통신 기록(1969.10.29)과 L. Kleinrock의 회고 인터뷰; 컴퓨터역사박물관(CHM) ARPANET 아카이브.*
+{: .prompt-tip }
+
 ## 1.3 TCP/IP(Transmission Control Protocol / Internet Protocol) 표준화
 
 TCP/IP(Transmission Control Protocol / Internet Protocol)가 확립되면서
