@@ -45,12 +45,9 @@ mermaid: true
 
 ### 1.2 1970년대 환경 변화
 
-PDF에서 강조하듯 1970년대에는:
+![](/assets/img/posts/2026-09-12-infosec-5-crypto-3-1-publickey-1787494266712.png)
 
-1. 컴퓨터 네트워크 확산
-2. 이메일 등장
-3. 전자상거래 구상
-4. 글로벌 통신 급증
+
 
 **이런 변화 때문에 “서로 미리 키를 공유하지 않고도 안전하게 시작하는 방법”이 필요해졌다.**
 
@@ -70,13 +67,6 @@ PDF에서 강조하듯 1970년대에는:
 1. 공개키로 암호화한 것은 대응 개인키로만 복호 가능
 2. 개인키로 서명한 것은 대응 공개키로 검증 가능
 
-```mermaid
-flowchart LR
-A["송신자"] -->|수신자 공개키로 암호화| C["암호문"]
-C --> B["수신자"]
-B -->|수신자 개인키로 복호화| M["원문 복원"]
-```
-
 > 공개키는 “열쇠를 나눠주는 방식”을 바꾼 혁신이다.
 {: .prompt-tip }
 
@@ -93,8 +83,12 @@ B -->|수신자 개인키로 복호화| M["원문 복원"]
 
 > **📜 역사 한 토막 — 3년 먼저 발명하고도 말할 수 없었던 사람들**
 >
-> 사실 "공개 채널로 비밀을 만든다"는 아이디어는 Diffie-Hellman보다 먼저 나왔다. 영국 정보기관 GCHQ의 James Ellis는 **1969년**에 '비(非)비밀 암호(non-secret encryption)'라는 개념을 제안했고, 1973년에 갓 입사한 수학자 Clifford Cocks는 이 아이디어를 전해 들은 **그날 저녁 RSA와 사실상 같은 방식을 고안**했다(RSA 발표보다 4년 앞선다). 이듬해 Malcolm Williamson은 DH 키 교환과 같은 방법을 찾아냈다.
->
+> 사실 "공개 채널로 비밀을 만든다"는 아이디어는 Diffie-Hellman보다 먼저 나왔다. 영국 정보기관 GCHQ의 James Ellis는 **1969년**에 '비(非)비밀 암호([non-secret encryption](https://nsarchive.gwu.edu/sites/default/files/documents/3035765/Document-02.pdf))'라는 개념을 제안했고, 1973년에 갓 입사한 수학자 Clifford Cocks는 이 아이디어를 전해 들은 **그날 저녁 RSA와 사실상 같은 방식을 고안**했다(RSA 발표보다 4년 앞선다). 이듬해 Malcolm Williamson은 DH 키 교환과 같은 방법을 찾아냈다.
+> 
+> ![|259x361](/assets/img/posts/2026-09-12-infosec-5-crypto-3-1-publickey-1787494392514.png)
+
+![](/assets/img/posts/2026-09-12-infosec-5-crypto-3-1-publickey-1787494444217.png)
+
 > 그러나 이 모든 것은 국가 기밀이었다. 세 사람은 학계의 다른 이들이 같은 발명으로 세계적 명성을 얻는 것을 지켜보면서도 침묵해야 했고, GCHQ가 이 사실을 공개한 것은 **1997년** — Ellis는 공개를 불과 한 달 앞두고 세상을 떠났다. "공개와 검증이 곧 신뢰"라는 현대 암호학의 원칙과 함께, 밀실의 발명이 역사에서 어떤 자리를 얻는지를 동시에 보여주는 일화다.
 >
 > *근거: 1997년 12월 GCHQ가 기밀 해제한 내부 문서(Ellis 1970년 보고서, Cocks 1973년 노트, Williamson 1974년 노트); Simon Singh, 『The Code Book』(1999) 6장.*
@@ -115,6 +109,8 @@ $$
 K = g^{ab} \bmod p
 $$
 
+![](/assets/img/posts/2026-09-12-infosec-5-crypto-3-1-publickey-1787494536051.png)
+
 #### 키 배송 문제(Key Distribution Problem)를 해결한 의미
 
 - 공개 채널에서도 안전하게 공통 키를 만들 수 있다.
@@ -127,7 +123,8 @@ $$
 ### 3.3 왜 안전한가
 
 공격자는 `p, g, A, B`는 볼 수 있지만, `a` 또는 `b`를 찾기 어렵다.  
-이 어려움이 **이산로그 문제(Discrete Logarithm Problem)**에 기반한다. (수학적 상세는 **[⑥ 수학 배경 — A.8 Diffie-Hellman](/posts/infosec-5-crypto-3-6-math/#a8-diffie-hellmandh-키-교환)**)
+이 어려움이 **이산로그 문제(Discrete Logarithm Problem)**에 기반한다. 
+(수학적 상세는 **[⑥ 수학 배경 — A.8 Diffie-Hellman](/posts/infosec-5-crypto-3-6-math/#a8-diffie-hellmandh-키-교환)**)
 
 ### 3.4 한계: MITM 공격
 
@@ -179,11 +176,12 @@ $$
 
 - [RSA 키 생성](https://emn178.github.io/online-tools/rsa/key-generator/)
 - [RSA 복호](https://emn178.github.io/online-tools/rsa/decrypt/)
-- [RSA 서명](https://emn178.github.io/online-tools/rsa/sign/)
-- [RSA 서명 검증](https://emn178.github.io/online-tools/rsa/verify/)
+
 
 #### 💡 실습 시나리오: Alice와 Bob의 비밀 통신
 이해를 돕기 위해 Alice(수신자)와 Bob(송신자)이 RSA 도구를 사용하여 메시지를 안전하게 주고받고 서명하는 구체적인 예제를 따라해 봅시다.
+
+![](/assets/img/posts/2026-09-12-infosec-5-crypto-3-1-publickey-1787494963841.png)
 
 ##### 1단계: Alice의 키 쌍 생성 (Key Generation)
 1. **[RSA 키 생성]** 링크를 클릭합니다.
@@ -207,22 +205,6 @@ Alice는 Bob에게서 받은 암호문을 해독합니다.
 3. Ciphertext 입력란에 Bob에게 받은 **암호문**을 붙여넣고 **Decrypt**를 누릅니다.
 4. 원문인 `Meet me at 10 PM`이 정확히 복원되는지 확인합니다.
 
-##### 4단계: Alice가 개인키로 서명 작성 (Signing)
-Alice는 자신이 보낸 메시지("I will be there")가 위조되지 않았음을 Bob에게 증명하고자 합니다.
-1. **[RSA 서명]** 링크를 클릭합니다.
-2. **Private Key** 입력란에 **Alice의 개인키**를 붙여넣습니다.
-3. Message 입력란에 `I will be there`를 입력한 뒤 **Sign**을 누릅니다.
-4. 생성된 **전자서명값**(길고 복잡한 무작위 문자열)을 메시지와 함께 Bob에게 보냅니다.
-
-##### 5단계: Bob이 Alice의 공개키로 서명 검증 (Verification)
-Bob은 받은 메시지가 진짜 Alice가 보낸 것인지 확인합니다.
-1. **[RSA 서명 검증]** 링크를 클릭합니다.
-2. **Public Key** 입력란에 **Alice의 공개키**를 붙여넣습니다.
-3. Message 입력란에 `I will be there`를 적고, Signature 입력란에 Alice에게 받은 **전자서명값**을 붙여넣은 뒤 **Verify**를 누릅니다.
-4. **"Verified successfully"** (검증 성공) 메시지가 뜨는지 확인합니다. 만약 메시지의 글자 하나를 바꾸고(예: `I will be here`) 검증을 시도하면 실패하는지도 테스트해 보세요!
-
-> 전자서명의 개념·목적·PKI 연결은 **[전자서명과 PKI](/posts/infosec-5-crypto-3-3-signature-pki/)** 글에서 자세히 다룬다.
-{: .prompt-tip }
 
 ---
 
@@ -285,17 +267,3 @@ K --> S["대칭키 알고리즘으로 대용량 데이터 암호화"]
 
 ---
 
-## 공개키 암호 시리즈 읽는 순서
-
-공개키 암호는 분량이 커서 다섯 편으로 나누어 다룬다.
-
-| 순서 | 글 | 내용 |
-|---|---|---|
-| **③** | **이 글** — 공개키 암호의 원리 | 키 분배 문제 · 공개키의 기본 개념 · Diffie-Hellman · RSA · 하이브리드 |
-| **④** | **[타원곡선 암호(ECC)](/posts/infosec-5-crypto-3-4-ecc/)** | 유한체 위 타원곡선 · 점 덧셈과 스칼라 배 · ECDLP · 키가 작아도 안전한 이유 |
-| **⑤** | **[포스트 양자 암호(PQC)](/posts/infosec-5-crypto-3-5-pqc/)** | 쇼어 알고리즘의 위협 · 격자 기반 암호 · SVP·CVP·LWE · NIST 표준 |
-| **⑥** | **[수학 배경(부록)](/posts/infosec-5-crypto-3-6-math/)** | 소수 · 모듈러 연산 · gcd · 오일러 φ · 모듈러 역원 · 오일러 정리 · DH/RSA가 작동하는 원리 |
-| **⑦⑧** | **[해시와 MAC](/posts/infosec-5-crypto-3-2-hash/)** · **[전자서명과 PKI](/posts/infosec-5-crypto-3-3-signature-pki/)** | 무결성 · 인증 · 신뢰 체계 |
-
-> **읽는 순서 제안** — ③④⑤를 차례로 읽고, 식이 왜 성립하는지 막히면 그때 **⑥ 수학 배경**을 찾아보면 된다. ⑥은 처음부터 순서대로 읽을 필요가 없는 참고 문서다.
-{: .prompt-tip }
