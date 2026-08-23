@@ -269,6 +269,8 @@ ss -tuln
 
 컴퓨터가 도메인 이름을 IP 주소로 바꿀 때는 **DNS 서버에 묻기 전에 먼저 로컬 파일 `/etc/hosts`를 참조**한다. 이 순서는 `/etc/nsswitch.conf` 파일의 `hosts: files dns` 설정으로 정해진다. `files`(즉 `/etc/hosts`)가 `dns`보다 앞에 있으므로 파일이 먼저 참조된다.
 
+![](/assets/img/posts/2026-09-29-linuxintro-week5-1-network-basic-1787477138692.png)
+
 | 파일 | 역할 |
 |---|---|
 | **`/etc/hosts`** | 로컬 이름 해석 표. **DNS보다 먼저 참조된다** |
