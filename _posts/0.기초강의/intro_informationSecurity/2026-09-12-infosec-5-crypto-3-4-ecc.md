@@ -66,6 +66,8 @@ RSA나 DH는 기밀성을 유지하려면 자릿수가 수천 자리에 달하�
 > 소니 PlayStation 3는 실행 파일 서명에 타원곡선 전자서명(ECDSA)을 사용했다. ECDSA는 **서명할 때마다 매번 새로운 난수 $k$** 를 써야 하는데, 소니는 이 값을 **고정된 상수**로 구현했다. 2010년 말 해커 그룹 fail0verflow는 같은 $k$로 서명된 서명 두 개만 있으면 **간단한 연립방정식으로 개인키가 그대로 계산된다**는 것을 컨퍼런스 무대에서 시연했고, PS3의 보안 체계는 그날로 무너졌다.
 >
 > 교훈: **암호는 알고리즘이 아니라 가장 약한 구현에서 깨진다.** 난수의 품질이 왜 목숨줄인지는 [⑨ 키 관리와 난수](/posts/infosec-5-crypto-4-key-random/) 편에서 이어서 다룬다.
+>
+> *근거: N. Koblitz "Elliptic Curve Cryptosystems"(1987)·V. Miller "Use of Elliptic Curves in Cryptography"(CRYPTO '85) — 1985년 독립 제안; fail0verflow, 27C3 발표 "Console Hacking 2010"(2010.12).*
 {: .prompt-tip }
 
 ## 3. 암호 계열 분류

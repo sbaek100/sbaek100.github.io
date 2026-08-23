@@ -42,6 +42,8 @@ mermaid: false
 > "양자 컴퓨터가 나오면 그때 바꾸면 되지 않나?"에 대한 답이 **"지금 수집, 나중에 해독(Harvest Now, Decrypt Later)"** 전략이다. 공격자가 오늘 암호문을 대량으로 저장해 두었다가 10~20년 뒤 양자 컴퓨터로 해독하면, **오늘 보낸 외교 전문·의료 기록·유전체 정보**가 그때 가서 전부 열린다. 수십 년 뒤에도 비밀이어야 하는 정보는 지금부터 PQC로 보호해야 하는 이유다.
 >
 > 한편 PQC 전환이 왜 신중해야 하는지 보여준 사건도 있다. NIST 공모 4라운드까지 살아남았던 후보 **SIKE**는 2022년, 양자 컴퓨터도 아닌 **노트북 한 대의 단일 코어로 약 1시간 만에** 격파되었다 — 공격에 쓰인 도구는 1997년에 발표된 고전 수학 정리였다. 새 암호에 대한 신뢰는 오직 **오랜 공개 검증의 시간**만이 만들어 준다는 것을 다시 확인시킨 사건이다.
+>
+> *근거: P. Shor, "Algorithms for Quantum Computation"(FOCS 1994); 미국 NSA·NIST의 양자 위협 대응 지침("Harvest Now, Decrypt Later"); W. Castryck·T. Decru, "An Efficient Key Recovery Attack on SIDH"(EUROCRYPT 2023, 2022년 공개) — SIKEp434 기준 단일 코어 약 1시간, 토대는 E. Kani의 1997년 정리.*
 {: .prompt-tip }
 
 ## 2. 격자 기반 암호 (Lattice-Based Cryptography)의 원리

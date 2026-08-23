@@ -68,6 +68,8 @@ mermaid: true
 > **2017년, SHA-1의 차례.** Google과 네덜란드 CWI 연구소는 내용이 다른데 SHA-1 해시값이 같은 **두 개의 PDF 파일**을 만들어 공개했다(SHAttered). 이 계산에는 GPU 한 대로 약 110년 치의 연산이 들어갔지만, 클라우드를 쓰면 현실적인 비용이었다. 이후 브라우저들은 SHA-1 인증서를 일제히 퇴출시켰다.
 >
 > 세 장면의 공통 교훈: **해시 함수의 수명은 유한하며, "아직 깨지지 않았다"와 "안전하다"는 다른 말이다.**
+>
+> *근거: X. Wang 외, "Collisions for Hash Functions MD4, MD5, HAVAL-128 and RIPEMD"(CRYPTO 2004 럼프 세션); Microsoft 보안 권고 2718704 및 M. Stevens(CWI)의 Flame 인증서 분석(2012); M. Stevens 외, "The First Collision for Full SHA-1"(CRYPTO 2017, shattered.io).*
 {: .prompt-tip }
 
 실습 링크:

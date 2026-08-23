@@ -96,6 +96,8 @@ B -->|수신자 개인키로 복호화| M["원문 복원"]
 > 사실 "공개 채널로 비밀을 만든다"는 아이디어는 Diffie-Hellman보다 먼저 나왔다. 영국 정보기관 GCHQ의 James Ellis는 **1969년**에 '비(非)비밀 암호(non-secret encryption)'라는 개념을 제안했고, 1973년에 갓 입사한 수학자 Clifford Cocks는 이 아이디어를 전해 들은 **그날 저녁 RSA와 사실상 같은 방식을 고안**했다(RSA 발표보다 4년 앞선다). 이듬해 Malcolm Williamson은 DH 키 교환과 같은 방법을 찾아냈다.
 >
 > 그러나 이 모든 것은 국가 기밀이었다. 세 사람은 학계의 다른 이들이 같은 발명으로 세계적 명성을 얻는 것을 지켜보면서도 침묵해야 했고, GCHQ가 이 사실을 공개한 것은 **1997년** — Ellis는 공개를 불과 한 달 앞두고 세상을 떠났다. "공개와 검증이 곧 신뢰"라는 현대 암호학의 원칙과 함께, 밀실의 발명이 역사에서 어떤 자리를 얻는지를 동시에 보여주는 일화다.
+>
+> *근거: 1997년 12월 GCHQ가 기밀 해제한 내부 문서(Ellis 1970년 보고서, Cocks 1973년 노트, Williamson 1974년 노트); Simon Singh, 『The Code Book』(1999) 6장.*
 {: .prompt-tip }
 
 ### 3.2 알고리즘 직관
@@ -169,6 +171,8 @@ $$
 > 그해 8월, 과학 칼럼니스트 Martin Gardner는 Scientific American에 RSA를 소개하며 **129자리 숫자로 암호화한 문장(RSA-129)** 을 현상금 100달러와 함께 실었다. 당시 추정 해독 시간은 "약 4경(4×10¹⁶) 년". 그러나 컴퓨터 성능과 인수분해 알고리즘이 나란히 발전하면서, **17년 뒤인 1994년** 전 세계 자원봉사자 600여 명이 인터넷으로 계산을 나눠 8개월 만에 풀어냈다. 숨어 있던 답은 "**THE MAGIC WORDS ARE SQUEAMISH OSSIFRAGE**"라는 뜻 없는 문장이었다.
 >
 > 교훈은 명확하다. **"현재 기술로 몇 년"이라는 안전성 평가는 유통기한이 있는 진술**이며, 키 길이는 시대와 함께 자라야 한다(RSA-129는 약 426비트, 오늘날 권장은 2048비트 이상이다).
+>
+> *근거: M. Gardner, "A New Kind of Cipher That Would Take Millions of Years to Break"(Scientific American, 1977년 8월호); D. Atkins 외, "The Magic Words are Squeamish Ossifrage"(ASIACRYPT '94) — 1994년 해독 팀의 공식 논문; 탄생 비화는 Rivest·Adleman의 회고 인터뷰(예: Adleman의 SIAM News 인터뷰)와 Simon Singh, 『The Code Book』(1999)에 전한다.*
 {: .prompt-tip }
 
 ### 4.3 RSA 실습 링크

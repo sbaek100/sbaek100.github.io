@@ -907,6 +907,8 @@ $$
 > 반전은 1990년에 왔다. Biham과 Shamir가 블록 암호를 깨는 강력한 신기법 **차분 분석(differential cryptanalysis)** 을 발표하며 여러 암호를 무너뜨렸는데, 이상하게도 **DES의 S-박스만은 이 공격에 최적으로 방어되어 있었다.** 1994년에야 IBM의 설계자 Coppersmith가 밝혔다. **IBM은 1974년에 이미 차분 분석을 자체 발견했고(내부명 "T-공격"), NSA의 요청으로 이를 기밀로 유지한 채 S-박스를 그 공격에 견디도록 설계했다**는 것이다. 뒷문이 아니라, 학계보다 16년 앞선 방어였던 셈이다.
 >
 > 다만 56비트로의 키 축소는 변명의 여지가 없었고(8.3에서 보듯 결국 이것이 DES의 사인이 되었다), "설계 근거를 숨기면 실력으로 방어했더라도 불신을 산다"는 교훈은 이후 **AES 공개 공모전**(9장)의 탄생 배경이 되었다.
+>
+> *근거: E. Biham·A. Shamir, "Differential Cryptanalysis of DES-like Cryptosystems"(CRYPTO '90); D. Coppersmith, "The Data Encryption Standard (DES) and its Strength Against Attacks"(IBM Journal of Research and Development, 1994) — 1974년 자체 발견과 기밀 유지 경위를 설계자가 직접 밝힌 논문.*
 {: .prompt-tip }
 
 ### 8.2 구조 핵심
@@ -1000,6 +1002,8 @@ DES 대체 표준으로 NIST가 공모를 진행했고, Rijndael이 AES로 채�
 > AES 공모전은 DES 때의 불신을 정반대 방식으로 씻어냈다. 전 세계에서 15개 알고리즘이 출품되어 **3년 반 동안 각국 암호학자들이 공개적으로 서로의 알고리즘을 공격**했고, 모든 분석 결과가 학회와 인터넷에 공개되었다. 그 결과 미국 연방 표준의 자리를 차지한 것은 미국 기업도 NSA도 아닌, **벨기에의 두 암호학자 Daemen과 Rijmen**이 만든 Rijndael이었다.
 >
 > 흥미로운 후일담 두 가지. 첫째, 전 세계가 "Rijndael"을 어떻게 읽어야 할지 몰라 혼란에 빠지자 제출 문서의 FAQ에 발음 안내("라인달"에 가깝다)까지 실렸다 — 표준 이름이 깔끔하게 AES로 정해진 것이 모두에게 다행이었다. 둘째, 2003년 NSA는 **AES(키 192/256비트)를 1급 기밀(TOP SECRET) 문서 보호용으로 승인**했다. 전 세계에 공개된 알고리즘이 국가 기밀을 지키는 시대 — 케르크호프스 원리의 최종 승리라 할 만하다.
+>
+> *근거: NIST AES 공모 공식 기록(1997~2000, 후보 15개)과 FIPS 197(2001); Daemen·Rijmen의 Rijndael 제안서 — 발음 안내("Reign Dahl" 등) 수록; 미국 CNSS Policy No. 15, Fact Sheet No. 1(2003) — TOP SECRET에 AES-192/256 승인.*
 {: .prompt-tip }
 
 ### 9.2 DES와 구조 차이
