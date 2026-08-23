@@ -1,9 +1,9 @@
 ---
-title: "4장 ⑪ 암호제품 평가체계 - CC·EAL·CCRA와 암호모듈 검증(CMVP·KCMVP)"
+title: "정보보안 기초 4장 ⑪ 암호제품 평가체계 - CC·EAL·CCRA와 암호모듈 검증(CMVP·KCMVP)"
 date: 2026-09-26 09:00:00 +0900
 categories:
   - 0.기초강의
-  - 정보보안
+  - 정보보안 기초
 tags:
   - 안전성평가
   - CommonCriteria
