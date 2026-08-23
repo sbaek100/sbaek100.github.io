@@ -86,9 +86,9 @@ mermaid: true
 > 사실 "공개 채널로 비밀을 만든다"는 아이디어는 Diffie-Hellman보다 먼저 나왔다. 영국 정보기관 GCHQ의 James Ellis는 **1969년**에 '비(非)비밀 암호([non-secret encryption](https://nsarchive.gwu.edu/sites/default/files/documents/3035765/Document-02.pdf))'라는 개념을 제안했고, 1973년에 갓 입사한 수학자 Clifford Cocks는 이 아이디어를 전해 들은 **그날 저녁 RSA와 사실상 같은 방식을 고안**했다(RSA 발표보다 4년 앞선다). 이듬해 Malcolm Williamson은 DH 키 교환과 같은 방법을 찾아냈다.
 > 
 > ![|259x361](/assets/img/posts/2026-09-12-infosec-5-crypto-3-1-publickey-1787494392514.png)
-
-![](/assets/img/posts/2026-09-12-infosec-5-crypto-3-1-publickey-1787494444217.png)
-
+>
+> ![](/assets/img/posts/2026-09-12-infosec-5-crypto-3-1-publickey-1787494444217.png)
+>
 > 그러나 이 모든 것은 국가 기밀이었다. 세 사람은 학계의 다른 이들이 같은 발명으로 세계적 명성을 얻는 것을 지켜보면서도 침묵해야 했고, GCHQ가 이 사실을 공개한 것은 **1997년** — Ellis는 공개를 불과 한 달 앞두고 세상을 떠났다. "공개와 검증이 곧 신뢰"라는 현대 암호학의 원칙과 함께, 밀실의 발명이 역사에서 어떤 자리를 얻는지를 동시에 보여주는 일화다.
 >
 > *근거: 1997년 12월 GCHQ가 기밀 해제한 내부 문서(Ellis 1970년 보고서, Cocks 1973년 노트, Williamson 1974년 노트); Simon Singh, 『The Code Book』(1999) 6장.*
