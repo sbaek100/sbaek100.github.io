@@ -1,6 +1,6 @@
 ---
-title: "정보보안 기초 3장. 정보보안의 원칙 - 위협 모델부터 Security by Design까지"
-date: 2026-09-05 09:00:00 +0900
+title: "정보보안 기초 7장. 정보보안의 원칙 - 위협 모델부터 Security by Design까지"
+date: 2026-10-24 09:00:00 +0900
 categories:
   - 0.기초강의
   - 정보보안 기초
