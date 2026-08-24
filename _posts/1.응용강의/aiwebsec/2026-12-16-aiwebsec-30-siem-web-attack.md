@@ -218,7 +218,7 @@ sudo nginx -t && sudo systemctl restart nginx
 
 DVWA는 처음 한 번 **데이터베이스를 만들고 로그인**해야 취약점 페이지를 쓸 수 있습니다.
 
-1. **VM2(Ubuntu Desktop)**에서 Firefox를 열고 주소창에 **`http://192.168.59.10/setup.php`** 입력. *(LAN→DMZ가 허용돼 있으니 접속됩니다.)*
+1. **VM2(Kali)**에서 Firefox를 열고 주소창에 **`http://192.168.59.10/setup.php`** 입력. *(LAN→DMZ가 허용돼 있으니 접속됩니다.)*
 2. 페이지 맨 아래 **[Create / Reset Database]** 버튼 클릭 → DB가 생성되고 잠시 후 **로그인 화면**으로 넘어갑니다.
 3. 로그인합니다 — 아이디 **`admin`** / 비밀번호 **`password`** (DVWA 기본 계정).
 4. 좌측 메뉴 맨 아래 **[DVWA Security]** 클릭 → 보안 수준을 **`Low`** 로 선택 → **[Submit]**.

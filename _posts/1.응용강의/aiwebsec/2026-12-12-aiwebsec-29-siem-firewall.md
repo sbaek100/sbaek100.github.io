@@ -20,7 +20,7 @@ mermaid: true
 
 ## 0. 이번 강의 한눈에
 
-- **지난 강의 도달 상태**: VM2(Ubuntu Desktop)를 설치하고 인터넷(NAT) 확인 완료
+- **지난 강의 도달 상태**: VM2(Kali Linux)를 공식 이미지로 준비하고 인터넷(NAT) 확인 완료
 - **오늘의 목표**: 방화벽 **VM1(OPNsense)**을 직접 설치하고, 두 개의 격리망(**LAN/DMZ**)을 만들어 VM2를 **안전한 LAN**으로 이전
 - **오늘 켜는 VM**: VM1(OPNsense) + VM2
 - **오늘 완성되는 연결**: `인터넷 — [OPNsense] — VM2(192.168.58.20)`
@@ -126,21 +126,31 @@ DMZ(em2)는 아직 배정 전입니다. 콘솔 메뉴에서 **`1) Assign interfa
 
 ### [단계 5] VM2의 네트워크를 내부망(LAN)으로 변경
 
-1. VirtualBox에서 **VM2(`Ubuntu-Workstation`) 전원을 끕니다**.
+1. VirtualBox에서 **VM2(`Kali-Attacker`) 전원을 끕니다**.
 2. VM2 **[설정] → [네트워크] → [어댑터 1]**:
    - 다음에 연결: **`내부 네트워크`** → 이름 **`intnet_lan`**
 3. **[확인]** 후 VM2를 켭니다.
 
-### [단계 6] VM2에 고정 IP(192.168.58.20) 설정
+### [단계 6] VM2(Kali)에 고정 IP(192.168.58.20) 설정
 
-1. VM2(Ubuntu) 우측 상단 → **[설정] → [네트워크] → 유선 톱니바퀴 아이콘**.
-2. **[IPv4]** 탭 → 방식 **'수동(Manual)'** 선택 후 입력:
-   - 주소(Address): **`192.168.58.20`**
-   - 넷마스크(Netmask): **`255.255.255.0`**
-   - 게이트웨이(Gateway): **`192.168.58.1`**
-   - DNS: **`192.168.58.1`**
-3. **[적용]** → 유선 스위치를 껐다 켜서 적용합니다.
-4. **[터미널]**을 열어(`Ctrl+Alt+T`) 아래 세 명령으로 단계별로 확인합니다.
+Kali는 **NetworkManager**로 네트워크를 관리합니다. GUI로 클릭하다 실수하지 않도록, 터미널에서 아래 한 덩어리를 복사해 붙여넣어 고정 IP를 설정합니다.
+
+1. VM2(Kali) 터미널을 엽니다(`Ctrl+Alt+T`). `sudo` 비밀번호를 물으면 `kali`를 입력합니다.
+2. **아래 한 덩어리를 그대로 복사해 붙여넣고** Enter 합니다.
+   ```bash
+   CON=$(nmcli -t -f NAME connection show | head -n1)
+   sudo nmcli con mod "$CON" ipv4.method manual \
+     ipv4.addresses 192.168.58.20/24 \
+     ipv4.gateway 192.168.58.1 \
+     ipv4.dns 192.168.58.1
+   sudo nmcli con down "$CON"; sudo nmcli con up "$CON"
+   ```
+
+   **명령어 상세 설명**
+   - `CON=$(nmcli -t -f NAME connection show | head -n1)` : 현재 유선 연결의 이름을 자동으로 찾아 `CON`에 담습니다. (환경마다 이름이 달라도 그대로 동작합니다.)
+   - `sudo nmcli con mod "$CON" ipv4.method manual ...` : 그 연결을 **수동(고정) IP 방식**으로 바꾸고, 주소 `192.168.58.20/24`·게이트웨이·DNS `192.168.58.1`을 지정합니다.
+   - `sudo nmcli con down "$CON"; sudo nmcli con up "$CON"` : 연결을 껐다 켜서 **새 설정을 즉시 적용**합니다.
+3. 이어서 아래 세 명령으로 단계별로 확인합니다.
    ```bash
    ip addr show
    ```
@@ -209,7 +219,7 @@ DMZ(em2)는 아직 배정 전입니다. 콘솔 메뉴에서 **`1) Assign interfa
 
 ## 💾 안전망: 스냅샷 찍기 (꼭!)
 
-`OPNsense-FW`와 `Ubuntu-Workstation` 두 VM을 **전원 끄고** 각각 우클릭 → **[스냅샷] → [찍기]** 로 저장하세요. 방화벽 설정은 되돌리기 어려우니, 막히면 강사가 제공한 **"정답 스냅샷"**을 복원해 다음 강의로 진행할 수 있습니다.
+`OPNsense-FW`와 `Kali-Attacker` 두 VM을 **전원 끄고** 각각 우클릭 → **[스냅샷] → [찍기]** 로 저장하세요. 방화벽 설정은 되돌리기 어려우니, 막히면 강사가 제공한 **"정답 스냅샷"**을 복원해 다음 강의로 진행할 수 있습니다.
 
 ---
 
