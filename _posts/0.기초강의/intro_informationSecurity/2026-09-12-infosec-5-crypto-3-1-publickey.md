@@ -262,8 +262,6 @@ K --> S["대칭키 알고리즘으로 대용량 데이터 암호화"]
 
 ![](/assets/img/posts/2026-03-11-infosec-5-crypto-3-1779146405648.png)
 
-> **다음 글로**: RSA·DH의 뒤를 잇는 3세대 공개키 암호 → **[④ 타원곡선 암호(ECC)](/posts/infosec-5-crypto-3-4-ecc/)**
-{: .prompt-info }
 
 ---
 

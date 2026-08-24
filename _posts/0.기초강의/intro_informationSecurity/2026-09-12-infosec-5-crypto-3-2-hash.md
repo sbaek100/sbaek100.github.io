@@ -62,6 +62,8 @@ mermaid: true
 > **📜 역사 한 토막 — 해시가 무너지던 세 장면**
 >
 > **2004년, MD5의 사망 선고.** 중국 산둥대학의 왕샤오윈(Wang Xiaoyun) 교수가 국제 암호학회 CRYPTO의 발표장에서 MD5의 충돌 쌍을 공개했다. 십수 년간 "이론적으로만 위험하다"던 함수가 눈앞에서 깨지는 순간이었고, 발표장에서는 박수가 터져 나왔다.
+> 
+> ![](/assets/img/posts/2026-09-12-infosec-5-crypto-3-2-hash-1787546844519.png)
 >
 > **2012년, 이론이 무기가 되다.** 중동 지역을 노린 국가급 악성코드 **Flame**은 MD5 충돌 공격으로 **Microsoft의 코드 서명 인증서를 위조**해, 마치 정상 Windows Update인 것처럼 자신을 배포했다. "충돌 공격은 실험실 이야기"라는 통념이 무너진 사건이다.
 >
@@ -72,6 +74,15 @@ mermaid: true
 > *근거: X. Wang 외, "Collisions for Hash Functions MD4, MD5, HAVAL-128 and RIPEMD"(CRYPTO 2004 럼프 세션); Microsoft 보안 권고 2718704 및 M. Stevens(CWI)의 Flame 인증서 분석(2012); M. Stevens 외, "The First Collision for Full SHA-1"(CRYPTO 2017, shattered.io).*
 {: .prompt-tip }
 
+> **📜 역사 한 토막 — 무너진 뒤에 한 일, SHA-3 공모전**
+>
+> SHA-1이 흔들리기 시작하자 미국 NIST는 2007년, AES 때와 똑같은 방법을 다시 꺼내 들었다. **전 세계 공개 공모전**이다. 64개 팀이 응모해 5년간 공개 검증을 거쳤고, 2012년 벨기에 팀의 **Keccak(케착)**이 SHA-3로 선정되었다.
+>
+> 재미있는 점이 두 가지 있다. 첫째, Keccak 설계자 중 한 명인 **요안 다먼(Joan Daemen)**은 AES(Rijndael)의 공동 설계자다. 한 사람이 현대 암호의 양대 표준(블록 암호 AES, 해시 SHA-3)을 모두 설계한 셈이다. 둘째, NIST는 SHA-2가 멀쩡히 살아 있는데도 SHA-3를 뽑았다. SHA-2와 **내부 구조가 완전히 다른**(스펀지 구조) 함수를 골라, 혹시 SHA-2 계열에 치명적 결함이 발견되더라도 갈아탈 "예비 타이어"를 미리 준비해 둔 것이다.
+>
+> *근거: NIST SHA-3 Competition(2007–2012) 공식 발표; FIPS 202 "SHA-3 Standard"(2015); Keccak 팀(G. Bertoni, J. Daemen, M. Peeters, G. Van Assche) 설계 문서.*
+{: .prompt-tip }
+
 실습 링크:
 
 - [SHA-512 실습](https://emn178.github.io/online-tools/sha512.html)
@@ -79,9 +90,7 @@ mermaid: true
 > **그런데 해시 함수만으로는 부족하다. 왜냐하면 해시는 누구나 계산할 수 있기 때문이다.** → 그래서 **비밀키**를 더한 MAC/HMAC이 필요하다.
 {: .prompt-warning }
 
-> **참고**: 해시의 충돌 저항성에만 의존해 양자 컴퓨터에도 안전하게 만든 서명이 **해시 기반 PQC(SPHINCS+)**다. 자세한 배경은 [⑤ 포스트 양자 암호(PQC)](/posts/infosec-5-crypto-3-5-pqc/).
-{: .prompt-info }
-
+> **참고**: 해시의 충돌 저항성에만 의존해 양자 컴퓨터에도 안전하게 만든 서명이 **해시 기반 PQC(SPHINCS+)**다. 
 ---
 
 ## 3. 무결성: MAC와 HMAC
@@ -133,6 +142,17 @@ HMAC는 비밀키를 함께 써서 이를 막는다.
 
 - 해시: "내용 요약 지문"
 - HMAC: "비밀 도장이 찍힌 내용 요약 지문"
+
+> **📜 역사 한 토막 — "키를 붙여 해시하면 되지 않나?" Flickr 사건(2009)**
+>
+> "비밀키를 메시지 앞에 붙여서 해시하면(`해시(K‖M)`) 그게 MAC 아닌가?"라는 생각은 누구나 한다. 실제로 사진 공유 서비스 **Flickr**의 API가 정확히 이 방식으로 요청 서명을 만들고 있었다.
+>
+> 2009년, 보안 연구자 타이 즈엉(Thai Duong)과 훌리아노 리소(Juliano Rizzo)는 이 방식이 **길이 확장 공격(length extension attack)**에 뚫린다는 것을 보였다. MD5나 SHA-1 같은 해시는 내부적으로 데이터를 블록 단위로 이어서 처리하기 때문에, 공격자는 **비밀키를 전혀 몰라도** 기존 서명값을 "이어받아" 메시지 뒤에 내용을 덧붙인 새 메시지의 올바른 서명을 계산해 낼 수 있다. 두 사람은 이 방법으로 Flickr API 호출을 위조하는 데 성공했다.
+>
+> 이것이 HMAC이 단순한 `해시(K‖M)`이 아니라 **키를 두 번 감싸는 이중 해시 구조**로 일부러 복잡하게 설계된 이유다. "그냥 붙여서 해시"와 HMAC의 차이는 취향 문제가 아니라, 실제로 뚫리느냐 안 뚫리느냐의 문제였다.
+>
+> *근거: T. Duong, J. Rizzo, "Flickr's API Signature Forgery Vulnerability"(2009); M. Bellare, R. Canetti, H. Krawczyk, "Keying Hash Functions for Message Authentication"(CRYPTO 1996, HMAC 설계 논문); RFC 2104.*
+{: .prompt-tip }
 
 실무 예시:
 
