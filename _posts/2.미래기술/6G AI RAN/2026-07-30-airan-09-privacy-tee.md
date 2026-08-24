@@ -2,7 +2,7 @@
 title: "[6G AI-RAN] 09. 프라이버시 보존형 AI 및 신뢰 실행 환경(TEE)"
 date: 2026-07-30 10:30:00 +0900
 categories:
-  - 2.미래기술
+  - 2.미래보안
   - 6G AI RAN
   - Part III 방어·복원력
 tags:

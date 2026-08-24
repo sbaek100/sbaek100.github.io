@@ -2,7 +2,7 @@
 title: "[6G AI-RAN] 06. RAN AI/ML 모델 대상 적대적 공격 (Adversarial ML)"
 date: 2026-07-30 10:00:00 +0900
 categories:
-  - 2.미래기술
+  - 2.미래보안
   - 6G AI RAN
   - Part II 위협·공격벡터
 tags:

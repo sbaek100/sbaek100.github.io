@@ -2,7 +2,7 @@
 title: "[6G AI-RAN] 02. O-RAN 기반 6G AI-RAN 아키텍처 진화 — RU·DU·CU 완전 정리"
 date: 2026-07-30 09:20:00 +0900
 categories:
-  - 2.미래기술
+  - 2.미래보안
   - 6G AI RAN
   - Part I 기초·아키텍처
 tags:

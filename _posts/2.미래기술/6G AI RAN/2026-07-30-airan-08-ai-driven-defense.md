@@ -2,7 +2,7 @@
 title: "[6G AI-RAN] 08. AI-Driven 자율 보안 탐지 및 Self-Healing RAN"
 date: 2026-07-30 10:20:00 +0900
 categories:
-  - 2.미래기술
+  - 2.미래보안
   - 6G AI RAN
   - Part III 방어·복원력
 tags:

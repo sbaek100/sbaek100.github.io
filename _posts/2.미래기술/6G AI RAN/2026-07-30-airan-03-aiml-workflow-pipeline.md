@@ -2,7 +2,7 @@
 title: "[6G AI-RAN] 03. RAN 내 AI/ML 워크플로우 및 데이터 파이프라인"
 date: 2026-07-30 09:30:00 +0900
 categories:
-  - 2.미래기술
+  - 2.미래보안
   - 6G AI RAN
   - Part I 기초·아키텍처
 tags:

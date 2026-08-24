@@ -2,7 +2,7 @@
 title: "[6G AI-RAN] 11. 컨테이너 기반 에뮬레이션, 테스트베드 및 벤치마크"
 date: 2026-07-30 10:50:00 +0900
 categories:
-  - 2.미래기술
+  - 2.미래보안
   - 6G AI RAN
   - Part IV 검증·미래
 tags:

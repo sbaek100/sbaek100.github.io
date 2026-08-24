@@ -2,7 +2,7 @@
 title: "[6G AI-RAN] 00. 시리즈 개요 — 6G AI-RAN과 보안 지형도"
 date: 2026-07-30 09:00:00 +0900
 categories:
-  - 2.미래기술
+  - 2.미래보안
   - 6G AI RAN
   - 개요
 tags:

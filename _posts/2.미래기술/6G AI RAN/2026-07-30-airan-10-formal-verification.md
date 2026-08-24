@@ -2,7 +2,7 @@
 title: "[6G AI-RAN] 10. 6G AI-RAN 보안 정형 검증 및 자율 컴플라이언스"
 date: 2026-07-30 10:40:00 +0900
 categories:
-  - 2.미래기술
+  - 2.미래보안
   - 6G AI RAN
   - Part IV 검증·미래
 tags:

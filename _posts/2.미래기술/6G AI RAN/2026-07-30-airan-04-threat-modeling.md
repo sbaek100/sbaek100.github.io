@@ -2,7 +2,7 @@
 title: "[6G AI-RAN] 04. 6G AI-RAN 위협 모델링 및 공격 표면"
 date: 2026-07-30 09:40:00 +0900
 categories:
-  - 2.미래기술
+  - 2.미래보안
   - 6G AI RAN
   - Part II 위협·공격벡터
 tags:

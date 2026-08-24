@@ -2,7 +2,7 @@
 title: "[6G AI-RAN] 01. 6G 비전과 AI-Native RAN 패러다임"
 date: 2026-07-30 09:10:00 +0900
 categories:
-  - 2.미래기술
+  - 2.미래보안
   - 6G AI RAN
   - Part I 기초·아키텍처
 tags:
