@@ -1,4 +1,5 @@
 ---
+published: false
 title: "[애플리케이션 보안] 07-1. IPSEC·SET·OTP 이론 — VPN과 전자상거래 보안"
 date: 2026-12-01 09:00:00 +0900
 categories:

@@ -1,4 +1,5 @@
 ---
+published: false
 title: "[애플리케이션 보안] 00. 과정 오리엔테이션 — 전체 편성 안내"
 date: 2026-10-13 09:00:00 +0900
 categories:
