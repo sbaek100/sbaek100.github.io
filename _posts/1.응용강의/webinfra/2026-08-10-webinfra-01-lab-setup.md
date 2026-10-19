@@ -1,5 +1,4 @@
 ---
-published: false
 title: "[웹 인프라 구축] 01. 실습환경 — VirtualBox, 네트워크 설계, 원본 VM 만들기"
 date: 2026-08-10 09:02:00 +0900
 categories:

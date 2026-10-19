@@ -1,5 +1,4 @@
 ---
-published: false
 title: 6강. 문제 정의와 요구사항 - 만들 것을 글로 확정하기
 date: 2027-04-05 09:00:00 +0900
 categories:

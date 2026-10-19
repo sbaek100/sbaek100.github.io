@@ -1,5 +1,4 @@
 ---
-published: false
 title: (PQC 3강) NIST가 고른 표준 — FIPS 203·204·205·206·HQC
 date: 2026-06-11 09:00:00 +0900
 categories:

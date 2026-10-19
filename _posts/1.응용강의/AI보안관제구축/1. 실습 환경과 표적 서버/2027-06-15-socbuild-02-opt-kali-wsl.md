@@ -1,5 +1,4 @@
 ---
-published: false
 title: "[AI 보안관제 구축] 1-2 부록(선택). WSL로 Kali Linux 설치하기 — VM 없이 윈도우 안에 공격 도구 갖추기"
 date: 2027-06-14 18:00:00 +0900
 categories:

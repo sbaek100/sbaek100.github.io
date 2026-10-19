@@ -1,5 +1,4 @@
 ---
-published: false
 title: 8강. 화면 설계 - 웹 리포트 와이어프레임
 date: 2027-04-19 09:00:00 +0900
 categories:

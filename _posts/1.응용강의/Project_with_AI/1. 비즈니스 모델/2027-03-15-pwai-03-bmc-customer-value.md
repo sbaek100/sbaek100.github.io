@@ -1,5 +1,4 @@
 ---
-published: false
 title: 3강. 비즈니스 모델 캔버스 I - 고객과 가치
 date: 2027-03-15 09:00:00 +0900
 categories:

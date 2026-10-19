@@ -1,5 +1,4 @@
 ---
-published: false
 title: "정보보안 기초 1장. 보안의 의미·CIA 요구사항·위험 관리·OSI 보안 구조"
 date: 2026-08-15 09:00:00 +0900
 categories:

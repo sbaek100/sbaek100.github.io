@@ -1,5 +1,4 @@
 ---
-published: false
 title: 네트워크 실무 10강 - 장비 하드닝: SSH·AAA·IOS 복구 (따라하기 실습)
 date: 2026-10-20 10:00:00 +0900
 categories:

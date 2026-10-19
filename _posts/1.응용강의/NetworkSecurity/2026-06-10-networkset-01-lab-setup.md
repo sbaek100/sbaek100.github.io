@@ -1,5 +1,4 @@
 ---
-published: false
 title: "[네트워크 보안] 01. 실습 환경 구축 - Kali · Metasploitable2 · Ubuntu (이중 타깃)"
 date: 2026-06-10 10:00:00 +0900
 categories:

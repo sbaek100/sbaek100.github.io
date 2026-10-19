@@ -1,5 +1,4 @@
 ---
-published: false
 title: 서브네팅 특강 ⓪ - UTP 다이렉트 케이블 만들기 (도입 실습)
 date: 2026-09-03 08:30:00 +0900
 categories:

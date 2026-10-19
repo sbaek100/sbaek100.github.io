@@ -1,5 +1,4 @@
 ---
-published: false
 title: 중급 C 프로그래밍 17강 - 종합 과제 TLS 동시 접속 서버
 date: 2027-03-15 09:00:00 +0900
 categories:

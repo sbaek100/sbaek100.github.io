@@ -1,5 +1,4 @@
 ---
-published: false
 title: "[웹 인프라 구축] 02. 1단계 — 서버 한 대에 전부 넣기 (올인원)"
 date: 2026-08-10 09:04:00 +0900
 categories:

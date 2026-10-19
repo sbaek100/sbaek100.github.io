@@ -1,5 +1,4 @@
 ---
-published: false
 title: "[애플리케이션 보안] 05-1. DB 보안 이론 — 공격 유형과 접근통제·암호화"
 date: 2026-11-17 09:00:00 +0900
 categories:

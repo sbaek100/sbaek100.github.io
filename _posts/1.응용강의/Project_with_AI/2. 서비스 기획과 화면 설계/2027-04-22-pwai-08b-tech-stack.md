@@ -1,5 +1,4 @@
 ---
-published: false
 title: 8.5강. 기술 스택 결정 - 무엇으로 만들지 확정하기
 date: 2027-04-22 09:00:00 +0900
 categories:

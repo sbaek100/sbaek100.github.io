@@ -1,5 +1,4 @@
 ---
-published: false
 title: 네트워크 실무 4강 - 스위치 CLI와 포트 보안 (따라하기 실습)
 date: 2026-09-08 10:00:00 +0900
 categories:

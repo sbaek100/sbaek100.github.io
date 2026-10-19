@@ -1,5 +1,4 @@
 ---
-published: false
 title: "[6G AI-RAN] 05. RAN 인터페이스 및 멀티 에이전트 제어 루프 위협"
 date: 2026-07-30 09:50:00 +0900
 categories:

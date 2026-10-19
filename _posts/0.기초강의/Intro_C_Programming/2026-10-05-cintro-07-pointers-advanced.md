@@ -1,5 +1,4 @@
 ---
-published: false
 title: C 프로그래밍 기초 7강 - 포인터와 배열 (2)
 date: 2026-10-05 09:00:00 +0900
 categories:

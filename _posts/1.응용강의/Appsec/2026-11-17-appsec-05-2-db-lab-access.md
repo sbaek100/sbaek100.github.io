@@ -1,5 +1,4 @@
 ---
-published: false
 title: "[애플리케이션 보안] 05-2. 실습 — MariaDB 계정·권한과 최소 권한"
 date: 2026-11-17 10:00:00 +0900
 categories:

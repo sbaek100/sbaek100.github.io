@@ -1,5 +1,4 @@
 ---
-published: false
 title: "[Web Security Lab] 06. Session Security"
 date: 2026-06-01 15:00:00 +0900
 categories:

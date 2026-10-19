@@ -1,5 +1,4 @@
 ---
-published: false
 title: "[Web Security Lab] 11. 정보보안기사 웹 보안 이론 총정리"
 date: 2026-06-01 20:00:00 +0900
 categories:

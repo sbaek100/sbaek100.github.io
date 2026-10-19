@@ -1,5 +1,4 @@
 ---
-published: false
 title: "정보보안 기초 6장. 디지털 콘텐츠 보안 - 저작권 보호와 정보 은닉(OpenStego 실습)"
 date: 2026-10-17 09:00:00 +0900
 categories:

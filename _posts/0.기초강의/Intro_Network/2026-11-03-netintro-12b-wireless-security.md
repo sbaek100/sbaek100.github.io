@@ -1,5 +1,4 @@
 ---
-published: false
 title: 네트워크 실무 12강 - 무선 네트워크 보안 심화 (이론)
 date: 2026-11-03 11:00:00 +0900
 categories:

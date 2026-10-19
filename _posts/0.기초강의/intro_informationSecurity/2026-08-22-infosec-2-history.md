@@ -1,5 +1,4 @@
 ---
-published: false
 title: "정보보안 기초 2장. 컴퓨터의 역사와 보안의 역사 - COMSEC에서 사이버 복원력까지"
 date: 2026-08-22 09:00:00 +0900
 categories:

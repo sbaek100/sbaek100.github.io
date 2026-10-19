@@ -1,5 +1,4 @@
 ---
-published: false
 title: "[네트워크 보안] 13. NAC와 통합 보안 운영 - 접속 전부터 사고 대응까지"
 date: 2026-06-10 22:00:00 +0900
 categories:

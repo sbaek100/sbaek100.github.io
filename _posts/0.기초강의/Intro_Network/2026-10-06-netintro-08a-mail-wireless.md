@@ -1,5 +1,4 @@
 ---
-published: false
 title: 네트워크 실무 8강 - 메일과 무선 네트워크 (이론)
 date: 2026-10-06 09:00:00 +0900
 categories:

@@ -1,5 +1,4 @@
 ---
-published: false
 title: 네트워크 실무 2강 - IP 주소와 서브네팅 (이론)
 date: 2026-08-25 09:00:00 +0900
 categories:

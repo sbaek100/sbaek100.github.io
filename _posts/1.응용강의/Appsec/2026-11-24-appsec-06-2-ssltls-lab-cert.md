@@ -1,5 +1,4 @@
 ---
-published: false
 title: "[애플리케이션 보안] 06-2. 실습 — openssl 인증서 생성과 HTTPS 구성"
 date: 2026-11-24 10:00:00 +0900
 categories:

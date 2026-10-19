@@ -1,5 +1,4 @@
 ---
-published: false
 title: "정보보안 기초 4장 ⑥ 현대 암호 - [부록] 공개키 암호를 위한 수학 배경"
 date: 2026-09-12 12:00:00 +0900
 categories:

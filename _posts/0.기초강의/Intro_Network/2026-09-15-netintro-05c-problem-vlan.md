@@ -1,5 +1,4 @@
 ---
-published: false
 title: 네트워크 실무 5강 - 실습 문제 ⑤
 date: 2026-09-15 11:00:00 +0900
 categories:

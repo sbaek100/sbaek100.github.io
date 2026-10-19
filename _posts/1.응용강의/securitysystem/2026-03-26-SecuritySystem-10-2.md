@@ -1,5 +1,4 @@
 ---
-published: false
 title: (10주차) 보안시스템구축실습 10-2 - Snort 로그 분석 과제 & IDS 우회와 대응
 date: 2026-03-26 13:30:00 +0900
 categories:

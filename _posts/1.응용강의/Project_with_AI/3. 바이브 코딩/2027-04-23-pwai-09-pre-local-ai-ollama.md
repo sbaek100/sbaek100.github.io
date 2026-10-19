@@ -1,5 +1,4 @@
 ---
-published: false
 title: "[기술 매뉴얼] 로컬 AI(Ollama) 구축과 ngrok 외부 접속 구성"
 date: 2027-04-23 09:00:00 +0900
 categories:

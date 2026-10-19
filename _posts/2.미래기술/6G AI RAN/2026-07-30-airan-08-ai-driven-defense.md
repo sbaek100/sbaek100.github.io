@@ -1,5 +1,4 @@
 ---
-published: false
 title: "[6G AI-RAN] 08. AI-Driven 자율 보안 탐지 및 Self-Healing RAN"
 date: 2026-07-30 10:20:00 +0900
 categories:

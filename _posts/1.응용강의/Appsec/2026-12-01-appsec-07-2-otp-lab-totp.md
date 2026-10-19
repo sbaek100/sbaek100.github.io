@@ -1,5 +1,4 @@
 ---
-published: false
 title: "[애플리케이션 보안] 07-2. 실습 — OTP(일회용 비밀번호) 직접 생성하기"
 date: 2026-12-01 10:00:00 +0900
 categories:

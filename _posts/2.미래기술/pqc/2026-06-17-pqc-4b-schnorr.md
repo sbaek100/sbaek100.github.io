@@ -1,5 +1,4 @@
 ---
-published: false
 title: (PQC 4-2강) 슈노르(Schnorr) 서명 — 레거시에서 ML-DSA로 가는 다리
 date: 2026-06-17 09:00:00 +0900
 categories:

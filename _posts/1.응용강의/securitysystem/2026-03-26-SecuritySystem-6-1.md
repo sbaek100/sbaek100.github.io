@@ -1,5 +1,4 @@
 ---
-published: false
 title: (6주차) 보안시스템구축실습 6-1 - 허술한 SSH 설정과 공격 성공 확인
 date: 2026-03-26 08:00:00 +0900
 categories:

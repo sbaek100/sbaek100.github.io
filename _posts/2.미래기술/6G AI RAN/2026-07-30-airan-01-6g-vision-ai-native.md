@@ -1,5 +1,4 @@
 ---
-published: false
 title: "[6G AI-RAN] 01. 6G 비전과 AI-Native RAN 패러다임"
 date: 2026-07-30 09:10:00 +0900
 categories:

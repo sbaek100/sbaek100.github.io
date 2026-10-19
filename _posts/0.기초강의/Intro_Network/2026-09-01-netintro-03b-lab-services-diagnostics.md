@@ -1,5 +1,4 @@
 ---
-published: false
 title: 네트워크 실무 3강 - 서비스와 진단 명령어 (따라하기 실습)
 date: 2026-09-01 10:00:00 +0900
 categories:

@@ -1,5 +1,4 @@
 ---
-published: false
 title: 중급 C 프로그래밍 15강 - OpenSSL로 TLS 구현
 date: 2027-03-01 09:00:00 +0900
 categories:

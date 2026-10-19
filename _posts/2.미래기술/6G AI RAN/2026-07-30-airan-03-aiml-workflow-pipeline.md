@@ -1,5 +1,4 @@
 ---
-published: false
 title: "[6G AI-RAN] 03. RAN 내 AI/ML 워크플로우 및 데이터 파이프라인"
 date: 2026-07-30 09:30:00 +0900
 categories:

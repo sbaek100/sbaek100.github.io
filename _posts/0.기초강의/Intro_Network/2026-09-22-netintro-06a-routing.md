@@ -1,5 +1,4 @@
 ---
-published: false
 title: 네트워크 실무 6강 - 라우팅: 정적·RIP·OSPF (이론)
 date: 2026-09-22 09:00:00 +0900
 categories:

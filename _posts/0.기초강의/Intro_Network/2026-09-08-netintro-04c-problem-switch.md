@@ -1,5 +1,4 @@
 ---
-published: false
 title: 네트워크 실무 4강 - 실습 문제 ④
 date: 2026-09-08 11:00:00 +0900
 categories:

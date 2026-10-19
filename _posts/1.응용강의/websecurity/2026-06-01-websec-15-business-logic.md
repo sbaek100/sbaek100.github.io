@@ -1,5 +1,4 @@
 ---
-published: false
 title: "[Web Security Lab] 15. 비즈니스 로직 취약점 (프로세스 검증 누락·취약한 비밀번호 복구)"
 date: 2026-06-01 22:00:00 +0900
 categories:

@@ -1,5 +1,4 @@
 ---
-published: false
 title: 중급 C 프로그래밍 16강 - 커널의 시각
 date: 2027-03-08 09:00:00 +0900
 categories:

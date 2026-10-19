@@ -1,5 +1,4 @@
 ---
-published: false
 title: 네트워크 실무 7강 - 실습 문제 ⑦
 date: 2026-09-29 11:00:00 +0900
 categories:

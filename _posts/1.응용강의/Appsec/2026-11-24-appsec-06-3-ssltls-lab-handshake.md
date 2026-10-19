@@ -1,5 +1,4 @@
 ---
-published: false
 title: "[애플리케이션 보안] 06-3. 실습 — TLS Handshake 캡처와 보안 점검"
 date: 2026-11-24 11:00:00 +0900
 categories:

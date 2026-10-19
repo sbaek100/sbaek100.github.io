@@ -1,5 +1,4 @@
 ---
-published: false
 title: "[네트워크 보안] 04. TCP/UDP와 포트 - 어떤 프로그램과 대화하는가"
 date: 2026-06-10 13:00:00 +0900
 categories:

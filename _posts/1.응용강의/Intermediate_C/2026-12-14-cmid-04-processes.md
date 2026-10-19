@@ -1,5 +1,4 @@
 ---
-published: false
 title: 중급 C 프로그래밍 4강 - 프로세스 fork exec wait
 date: 2026-12-14 09:00:00 +0900
 categories:

@@ -1,5 +1,4 @@
 ---
-published: false
 title: (PQC 5강) 대한민국의 PQC — 2035 마스터플랜, KpqC, 시범사업
 date: 2026-06-18 09:00:00 +0900
 categories:

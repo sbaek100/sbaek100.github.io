@@ -1,5 +1,4 @@
 ---
-published: false
 title: "[네트워크 보안] 10. 방화벽과 IDS/IPS - 무엇을 통과시키고, 무엇을 탐지하는가"
 date: 2026-06-10 19:00:00 +0900
 categories:

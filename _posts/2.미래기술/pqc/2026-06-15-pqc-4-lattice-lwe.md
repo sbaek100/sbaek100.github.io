@@ -1,5 +1,4 @@
 ---
-published: false
 title: (PQC 4강) 격자와 LWE — PQC가 기대는 수학
 date: 2026-06-15 09:00:00 +0900
 categories:

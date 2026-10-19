@@ -1,5 +1,4 @@
 ---
-published: false
 title: "[네트워크 보안] 11. 무선 LAN 보안 - 보이지 않는 선을 안전하게 쓰는 법"
 date: 2026-06-10 20:00:00 +0900
 categories:

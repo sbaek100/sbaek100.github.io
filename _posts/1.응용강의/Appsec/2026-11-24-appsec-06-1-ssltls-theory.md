@@ -1,5 +1,4 @@
 ---
-published: false
 title: "[애플리케이션 보안] 06-1. SSL/TLS 이론 — 암호화 통신과 Handshake"
 date: 2026-11-24 09:00:00 +0900
 categories:

@@ -1,5 +1,4 @@
 ---
-published: false
 title: "정보보안 기초 7장. 정보보안의 원칙 - 위협 모델부터 Security by Design까지"
 date: 2026-10-24 09:00:00 +0900
 categories:

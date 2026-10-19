@@ -1,5 +1,4 @@
 ---
-published: false
 title: 13강. 최종 발표 - 평가 기준과 발표 기법
 date: 2027-05-24 09:00:00 +0900
 categories:

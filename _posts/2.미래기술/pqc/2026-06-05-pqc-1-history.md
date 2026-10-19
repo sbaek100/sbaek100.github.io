@@ -1,5 +1,4 @@
 ---
-published: false
 title: (PQC 1강) PQC는 왜 등장했나 — 50년의 공개키 암호 역사
 date: 2026-06-05 09:00:00 +0900
 categories:

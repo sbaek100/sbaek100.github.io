@@ -1,5 +1,4 @@
 ---
-published: false
 title: "[6G AI-RAN] 07. 6G RAN을 위한 Zero Trust Architecture (ZTA)"
 date: 2026-07-30 10:10:00 +0900
 categories:

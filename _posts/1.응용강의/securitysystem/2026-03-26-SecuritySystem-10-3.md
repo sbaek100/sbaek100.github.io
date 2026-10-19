@@ -1,5 +1,4 @@
 ---
-published: false
 title: (10주차) 보안시스템구축실습 10-3 - 침입 차단 시스템 (Snort IPS) 및 실시간 차단 실습
 date: 2026-03-26 14:00:00 +0900
 categories:

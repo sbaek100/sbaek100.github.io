@@ -1,5 +1,4 @@
 ---
-published: false
 title: "[애플리케이션 보안] 04-3. 실습 — Zone Transfer 취약점과 DNS 스푸핑"
 date: 2026-11-10 11:00:00 +0900
 categories:

@@ -1,5 +1,4 @@
 ---
-published: false
 title: "[Web Security Lab] 13. 서버 설정 및 정보 노출 (디렉터리 인덱싱·에러 페이지·정보 누출·평문 전송·관리자 페이지)"
 date: 2026-06-01 21:00:00 +0900
 categories:

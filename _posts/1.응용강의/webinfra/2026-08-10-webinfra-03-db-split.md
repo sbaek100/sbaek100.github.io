@@ -1,5 +1,4 @@
 ---
-published: false
 title: "[웹 인프라 구축] 03. 2단계 — DB 서버 분리와 회원가입·로그인"
 date: 2026-08-10 09:06:00 +0900
 categories:

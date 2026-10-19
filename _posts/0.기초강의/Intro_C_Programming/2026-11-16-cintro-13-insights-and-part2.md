@@ -1,5 +1,4 @@
 ---
-published: false
 title: C 프로그래밍 기초 정리 - 핵심 인사이트와 2부 예고
 date: 2026-11-16 09:00:00 +0900
 categories:

@@ -1,5 +1,4 @@
 ---
-published: false
 title: (6주차) 보안시스템구축실습 6-2 - SSH 공개키 인증 강화와 공격 실패 확인
 date: 2026-03-26 08:30:00 +0900
 categories:

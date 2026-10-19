@@ -1,5 +1,4 @@
 ---
-published: false
 title: 네트워크 실무 6강 - 실습 문제 ⑥
 date: 2026-09-22 11:00:00 +0900
 categories:

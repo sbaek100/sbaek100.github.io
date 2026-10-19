@@ -1,5 +1,4 @@
 ---
-published: false
 title: C 프로그래밍 기초 12강 - 종합 과제 도서 관리 프로그램
 date: 2026-11-09 09:00:00 +0900
 categories:

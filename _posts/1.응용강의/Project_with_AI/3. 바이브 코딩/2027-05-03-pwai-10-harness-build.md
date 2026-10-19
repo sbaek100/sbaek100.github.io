@@ -1,5 +1,4 @@
 ---
-published: false
 title: 10강. 하네스로 프로젝트 완성 - pcapeek 구현
 date: 2027-05-03 09:00:00 +0900
 categories:

@@ -1,5 +1,4 @@
 ---
-published: false
 title: C 프로그래밍 기초 5강 - 함수와 프로그램 구조
 date: 2026-09-21 09:00:00 +0900
 categories:

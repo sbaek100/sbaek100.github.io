@@ -1,5 +1,4 @@
 ---
-published: false
 title: 네트워크 실무 11강 - 실습 문제 ⑪
 date: 2026-10-27 11:00:00 +0900
 categories:

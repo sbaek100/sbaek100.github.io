@@ -1,5 +1,4 @@
 ---
-published: false
 title: "[웹 인프라 구축] 06. 5단계 — Redis 세션 저장소로 세션 불일치 문제 해결"
 date: 2026-08-10 09:12:00 +0900
 categories:

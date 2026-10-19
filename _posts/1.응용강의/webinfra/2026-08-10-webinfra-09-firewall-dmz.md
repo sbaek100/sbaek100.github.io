@@ -1,5 +1,4 @@
 ---
-published: false
 title: "[웹 인프라 구축] 09. 8단계 — 방화벽 VM과 DMZ (완충 지대 완전 해부)"
 date: 2026-08-10 09:18:00 +0900
 categories:

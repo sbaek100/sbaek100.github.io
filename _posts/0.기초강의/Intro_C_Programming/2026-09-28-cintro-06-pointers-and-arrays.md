@@ -1,5 +1,4 @@
 ---
-published: false
 title: C 프로그래밍 기초 6강 - 포인터와 배열 (1)
 date: 2026-09-28 09:00:00 +0900
 categories:

@@ -1,5 +1,4 @@
 ---
-published: false
 title: 중급 C 프로그래밍 3강 - 파일 시스템과 메타데이터
 date: 2026-12-07 09:00:00 +0900
 categories:

@@ -1,5 +1,4 @@
 ---
-published: false
 title: "[애플리케이션 보안] 09-1. 동적분석·포렌식·DRM 이론"
 date: 2026-12-15 09:00:00 +0900
 categories:

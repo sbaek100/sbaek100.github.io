@@ -1,5 +1,4 @@
 ---
-published: false
 title: 네트워크 실무 4강 - 네트워크 장비와 스위칭 (이론)
 date: 2026-09-08 09:00:00 +0900
 categories:

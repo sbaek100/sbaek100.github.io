@@ -1,5 +1,4 @@
 ---
-published: false
 title: 네트워크 실무 5강 - VLAN·VTP·VLAN간 라우팅 (따라하기 실습)
 date: 2026-09-15 10:00:00 +0900
 categories:

@@ -1,5 +1,4 @@
 ---
-published: false
 title: 중급 C 프로그래밍 6강 - 파이프와 프로세스 간 통신
 date: 2026-12-28 09:00:00 +0900
 categories:

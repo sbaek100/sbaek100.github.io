@@ -1,5 +1,4 @@
 ---
-published: false
 title: "[웹 인프라 구축] 10. 9단계 — Bastion Host 관리망과 Open API 외부 연계"
 date: 2026-08-10 09:20:00 +0900
 categories:

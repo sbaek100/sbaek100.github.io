@@ -1,5 +1,4 @@
 ---
-published: false
 title: "[AI 보안관제 구축] 2-3 부록(선택). Suricata IPS 전환 — 탐지를 차단으로"
 date: 2027-07-12 18:00:00 +0900
 categories:
@@ -20,7 +19,7 @@ mermaid: false
 > 전제 상태: [2-3. Suricata IDS](/posts/socbuild-06-suricata-ids/) 를 끝내고, **Alerts 탭에 스캔·SQLi 경보가 뜨는 것을 눈으로 확인**한 상태.
 > 오늘의 목표: 같은 엔진·같은 규칙의 동작을 `alert` 에서 **`drop`** 으로 바꿔, 공격 패킷이 **표적에 닿지 못하게** 만듭니다.
 > 오늘 켜는 VM: **OPNsense + Kali + victim**.
-{: .prompt-info } 
+{: .prompt-info }
 
 ## 1. 왜 이것만 따로 떼어 놓았는가
 

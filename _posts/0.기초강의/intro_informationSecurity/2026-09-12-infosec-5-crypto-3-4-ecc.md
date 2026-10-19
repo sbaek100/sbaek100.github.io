@@ -1,5 +1,4 @@
 ---
-published: false
 title: "정보보안 기초 4장 ④ 현대 암호 - 타원곡선 암호 (ECC)"
 date: 2026-09-12 11:20:00 +0900
 categories:

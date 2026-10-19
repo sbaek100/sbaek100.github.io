@@ -1,5 +1,4 @@
 ---
-published: false
 title: (7주차) 보안시스템구축실습 7-2 - UFW로 쉽게 방화벽 관리하기
 date: 2026-03-26 09:30:00 +0900
 categories:

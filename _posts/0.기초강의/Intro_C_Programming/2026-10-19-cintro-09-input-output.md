@@ -1,5 +1,4 @@
 ---
-published: false
 title: C 프로그래밍 기초 9강 - 입출력과 파일
 date: 2026-10-19 09:00:00 +0900
 categories:
