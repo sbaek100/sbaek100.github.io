@@ -1,4 +1,5 @@
 ---
+published: false
 title: 서브네팅 특강 ② - 패킷 트레이서 실습 3세트 (따라하기)
 date: 2026-09-03 10:00:00 +0900
 categories:

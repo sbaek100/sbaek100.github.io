@@ -1,4 +1,5 @@
 ---
+published: false
 title: 네트워크 실무 9강 - CME로 IP 전화 통화 (따라하기 실습)
 date: 2026-10-13 10:00:00 +0900
 categories:

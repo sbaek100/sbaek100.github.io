@@ -1,4 +1,5 @@
 ---
+published: false
 title: "[애플리케이션 보안] 04-1. DNS 보안 이론 — 이름 풀이의 원리와 취약점"
 date: 2026-11-10 09:00:00 +0900
 categories:

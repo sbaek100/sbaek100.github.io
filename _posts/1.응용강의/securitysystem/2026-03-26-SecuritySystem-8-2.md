@@ -1,4 +1,5 @@
 ---
+published: false
 title: (8주차) 보안시스템구축실습 8-2 - WAF(ModSecurity)로 웹 공격 막아내기
 date: 2026-03-26 10:30:00 +0900
 categories:

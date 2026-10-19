@@ -1,4 +1,5 @@
 ---
+published: false
 title: 네트워크 실무 11강 - 접근제어(ACL)와 방화벽(ASA) (이론)
 date: 2026-10-27 09:00:00 +0900
 categories:

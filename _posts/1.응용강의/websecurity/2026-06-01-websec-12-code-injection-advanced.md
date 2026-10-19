@@ -1,4 +1,5 @@
 ---
+published: false
 title: "[Web Security Lab] 12. 코드 인젝션 심화 ① — SSI·XPath·XXE"
 date: 2026-06-01 20:30:00 +0900
 categories:

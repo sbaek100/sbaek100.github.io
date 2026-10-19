@@ -1,4 +1,5 @@
 ---
+published: false
 title: C 프로그래밍 기초 4강 - 제어 흐름
 date: 2026-09-14 09:00:00 +0900
 categories:

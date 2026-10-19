@@ -1,4 +1,5 @@
 ---
+published: false
 title: 중급 C 프로그래밍 2강 - 저수준 파일 입출력과 파일 서술자
 date: 2026-11-30 09:00:00 +0900
 categories:

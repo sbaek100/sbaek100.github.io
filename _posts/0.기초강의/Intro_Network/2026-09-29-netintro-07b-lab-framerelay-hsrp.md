@@ -1,4 +1,5 @@
 ---
+published: false
 title: 네트워크 실무 7강 - 프레임릴레이와 HSRP (따라하기 실습)
 date: 2026-09-29 10:00:00 +0900
 categories:

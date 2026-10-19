@@ -1,4 +1,5 @@
 ---
+published: false
 title: 네트워크 실무 12강 - GRE 터널과 IPSec (따라하기 실습)
 date: 2026-11-03 13:00:00 +0900
 categories:

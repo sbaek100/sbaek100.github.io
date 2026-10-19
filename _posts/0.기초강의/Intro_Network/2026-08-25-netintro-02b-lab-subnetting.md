@@ -1,4 +1,5 @@
 ---
+published: false
 title: 네트워크 실무 2강 - 서브넷 나누고 통신 확인하기 (따라하기 실습)
 date: 2026-08-25 10:00:00 +0900
 categories:

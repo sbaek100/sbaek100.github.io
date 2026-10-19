@@ -1,4 +1,5 @@
 ---
+published: false
 title: 네트워크 실무 10강 - 정보보안 개론 (이론)
 date: 2026-10-20 09:00:00 +0900
 categories:

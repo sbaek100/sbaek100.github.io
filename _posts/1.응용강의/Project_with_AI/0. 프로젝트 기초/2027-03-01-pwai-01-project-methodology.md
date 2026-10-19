@@ -1,4 +1,5 @@
 ---
+published: false
 title: 1강. 프로젝트와 개발 방법론 - 애자일과 스프린트
 date: 2027-03-01 09:00:00 +0900
 categories:

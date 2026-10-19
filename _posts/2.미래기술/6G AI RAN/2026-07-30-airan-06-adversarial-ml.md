@@ -1,4 +1,5 @@
 ---
+published: false
 title: "[6G AI-RAN] 06. RAN AI/ML 모델 대상 적대적 공격 (Adversarial ML)"
 date: 2026-07-30 10:00:00 +0900
 categories:

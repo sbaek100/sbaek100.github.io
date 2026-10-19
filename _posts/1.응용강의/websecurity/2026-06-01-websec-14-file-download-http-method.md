@@ -1,4 +1,5 @@
 ---
+published: false
 title: "[Web Security Lab] 14. 파일 다운로드 & 불필요한 HTTP Method"
 date: 2026-06-01 21:30:00 +0900
 categories:

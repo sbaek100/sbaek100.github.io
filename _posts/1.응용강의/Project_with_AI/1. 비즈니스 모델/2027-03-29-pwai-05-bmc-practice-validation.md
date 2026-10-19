@@ -1,4 +1,5 @@
 ---
+published: false
 title: 5강. 비즈니스 모델 캔버스 III - 작성·검증·요구사항 연결
 date: 2027-03-29 09:00:00 +0900
 categories:

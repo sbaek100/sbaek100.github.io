@@ -1,4 +1,5 @@
 ---
+published: false
 title: "정보보안 기초 3장 ① 컴퓨터 네트워크 기초"
 date: 2026-08-29 09:00:00 +0900
 categories:

@@ -1,4 +1,5 @@
 ---
+published: false
 title: (9주차) 보안시스템구축실습 9-1 - 웹 취약점 실습 (DVWA & Burp Suite)
 date: 2026-03-26 11:00:00 +0900
 categories:

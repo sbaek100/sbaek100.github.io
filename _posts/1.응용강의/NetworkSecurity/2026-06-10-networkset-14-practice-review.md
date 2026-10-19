@@ -1,4 +1,5 @@
 ---
+published: false
 title: "[네트워크 보안] 14. 종합 실전 정리 - 상황을 보고 정답을 고르는 법"
 date: 2026-06-10 23:00:00 +0900
 categories:

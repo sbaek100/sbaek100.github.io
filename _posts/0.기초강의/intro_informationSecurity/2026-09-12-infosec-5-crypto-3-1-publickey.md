@@ -1,4 +1,5 @@
 ---
+published: false
 title: "정보보안 기초 4장 ③ 현대 암호 - 공개키 암호의 원리 (DH·RSA)"
 date: 2026-09-12 11:00:00 +0900
 categories:

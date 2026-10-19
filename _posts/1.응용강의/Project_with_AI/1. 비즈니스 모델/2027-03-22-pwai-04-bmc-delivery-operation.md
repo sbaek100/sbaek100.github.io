@@ -1,4 +1,5 @@
 ---
+published: false
 title: 4강. 비즈니스 모델 캔버스 II - 전달·유지·실행 구조
 date: 2027-03-22 09:00:00 +0900
 categories:

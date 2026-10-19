@@ -1,4 +1,5 @@
 ---
+published: false
 title: "[애플리케이션 보안] 03-2. 실습 — SMTP로 메일을 직접 보내고 헤더 분석하기"
 date: 2026-11-03 10:00:00 +0900
 categories:

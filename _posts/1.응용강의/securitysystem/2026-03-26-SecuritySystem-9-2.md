@@ -1,4 +1,5 @@
 ---
+published: false
 title: (9주차) 보안시스템구축실습 9-2 - 웹 취약점 과제 & 방어 코드 정리
 date: 2026-03-26 11:30:00 +0900
 categories:

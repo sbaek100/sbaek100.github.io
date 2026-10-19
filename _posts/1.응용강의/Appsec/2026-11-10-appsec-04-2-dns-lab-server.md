@@ -1,4 +1,5 @@
 ---
+published: false
 title: "[애플리케이션 보안] 04-2. 실습 — BIND9로 DNS 서버 구축하기"
 date: 2026-11-10 10:00:00 +0900
 categories:

@@ -1,4 +1,5 @@
 ---
+published: false
 title: 네트워크 실무 14강 - 종합실습 ② 구축 가이드와 대회 도전
 date: 2026-11-17 11:00:00 +0900
 categories:

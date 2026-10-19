@@ -1,4 +1,5 @@
 ---
+published: false
 title: "정보보안 기초 5장 ② 접근통제 - 인증(소유·생체 기반, Have/Are)"
 date: 2026-10-10 10:00:00 +0900
 categories:

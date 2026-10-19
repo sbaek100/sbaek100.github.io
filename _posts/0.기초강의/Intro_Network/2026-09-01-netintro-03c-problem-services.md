@@ -1,4 +1,5 @@
 ---
+published: false
 title: 네트워크 실무 3강 - 실습 문제 ③
 date: 2026-09-01 11:00:00 +0900
 categories:

@@ -1,4 +1,5 @@
 ---
+published: false
 title: "정보보안 기초 4장 ⑧ 현대 암호 - 전자서명과 PKI"
 date: 2026-09-12 12:40:00 +0900
 categories:

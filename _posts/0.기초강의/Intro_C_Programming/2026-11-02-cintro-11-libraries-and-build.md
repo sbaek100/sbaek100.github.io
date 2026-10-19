@@ -1,4 +1,5 @@
 ---
+published: false
 title: C 프로그래밍 기초 11강 - 라이브러리 만들기와 빌드 자동화
 date: 2026-11-02 09:00:00 +0900
 categories:

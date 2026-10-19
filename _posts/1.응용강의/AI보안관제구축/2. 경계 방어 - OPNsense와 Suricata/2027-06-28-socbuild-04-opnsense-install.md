@@ -1,4 +1,5 @@
 ---
+published: false
 title: "[AI 보안관제 구축] 2-1. 경계 방화벽 세우기 — 방화벽·IDS·IPS 이해와 OPNsense 설치"
 date: 2027-06-28 09:00:00 +0900
 categories:

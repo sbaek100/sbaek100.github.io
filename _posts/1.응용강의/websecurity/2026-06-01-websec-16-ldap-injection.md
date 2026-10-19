@@ -1,4 +1,5 @@
 ---
+published: false
 title: "[Web Security Lab] 16. 코드 인젝션 심화 ② — LDAP 인젝션 (환경 구축부터)"
 date: 2026-06-01 22:30:00 +0900
 categories:

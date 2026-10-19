@@ -1,4 +1,5 @@
 ---
+published: false
 title: (6주차) 보안시스템구축실습 6-4 - SSH·계정 보안 기출문제 풀이 (정보보안기사 실기)
 date: 2026-03-26 10:00:00 +0900
 categories:

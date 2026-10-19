@@ -1,4 +1,5 @@
 ---
+published: false
 title: 9강. 개발 환경 구축 - WSL과 Claude Code
 date: 2027-04-26 09:00:00 +0900
 categories:

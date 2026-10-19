@@ -1,4 +1,5 @@
 ---
+published: false
 title: "[AI 보안관제 구축] 1-3-1. 무방비 표적 취약점 점검 ① 네트워크 — 포트 스캔을 통한 공격면(Attack Surface) 식별"
 date: 2027-06-22 09:00:00 +0900
 categories:

@@ -1,4 +1,5 @@
 ---
+published: false
 title: "정보보안 기초 4장 ⑩ 암호 알고리즘의 안전성 - 공격 모델(COA·KPA·CPA·CCA)과 안전성 개념(OW·IND·NM)"
 date: 2026-09-19 09:00:00 +0900
 categories:

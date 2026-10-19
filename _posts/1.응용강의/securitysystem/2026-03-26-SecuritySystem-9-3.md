@@ -1,4 +1,5 @@
 ---
+published: false
 title: (7주차) 보안시스템 구축 실습 7-1-1 - Nmap 스캐닝 기법 실습
 date: 2026-03-26 11:36:00 +0900
 categories:

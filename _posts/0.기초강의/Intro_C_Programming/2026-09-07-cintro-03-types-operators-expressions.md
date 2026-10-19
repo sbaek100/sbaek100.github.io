@@ -1,4 +1,5 @@
 ---
+published: false
 title: C 프로그래밍 기초 3강 - 자료형·연산자·식
 date: 2026-09-07 09:00:00 +0900
 categories:

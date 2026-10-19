@@ -1,4 +1,5 @@
 ---
+published: false
 title: (PQC 2강) 레거시 vs PQC — 무엇이 다르고, 무엇이 더 좋은가
 date: 2026-06-08 09:00:00 +0900
 categories:

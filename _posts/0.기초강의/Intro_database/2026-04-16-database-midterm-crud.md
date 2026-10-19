@@ -1,4 +1,5 @@
 ---
+published: false
 layout: post
 title: 2026-1학기 중간고사준비(재직자반) - CRUD 및 AND/OR 실습 20문제
 date: 2026-04-16 10:00:00 +0900

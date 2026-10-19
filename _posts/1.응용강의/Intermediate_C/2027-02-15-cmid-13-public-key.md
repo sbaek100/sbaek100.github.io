@@ -1,4 +1,5 @@
 ---
+published: false
 title: 중급 C 프로그래밍 13강 - 공개키 키 교환 전자서명
 date: 2027-02-15 09:00:00 +0900
 categories:

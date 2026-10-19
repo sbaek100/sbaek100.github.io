@@ -1,4 +1,5 @@
 ---
+published: false
 title: "[AI 보안관제 구축] 1-3-3. 무방비 표적 취약점 점검 ③ 웹 — Juice Shop SQLi·XSS·접근통제 결함"
 date: 2027-06-26 09:00:00 +0900
 categories:

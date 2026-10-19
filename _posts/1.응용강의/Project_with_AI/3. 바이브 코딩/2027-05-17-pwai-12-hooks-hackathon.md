@@ -1,4 +1,5 @@
 ---
+published: false
 title: 12강. 하네스 심화 II - 자동 검증과 해커톤 실전
 date: 2027-05-17 09:00:00 +0900
 categories:

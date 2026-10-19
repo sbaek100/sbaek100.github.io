@@ -1,4 +1,5 @@
 ---
+published: false
 title: "[네트워크 보안] 09. DoS와 DDoS - 서비스를 못 쓰게 만드는 공격"
 date: 2026-06-10 18:00:00 +0900
 categories:

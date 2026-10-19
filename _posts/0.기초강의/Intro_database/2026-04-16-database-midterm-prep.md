@@ -1,4 +1,5 @@
 ---
+published: false
 layout: post
 title: 2026-1학기 중간고사준비 - MySQL 실습 환경 20문제
 date: 2026-04-15 10:00:00 +0900

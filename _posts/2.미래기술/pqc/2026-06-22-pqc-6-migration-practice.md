@@ -1,4 +1,5 @@
 ---
+published: false
 title: (PQC 6강) 현실 적용 — 하이브리드, 마이그레이션, 전자서명 실습
 date: 2026-06-22 09:00:00 +0900
 categories:

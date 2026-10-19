@@ -1,4 +1,5 @@
 ---
+published: false
 title: 네트워크 실무 5강 - VLAN과 트렁킹 (이론)
 date: 2026-09-15 09:00:00 +0900
 categories:

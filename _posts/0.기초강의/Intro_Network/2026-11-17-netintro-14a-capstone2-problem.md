@@ -1,4 +1,5 @@
 ---
+published: false
 title: 네트워크 실무 14강 - 종합실습 ② 지사·홈·통합 (실습 문제)
 date: 2026-11-17 09:00:00 +0900
 categories:

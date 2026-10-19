@@ -1,4 +1,5 @@
 ---
+published: false
 title: "정보보안 기초 4장 ⑤ 현대 암호 - 포스트 양자 암호 (PQC)"
 date: 2026-09-12 11:40:00 +0900
 categories:

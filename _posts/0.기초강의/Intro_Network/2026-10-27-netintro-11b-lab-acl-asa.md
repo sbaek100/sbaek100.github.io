@@ -1,4 +1,5 @@
 ---
+published: false
 title: 네트워크 실무 11강 - 확장 ACL과 ASA 방화벽 (따라하기 실습)
 date: 2026-10-27 10:00:00 +0900
 categories:

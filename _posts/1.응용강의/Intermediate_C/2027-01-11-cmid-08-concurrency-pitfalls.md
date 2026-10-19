@@ -1,4 +1,5 @@
 ---
+published: false
 title: 중급 C 프로그래밍 8강 - 동시성의 함정
 date: 2027-01-11 09:00:00 +0900
 categories:

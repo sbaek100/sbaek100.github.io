@@ -1,4 +1,5 @@
 ---
+published: false
 title: "[애플리케이션 보안] 10-2. 실습 — 서버 하드닝 종합 점검"
 date: 2026-12-22 10:00:00 +0900
 categories:

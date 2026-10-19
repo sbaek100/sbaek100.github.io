@@ -1,4 +1,5 @@
 ---
+published: false
 title: 중급 C 프로그래밍 14강 - TLS 핸드셰이크 완전 분해
 date: 2027-02-22 09:00:00 +0900
 categories:

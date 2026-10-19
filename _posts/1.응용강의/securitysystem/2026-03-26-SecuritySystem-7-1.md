@@ -1,4 +1,5 @@
 ---
+published: false
 title: (7주차) 보안시스템구축실습 7-1 - 방화벽 기초와 iptables 따라하기
 date: 2026-03-26 09:00:00 +0900
 categories:

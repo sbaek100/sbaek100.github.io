@@ -1,4 +1,5 @@
 ---
+published: false
 title: "[AI 보안관제 구축] 1-3. 표적 서버 만들기와 첫 공격 — 물리 리눅스 서버 + Juice Shop, 무방비 상태 확인"
 date: 2027-06-21 09:00:00 +0900
 categories:

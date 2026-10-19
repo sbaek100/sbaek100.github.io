@@ -1,4 +1,5 @@
 ---
+published: false
 title: C 프로그래밍 기초 1강 - 개발 환경 구축과 첫 번째 프로그램
 date: 2026-08-24 09:00:00 +0900
 categories:

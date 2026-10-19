@@ -1,4 +1,5 @@
 ---
+published: false
 title: "[웹 인프라 구축] 08. 7단계 — DB 복제 (Primary–Standby 이중화)"
 date: 2026-08-10 09:16:00 +0900
 categories:

@@ -1,4 +1,5 @@
 ---
+published: false
 title: 네트워크 실무 8강 - 메일 서버와 무선 연결 (따라하기 실습)
 date: 2026-10-06 10:00:00 +0900
 categories:

@@ -1,4 +1,5 @@
 ---
+published: false
 title: (8주차) 보안시스템구축실습 8-1 - DVWA 설치와 웹 공격 시연
 date: 2026-03-26 10:00:00 +0900
 categories:

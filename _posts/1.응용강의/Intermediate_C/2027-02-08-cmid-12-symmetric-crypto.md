@@ -1,4 +1,5 @@
 ---
+published: false
 title: 중급 C 프로그래밍 12강 - 대칭키 암호
 date: 2027-02-08 09:00:00 +0900
 categories:

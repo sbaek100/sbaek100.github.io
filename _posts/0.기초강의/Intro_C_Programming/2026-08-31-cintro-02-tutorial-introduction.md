@@ -1,4 +1,5 @@
 ---
+published: false
 title: C 프로그래밍 기초 2강 - C 언어 한 바퀴 둘러보기
 date: 2026-08-31 09:00:00 +0900
 categories:

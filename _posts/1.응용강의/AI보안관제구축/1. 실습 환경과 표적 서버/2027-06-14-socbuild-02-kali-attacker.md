@@ -1,4 +1,5 @@
 ---
+published: false
 title: "[AI 보안관제 구축] 1-2. 공격자 VM 만들기 — Kali Linux 설치·연결"
 date: 2027-06-14 09:00:00 +0900
 categories:

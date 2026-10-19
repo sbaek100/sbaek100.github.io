@@ -1,4 +1,5 @@
 ---
+published: false
 title: "[Web Security Lab] 09. File Inclusion (LFI / RFI)"
 date: 2026-06-01 18:00:00 +0900
 categories:

@@ -1,4 +1,5 @@
 ---
+published: false
 title: 네트워크 실무 1강 - 네트워크 개요 (이론)
 date: 2026-08-18 09:00:00 +0900
 categories:

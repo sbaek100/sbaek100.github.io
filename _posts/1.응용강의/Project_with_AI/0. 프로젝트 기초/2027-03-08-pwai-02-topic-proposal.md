@@ -1,4 +1,5 @@
 ---
+published: false
 title: 2강. 주제 선정과 제안서 - 무엇을 만들 것인가
 date: 2027-03-08 09:00:00 +0900
 categories:

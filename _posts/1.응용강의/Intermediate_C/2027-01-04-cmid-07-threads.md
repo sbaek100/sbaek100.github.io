@@ -1,4 +1,5 @@
 ---
+published: false
 title: 중급 C 프로그래밍 7강 - 스레드
 date: 2027-01-04 09:00:00 +0900
 categories:

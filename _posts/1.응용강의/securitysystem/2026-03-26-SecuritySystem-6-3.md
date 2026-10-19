@@ -1,4 +1,5 @@
 ---
+published: false
 title: (6주차) 보안시스템구축실습 6-3 - Fail2Ban으로 반복 SSH 공격 자동 차단
 date: 2026-03-26 08:50:00 +0900
 categories:

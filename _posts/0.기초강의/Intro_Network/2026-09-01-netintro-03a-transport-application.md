@@ -1,4 +1,5 @@
 ---
+published: false
 title: 네트워크 실무 3강 - 전송·응용 계층과 진단 (이론)
 date: 2026-09-01 09:00:00 +0900
 categories:

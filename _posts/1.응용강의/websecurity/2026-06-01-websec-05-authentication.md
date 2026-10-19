@@ -1,4 +1,5 @@
 ---
+published: false
 title: "[Web Security Lab] 05. Authentication Attacks"
 date: 2026-06-01 14:00:00 +0900
 categories:

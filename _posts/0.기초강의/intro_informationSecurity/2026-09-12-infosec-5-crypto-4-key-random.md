@@ -1,4 +1,5 @@
 ---
+published: false
 title: "정보보안 기초 4장 ⑨ 현대 암호 - 키 관리와 난수"
 date: 2026-09-12 13:00:00 +0900
 categories:

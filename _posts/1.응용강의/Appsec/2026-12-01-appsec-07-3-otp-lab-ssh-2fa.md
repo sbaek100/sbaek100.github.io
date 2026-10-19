@@ -1,4 +1,5 @@
 ---
+published: false
 title: "[애플리케이션 보안] 07-3. 실습 — SSH 로그인에 OTP 2단계 인증 붙이기"
 date: 2026-12-01 11:00:00 +0900
 categories:

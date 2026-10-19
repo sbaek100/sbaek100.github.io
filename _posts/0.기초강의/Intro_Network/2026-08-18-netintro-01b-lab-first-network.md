@@ -1,4 +1,5 @@
 ---
+published: false
 title: 네트워크 실무 1강 - 첫 네트워크 만들기 (따라하기 실습)
 date: 2026-08-18 10:00:00 +0900
 categories:

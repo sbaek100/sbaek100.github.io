@@ -1,4 +1,5 @@
 ---
+published: false
 title: 중급 C 프로그래밍 1강 - 실습 환경 구축과 시스템 호출의 세계
 date: 2026-11-23 09:00:00 +0900
 categories:

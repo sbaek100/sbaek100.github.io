@@ -1,4 +1,5 @@
 ---
+published: false
 title: "[6G AI-RAN] 12. 양자 암호(PQC), 표준화 및 미래 연구 과제"
 date: 2026-07-30 11:00:00 +0900
 categories:

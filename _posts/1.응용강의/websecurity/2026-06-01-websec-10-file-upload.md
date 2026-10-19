@@ -1,4 +1,5 @@
 ---
+published: false
 title: "[Web Security Lab] 10. File Upload Vulnerabilities"
 date: 2026-06-01 19:00:00 +0900
 categories:

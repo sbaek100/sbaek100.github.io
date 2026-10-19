@@ -1,4 +1,5 @@
 ---
+published: false
 title: (10주차) 보안시스템구축실습 10-1 - 침입 탐지 시스템 (Snort IDS)
 date: 2026-03-26 13:00:00 +0900
 categories:

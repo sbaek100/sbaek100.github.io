@@ -1,4 +1,5 @@
 ---
+published: false
 title: 11강. 하네스 심화 I - 4개 레이어와 실행 엔진
 date: 2027-05-10 09:00:00 +0900
 categories:

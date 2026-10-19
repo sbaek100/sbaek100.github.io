@@ -1,4 +1,5 @@
 ---
+published: false
 title: "정보보안 기초 5장 ③ 접근통제 - 인가(Authorization)"
 date: 2026-10-10 11:00:00 +0900
 categories:

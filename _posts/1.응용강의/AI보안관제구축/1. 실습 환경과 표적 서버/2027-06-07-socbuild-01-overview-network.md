@@ -1,4 +1,5 @@
 ---
+published: false
 title: "[AI 보안관제 구축] 1-1. 전체 설계도와 실습망 준비 — VirtualBox·내부 네트워크 만들기"
 date: 2027-06-07 09:00:00 +0900
 categories:

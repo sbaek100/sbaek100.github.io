@@ -1,4 +1,5 @@
 ---
+published: false
 title: "[네트워크 보안] 08. DNS, DHCP, SNMP - 이름, 주소, 관리 정보"
 date: 2026-06-10 17:00:00 +0900
 categories:

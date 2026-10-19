@@ -1,4 +1,5 @@
 ---
+published: false
 title: "[웹 인프라 구축] 07. 6단계 — 프록시 이중화 (Keepalived와 가상 IP)"
 date: 2026-08-10 09:14:00 +0900
 categories:

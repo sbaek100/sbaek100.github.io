@@ -1,4 +1,5 @@
 ---
+published: false
 title: "정보보안 기초 4장 ② 현대 암호 - 대칭키 암호체계"
 date: 2026-09-12 10:00:00 +0900
 categories:

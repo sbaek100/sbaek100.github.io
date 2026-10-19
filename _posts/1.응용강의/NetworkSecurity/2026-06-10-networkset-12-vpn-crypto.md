@@ -1,4 +1,5 @@
 ---
+published: false
 title: "[네트워크 보안] 12. VPN과 암호화 통신 - 안전한 터널 만들기"
 date: 2026-06-10 21:00:00 +0900
 categories:

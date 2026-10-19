@@ -1,4 +1,5 @@
 ---
+published: false
 title: 네트워크 실무 12강 - VPN: GRE와 IPSec (이론)
 date: 2026-11-03 09:00:00 +0900
 categories:

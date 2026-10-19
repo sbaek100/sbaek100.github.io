@@ -1,4 +1,5 @@
 ---
+published: false
 title: 네트워크 실무 7강 - WAN과 게이트웨이 이중화 (이론)
 date: 2026-09-29 09:00:00 +0900
 categories:

@@ -1,4 +1,5 @@
 ---
+published: false
 title: 네트워크 실무 13강 - 종합실습 ① 구축 가이드
 date: 2026-11-10 11:00:00 +0900
 categories:

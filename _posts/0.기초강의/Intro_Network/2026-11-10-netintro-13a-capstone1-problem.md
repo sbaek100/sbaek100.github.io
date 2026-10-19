@@ -1,4 +1,5 @@
 ---
+published: false
 title: 네트워크 실무 13강 - 종합실습 ① 본사·외부망 (실습 문제)
 date: 2026-11-10 09:00:00 +0900
 categories:

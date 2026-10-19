@@ -1,4 +1,5 @@
 ---
+published: false
 layout: post
 title: 2026년 1학기 (재직자반) 데이터베이스 보안 기말고사 (10문제)
 date: 2026-06-16 09:00:00 +0900

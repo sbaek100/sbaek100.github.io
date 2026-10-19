@@ -1,4 +1,5 @@
 ---
+published: false
 title: "[네트워크 보안] 03. IP 주소와 라우팅 - 길을 찾고 오류를 알려주는 방식"
 date: 2026-06-10 12:00:00 +0900
 categories:

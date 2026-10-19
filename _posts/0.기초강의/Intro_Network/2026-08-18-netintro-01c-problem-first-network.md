@@ -1,4 +1,5 @@
 ---
+published: false
 title: 네트워크 실무 1강 - 실습 문제 ①
 date: 2026-08-18 11:00:00 +0900
 categories:

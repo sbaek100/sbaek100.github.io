@@ -1,4 +1,5 @@
 ---
+published: false
 title: 서브네팅 특강 ① - 장비 대수로 IP를 설계하는 법 (이론)
 date: 2026-09-03 09:00:00 +0900
 categories:

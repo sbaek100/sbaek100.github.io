@@ -1,4 +1,5 @@
 ---
+published: false
 title: 중급 C 프로그래밍 10강 - 다중 접속 서버
 date: 2027-01-25 09:00:00 +0900
 categories:

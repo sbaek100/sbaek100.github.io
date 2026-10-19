@@ -1,4 +1,5 @@
 ---
+published: false
 title: "[웹 인프라 구축] 11. 10단계 — CDN·캐시, 그리고 종합 장애 훈련 (최종회)"
 date: 2026-08-10 09:22:00 +0900
 categories:
