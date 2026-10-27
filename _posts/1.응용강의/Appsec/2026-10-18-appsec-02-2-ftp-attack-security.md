@@ -82,7 +82,7 @@ FTP Bounce 공격은 공격자가 `PORT` 명령에 자신의 주소 대신 **제
 
 #### 공격 절차
 
-![FTP Bounce 공격 흐름: 공격자가 PORT 명령으로 내부 PC 주소를 적으면 FTP 서버가 대신 접속한다|530x297](/assets/img/posts/2026-10-18-appsec-02-2-ftp-bounce.svg)
+![FTP Bounce 공격 흐름: 공격자가 PORT 명령으로 내부 PC 주소를 적으면 FTP 서버가 대신 접속한다](/assets/img/posts/2026-10-18-appsec-02-2-ftp-bounce.svg){: width="530" height="297" }
 
 | 단계 | 내용 |
 |---|---|

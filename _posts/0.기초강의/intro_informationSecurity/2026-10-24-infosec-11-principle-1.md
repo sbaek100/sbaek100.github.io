@@ -272,7 +272,7 @@ TCB는 보안이 실제로 의존하는 핵심 구성요소 집합임.
 - 복구 절차 문서화 및 모의훈련
 - 비상연락 체계와 의사결정 권한 정의
 
-![|567x767](/assets/img/posts/2026-03-11-infosec-3-principle-1-1773219959125.png)
+![](/assets/img/posts/2026-03-11-infosec-3-principle-1-1773219959125.png){: width="567" height="767" }
 ![](/assets/img/posts/2026-03-11-infosec-3-principle-1-1773219986860.png)
 
 ### 6.4 DR 센터와 업무 연속성

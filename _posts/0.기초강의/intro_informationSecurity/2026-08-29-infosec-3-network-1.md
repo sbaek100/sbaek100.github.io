@@ -212,7 +212,7 @@ graph LR
 # Part 3. OSI 7계층(Open Systems Interconnection 7 Layers)과 캡슐화
 
 
-![|697x397](/assets/img/posts/2026-03-11-infosec-2-network-1773211644059.png)
+![](/assets/img/posts/2026-03-11-infosec-2-network-1773211644059.png){: width="697" height="397" }
 
 ## 3.1 OSI 7계층(Open Systems Interconnection 7 Layers)의 목적
 
@@ -455,7 +455,7 @@ L7은 공격자에게도 매력적인 계층임.
 송신 시 각 계층 헤더(Header)가 붙고,
 수신 시 반대로 벗겨지는 과정임.
 
-![|700x488](/assets/img/posts/2026-03-11-infosec-2-network-1773212222842.png)
+![](/assets/img/posts/2026-03-11-infosec-2-network-1773212222842.png){: width="700" height="488" }
 
 
 ```mermaid

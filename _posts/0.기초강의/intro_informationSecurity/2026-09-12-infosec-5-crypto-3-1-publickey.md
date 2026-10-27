@@ -85,7 +85,7 @@ mermaid: true
 >
 > 사실 "공개 채널로 비밀을 만든다"는 아이디어는 Diffie-Hellman보다 먼저 나왔다. 영국 정보기관 GCHQ의 James Ellis는 **1969년**에 '비(非)비밀 암호([non-secret encryption](https://nsarchive.gwu.edu/sites/default/files/documents/3035765/Document-02.pdf))'라는 개념을 제안했고, 1973년에 갓 입사한 수학자 Clifford Cocks는 이 아이디어를 전해 들은 **그날 저녁 RSA와 사실상 같은 방식을 고안**했다(RSA 발표보다 4년 앞선다). 이듬해 Malcolm Williamson은 DH 키 교환과 같은 방법을 찾아냈다.
 > 
-> ![|259x361](/assets/img/posts/2026-09-12-infosec-5-crypto-3-1-publickey-1787494392514.png)
+> ![](/assets/img/posts/2026-09-12-infosec-5-crypto-3-1-publickey-1787494392514.png){: width="259" height="361" }
 >
 > ![](/assets/img/posts/2026-09-12-infosec-5-crypto-3-1-publickey-1787494444217.png)
 >

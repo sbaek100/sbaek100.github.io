@@ -79,7 +79,7 @@ mermaid: true
 컴퓨터 시대가 열리며 암호는 감각이 아니라 수학으로 재정의되었다.
 
 - Claude Shannon(1948~1949): 정보이론 기반 암호학 토대
-  ![|210x322](/assets/img/posts/2026-09-12-infosec-5-crypto-2-1787484018642.png)
+  ![](/assets/img/posts/2026-09-12-infosec-5-crypto-2-1787484018642.png){: width="210" height="322" }
 - **핵심 질문: "절대 안전한가?"보다 "현실적 자원으로 깨기 가능한가?"**
   
   ![](/assets/img/posts/2026-03-11-infosec-5-crypto-2-1773262819147.png)
@@ -412,7 +412,7 @@ RC4 하나를 제대로 이해했다면 나머지는 어디가 다른지만 알�
 
 **대니얼 번스타인(Daniel J. Bernstein)** 이 설계한 **Salsa20**(2005)의 개량판으로 2008년 발표되었다. **RFC 8439**로 표준화되어 있고 **TLS 1.3의 표준 암호군**에 포함된다. 키 256비트, 논스 96비트를 쓰며 구조는 **ARX**(Add–Rotate–XOR)다. 실무에서는 인증 태그와 결합한 **ChaCha20-Poly1305**(AEAD) 형태로 쓴다.
 
-![|234x351](/assets/img/posts/2026-09-12-infosec-5-crypto-2-1787485399818.png)
+![](/assets/img/posts/2026-09-12-infosec-5-crypto-2-1787485399818.png){: width="234" height="351" }
 
 AES가 있는데도 쓰는 이유는 성능이다. 최신 CPU에는 AES 전용 명령어(**AES-NI**)가 있어 AES가 매우 빠르지만, 그런 가속기가 없는 **저사양 모바일·IoT 기기**에서는 ChaCha20이 더 빠르고 상수 시간 구현도 쉽다. 구글이 안드로이드·크롬에 적극 도입한 이유가 이것이다.
 

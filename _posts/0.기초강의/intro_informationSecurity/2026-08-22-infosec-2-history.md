@@ -202,7 +202,7 @@ MULTICS는 상업적으로 크게 성공하지 못했으나, 오늘날의 운영
 
 이 보고서에서 가장 자주 인용되는 것은 **"COMPUTER NETWORK VULNERABILITIES"** 라는 한 장의 그림임. 자원 공유형 시스템의 구성요소를 늘어놓고, **각 지점마다 어떤 취약점이 존재하는지를 빠짐없이 표시**한 도해임.
 
-![|671x458](/assets/img/posts/2026-03-04-infosec-2-history-1786171549243.png)
+![](/assets/img/posts/2026-03-04-infosec-2-history-1786171549243.png){: width="671" height="458" }
 
 각 지점의 취약점을 정리하면 다음과 같음.
 
@@ -440,7 +440,7 @@ TCSEC의 기여는 다음과 같음.
 
 ![](/assets/img/posts/2026-03-04-infosec-2-history-1786172470907.png)
 
-![|357x491](/assets/img/posts/2026-03-04-infosec-2-history-1786172480685.png)
+![](/assets/img/posts/2026-03-04-infosec-2-history-1786172480685.png){: width="357" height="491" }
 
 그 결과 1984년 **NSDD-145(National Security Decision Directive 145)** 가 발표되어 컴퓨터 보안 정책 강화와 연방정부 시스템 보안 강화를 지시함. 같은 해 첫 법안이 제출되었고, 1986년 **CFAA(Computer Fraud and Abuse Act, 컴퓨터 사기 및 남용 방지법)** 가 제정됨.
 
@@ -679,7 +679,7 @@ CFAA가 처벌 대상으로 규정한 행위는 다음과 같음.
 
 그래서 최근의 정책과 표준은 **복원력(Resilience)** 을 전면에 세움. 미국 NIST는 **SP 800-160 Volume 2**에서 **사이버 복원력(cyber resiliency)** 을 사이버 자원을 사용하는 시스템에 대한 불리한 조건·스트레스·공격·침해를 다루는 능력으로 정의하고, 네 가지 목표를 제시함.
 
-![|700x310](/assets/img/posts/2026-03-04-infosec-2-history-1786174181454.png)
+![](/assets/img/posts/2026-03-04-infosec-2-history-1786174181454.png){: width="700" height="310" }
 
 | 목표 | 내용 |
 |---|---|

@@ -157,7 +157,7 @@ OTP·생체인증·FIDO·MFA·SSO·웹 인증까지 이어서 살펴본다.
 - OTP 토큰과 OTP 인증서버가 **동기화된 카운터**를 기준으로, 사용자가 인증을 요청할 때마다 OTP 값을 생성한다.
 - 서버와 클라이언트가 카운트 값을 **동일하게 증가**시켜 가며, 해당 카운트 값을 입력으로 OTP를 생성해 인증한다.
 - 시간 동기화와 달리 **시계가 필요 없다.** 다만 토큰 버튼을 실수로 여러 번 누르면 카운터가 서버보다 앞서가 **동기화가 어긋날 수** 있다. 
-  ![|202x202](/assets/img/posts/2026-06-01-infosec-9-auth-1-1780903779769.png)
+  ![](/assets/img/posts/2026-06-01-infosec-9-auth-1-1780903779769.png){: width="202" height="202" }
 
 ### 2.3 질의-응답 방식 (Challenge-Response)
 
@@ -211,7 +211,7 @@ $$h^n,\ h^{n-1},\ h^{n-2},\ \cdots \quad(\text{사용 — 역순})$$
 | 생리적(Physiological) | 지문(Fingerprint), 손바닥(Hand), 홍채(Iris), 얼굴(Face), DNA |
 | 행동적(Behavioral)    | 키스트로크(Keystroke), 서명(Signature), 음성(Voice)          |
 
-![|697|538x289](/assets/img/posts/2026-06-01-infosec-9-auth-1-1780901992081.png)
+![](/assets/img/posts/2026-06-01-infosec-9-auth-1-1780901992081.png){: width="538" height="289" }
 
 [마스크를 써도 얼굴 인식이 되는 인공지능 기술 / YTN 사이언스](https://youtu.be/Dh3YzMYpGPQ?si=ucVzMmvI0ANrK8HW)
 

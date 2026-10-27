@@ -216,7 +216,7 @@ pacman -Syu
 > MSYS2에는 UCRT64, MINGW64, CLANG64 등 여러 환경이 있습니다. 우리는 최신 윈도우 런타임을 사용하는 **UCRT64**를 기준으로 진행합니다. 다른 창에서 설치하면 컴파일러가 엉뚱한 곳에 설치되어 뒤에서 `gcc`를 찾지 못합니다.
 {: .prompt-warning }
 
-![|220x362](/assets/img/posts/2026-08-24-cintro-01-vscode-gcc-hello-world-1787320139499.png)
+![](/assets/img/posts/2026-08-24-cintro-01-vscode-gcc-hello-world-1787320139499.png){: width="220" height="362" }
 
 UCRT64 터미널에서 갱신을 한 번 더 마무리한 뒤, 컴파일러 꾸러미를 설치합니다.
 
