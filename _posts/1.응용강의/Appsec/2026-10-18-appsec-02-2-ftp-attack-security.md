@@ -120,6 +120,53 @@ FTP Bounce는 포트 스캔에 그치지 않고, 내부 서비스에 **임의의
 > 시험에서는 "**PORT 명령**을 악용하여 외부에서 직접 접근 불가능한 **내부망** 컴퓨터의 포트에 FTP 서버를 통해 접근"이 정답 문장으로 출제된다.
 {: .prompt-tip }
 
+### [실습] 서버가 PORT 목적지를 검증하는지 확인
+
+공격을 재현하지 않고, 대책인 **`PORT` 목적지 검증**이 실제로 동작하는지만 확인합니다. Kali에서 `ftp` 로 로그인한 뒤 `quote` 로 `PORT` 명령을 직접 보냅니다. 첫 번째는 **Kali 자신의 주소**(`192.168.0.10`), 두 번째는 **다른 호스트의 주소**(`192.168.0.99`의 25번 포트)입니다.
+
+```bash
+# === Kali ===
+ftp 192.168.0.30
+```
+
+```
+Name (192.168.0.30:kali): ftpuser
+331 Please specify the password.
+Password:                       <- ftppass123
+230 Login successful.
+ftp> quote PORT 192,168,0,10,195,80
+200 PORT command successful. Consider using PASV.
+ftp> quote PORT 192,168,0,99,0,25
+500 Illegal PORT command.
+ftp> bye
+221 Goodbye.
+```
+
+| 보낸 명령 | 서버 응답 | 의미 |
+|---|---|---|
+| `PORT 192,168,0,10,195,80` | `200` | 목적지가 **명령을 보낸 Kali 자신**이므로 허용 |
+| `PORT 192,168,0,99,0,25` | `500 Illegal PORT command` | 목적지가 **제3의 호스트**이므로 거부 → Bounce 차단 |
+
+vsftpd는 `port_promiscuous` 설정이 `NO`(기본값)일 때 `PORT` 주소와 실제 접속한 클라이언트 주소가 다르면 이처럼 거부합니다. Ubuntu에서 관련 설정을 확인합니다.
+
+```bash
+# === Ubuntu ===
+grep -nE '^(port_promiscuous|anonymous_enable|anon_upload_enable)' /etc/vsftpd.conf
+```
+
+```
+25:anonymous_enable=NO
+```
+
+| 설정 | 결과 | 의미 |
+|---|---|---|
+| `port_promiscuous` | 줄이 없음 | 기본값 `NO` 적용 → `PORT` 목적지 검증 **켜짐** |
+| `anonymous_enable` | `NO` | 익명 접속 **금지** |
+| `anon_upload_enable` | 줄이 없음 | 기본값 `NO` 적용 → 익명 업로드 **금지** |
+
+> `port_promiscuous=YES` 로 바꾸면 검증이 꺼져 Bounce 공격이 가능해집니다. 실습 서버에서도 이 값은 바꾸지 않습니다.
+{: .prompt-danger }
+
 ## 3.4 TFTP를 이용한 공격
 
 | 항목  | 내용                                                                                                                                              |
@@ -164,8 +211,6 @@ sudo grep -E "OK LOGIN|FAIL LOGIN" /var/log/vsftpd.log | tail -n 5
 Sun Oct 18 16:58:39 2026 [pid 1191] [ftpuser] OK LOGIN: Client "::ffff:192.168.0.10"
 Sun Oct 18 17:00:47 2026 [pid 1366] [ftpuser] FAIL LOGIN: Client "::ffff:192.168.0.10"
 ```
-
-📷 **캡처**: `FAIL LOGIN` 이 기록된 화면
 
 | 항목 | 의미 |
 |---|---|
@@ -233,8 +278,6 @@ Sun Oct 18 17:10:02 2026 [pid 1403] [ftpuser] FAIL LOGIN: Client "::ffff:192.168
 Sun Oct 18 17:10:02 2026 [pid 1404] [ftpuser] FAIL LOGIN: Client "::ffff:192.168.0.10"
 Sun Oct 18 17:10:02 2026 [pid 1405] [ftpuser] FAIL LOGIN: Client "::ffff:192.168.0.10"
 ```
-
-📷 **캡처**: `FAIL LOGIN` 이 같은 IP·같은 시각에 반복된 화면
 
 | 관찰 포인트 | 의미 |
 |---|---|
