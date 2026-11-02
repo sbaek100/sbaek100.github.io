@@ -30,6 +30,18 @@ mermaid: false
 > 명령과 예상 화면은 **Ubuntu 24.04.4 LTS(Postfix 3.8.6)** 와 **Kali Rolling** 에서 실행해 확인했습니다. 큐 번호, 시각, 로그의 호스트 이름처럼 환경마다 다른 값은 화면과 다를 수 있습니다. 4.2절의 SPF 조회는 **Kali가 인터넷에 연결**되어 있어야 합니다.
 {: .prompt-warning }
 
+절마다 Kali와 Ubuntu에서 하는 일은 다음과 같습니다. Kali는 **공격하거나 시험 메일을 보내는 쪽**, Ubuntu는 **결과를 확인하고 막는 쪽**입니다.
+
+| 절 | Kali에서 할 일 | Ubuntu에서 할 일 |
+|---|---|---|
+| 3.2 발신자 위조 | `admin@bank.com` 으로 위장한 메일 보내기 | 받은 메일의 `Received` 에서 실제 IP 찾기 |
+| 3.3 오픈 릴레이 | 외부 도메인으로 메일 보내 보기 | 릴레이 허용 설정(`mynetworks`) 확인 |
+| 3.4 VRFY | 계정 확인 → 차단 후 다시 확인 | `disable_vrfy_command = yes` 로 차단 |
+| 3.5 Active Contents | (이론만) | (이론만) |
+| 4.1 첨부파일 필터링 | `.exe`·`.txt` 첨부 메일 보내기 | 차단 규칙 만들기, 메일 로그 확인 |
+| 4.2 SPF·DMARC | 실제 도메인의 레코드 조회 | — |
+| 4.3 STARTTLS | 서버가 STARTTLS를 지원하는지 확인 | — |
+
 ---
 
 # 3. 이메일 공격 유형
@@ -63,7 +75,7 @@ mermaid: false
 
 다만 `Received` 헤더에는 서버가 직접 확인한 **실제 접속 IP**가 남습니다. 위조 메일을 가려낼 때 `Received` 를 보는 이유입니다.
 
-### [실습] (Kali) 은행 관리자로 위장한 메일 보내기
+### [실습 1] (Kali) 은행 관리자로 위장한 메일 보내기
 
 ```bash
 # === Kali ===
@@ -72,7 +84,7 @@ nc -C 192.168.0.30 25
 
 `nc -C` 는 03-1에서 쓴 것과 같은 명령입니다. Kali에서 Ubuntu의 25번 포트로 TCP 연결을 열고, 입력한 SMTP 명령을 그대로 보냅니다. `-C` 는 줄 끝을 SMTP 규칙(CR+LF)에 맞추는 옵션입니다.
 
-아래를 한 줄씩 입력합니다. 실제로는 존재하지 않는 `bank.com` 관리자를 사칭합니다.
+아래를 한 줄씩 입력합니다. 공격자가 `bank.com` 이라는 은행의 관리자를 사칭하는 상황입니다. Kali는 `bank.com` 과 아무 관계가 없습니다.
 
 ```
 EHLO bank.com
@@ -123,14 +135,14 @@ QUIT
 
 남의 주소를 적었는데도 **아무 확인 없이 `250 Ok` 로 접수**되었습니다.
 
-### [확인] (Ubuntu) 받은 메일에서 위조 흔적 찾기
+### [실습 2] (Ubuntu) 받은 메일에서 위조 흔적 찾기
 
 ```bash
 # === Ubuntu ===
-sudo tail -15 /var/mail/mailuser
+sudo tail -n 15 /var/mail/mailuser
 ```
 
-> `tail -15` 는 파일의 **마지막 15줄**만 보여 주는 명령입니다. 메일함 파일에는 메일이 도착한 순서대로 쌓이므로, 끝부분을 보면 방금 받은 메일만 확인할 수 있습니다.
+> `tail -n 15` 는 파일의 **마지막 15줄**만 보여 주는 명령입니다. 메일함 파일에는 메일이 도착한 순서대로 쌓이므로, 끝부분을 보면 방금 받은 메일만 확인할 수 있습니다.
 {: .prompt-info }
 
 ```
@@ -150,16 +162,26 @@ Date: Mon, 19 Oct 2026 22:45:23 +0900 (KST)
 Please log in to confirm your password.
 ```
 
-📷 **캡처**: `From: Bank Admin <admin@bank.com>` 과 `Received: ... [192.168.0.10]` 이 함께 보이는 화면
-
-| 헤더 | 값 | 판단 |
-|---|---|---|
-| `From`, `Return-Path` | `admin@bank.com` | 공격자가 **적은 대로** 보임 → 믿을 수 없음 |
-| `Received` 의 `from bank.com` | `EHLO` 로 공격자가 적은 이름 | 믿을 수 없음 |
-| `Received` 의 `unknown [192.168.0.10]` | 서버가 **직접 확인한 IP** | **Kali에서 왔다는 증거** |
+| 헤더                                    | 값                   | 판단                          |
+| ------------------------------------- | ------------------- | --------------------------- |
+| `From`, `Return-Path`                 | `admin@bank.com`    | 공격자가 **적은 대로** 보임 → 믿을 수 없음 |
+| `Received` 의 `from bank.com`          | `EHLO` 로 공격자가 적은 이름 | 믿을 수 없음                     |
+| `Received` 의 `unknown [192.168.0.10]` | 서버가 **직접 확인한 IP**   | **Kali에서 왔다는 증거**           |
 
 > 메일 프로그램은 보통 `From` 만 보여 주므로 사용자는 진짜 은행 메일로 착각합니다. 이런 위조를 **수신 서버가 자동으로 가려내게** 하는 기술이 4.2절의 SPF입니다.
 {: .prompt-info }
+
+### 정리
+
+| 장비 | 한 일 | 결과 |
+|---|---|---|
+| Kali | `MAIL FROM`·`From:` 에 남의 주소(`admin@bank.com`)를 적어 발송 | 아무 확인 없이 `250 Ok` 로 접수 |
+| Ubuntu | 메일함에서 헤더 확인 | `From` 은 위조 주소, `Received` 에는 실제 IP `192.168.0.10` |
+
+> - SMTP는 보내는 사람이 **누구인지 확인하지 않으므로** `From` 과 `Return-Path` 는 얼마든지 위조됩니다.
+> - `Received` 의 `from` 뒤 이름도 `EHLO` 로 공격자가 적은 값이라 믿을 수 없습니다. 믿을 수 있는 것은 **대괄호 안의 IP** 뿐입니다.
+> - 대책은 받는 서버가 발신 도메인을 확인하는 **SPF·DKIM·DMARC**(4.2절)와, 사용자가 링크·첨부를 함부로 열지 않는 습관입니다.
+{: .prompt-tip }
 
 ---
 
@@ -177,7 +199,7 @@ Please log in to confirm your password.
 
 그래서 메일 서버는 **허용한 네트워크(내부 사용자)나 인증한 사용자에게만** 릴레이를 허용합니다.
 
-### [실습] 외부 도메인으로 릴레이가 막히는지 확인
+### [실습 1] (Ubuntu) 릴레이 허용 설정 확인
 
 먼저 Ubuntu에서 릴레이를 허용하는 네트워크를 봅니다.
 
@@ -199,7 +221,9 @@ smtpd_relay_restrictions = permit_mynetworks permit_sasl_authenticated defer_una
 | `mynetworks = 127.0.0.0/8 ...` | 릴레이를 허용할 네트워크는 **서버 자신(localhost)뿐** |
 | `permit_mynetworks` | `mynetworks` 에서 온 메일은 릴레이 허용 |
 | `permit_sasl_authenticated` | 아이디·비밀번호로 **인증한 사용자**는 릴레이 허용 |
-| `defer_unauth_destination` | 그 밖의 사람이 **남의 도메인**으로 보내려 하면 거부 |
+| `defer_unauth_destination` | 그 밖의 사람이 **남의 도메인**으로 보내려 하면 **일시적 실패(4xx)** 로 거부 |
+
+### [실습 2] (Kali) 외부 도메인으로 메일 보내 보기
 
 Kali는 `mynetworks` 에 없습니다. Kali에서 외부 도메인(`example.com`)으로 보내 봅니다.
 
@@ -241,9 +265,21 @@ QUIT
 221 2.0.0 Bye
 ```
 
-📷 **캡처**: `Relay access denied` 화면
-
 `RCPT TO` 단계에서 **`Relay access denied`** 로 거부되었습니다. 이 서버는 오픈 릴레이가 아닙니다. 반면 3.2절처럼 **이 서버가 받는 주소**(`@ubuntu.lab.local`)로 보내는 메일은 정상적으로 받습니다.
+
+> 응답 코드가 `5xx` 가 아니라 `454`(일시적 실패)인 것은 `defer_unauth_destination` 의 `defer`(미룸) 때문입니다. 설정이 잘못된 경우에 대비해 영구 거부 대신 "나중에 다시 시도하라"고 답하는 Postfix의 기본 동작입니다.
+{: .prompt-info }
+
+### 정리
+
+| 장비 | 한 일 | 결과 |
+|---|---|---|
+| Ubuntu | `postconf mynetworks smtpd_relay_restrictions` 로 설정 확인 | 릴레이는 서버 자신과 인증한 사용자에게만 허용 |
+| Kali | 외부 도메인(`someone@example.com`)으로 `RCPT TO` | `454 ... Relay access denied` 로 거부 |
+
+> - **오픈 릴레이**는 아무나 내 서버를 거쳐 남의 도메인으로 메일을 보낼 수 있는 상태입니다. 스팸 발송지로 찍혀 블랙리스트에 오르고, 정상 메일까지 거부됩니다.
+> - 메일 서버는 **자기 도메인으로 오는 메일은 누구에게서나 받고**, **다른 도메인으로 보내는 메일(릴레이)은 허용한 네트워크나 인증한 사용자에게만** 허용해야 합니다.
+{: .prompt-tip }
 
 ---
 
@@ -332,7 +368,7 @@ disable_vrfy_command = no
 disable_vrfy_command = yes
 ```
 
-### [확인] (Kali) VRFY가 막혔는지 확인
+### [실습 3] (Kali) VRFY가 막혔는지 다시 확인
 
 ```bash
 # === Kali ===
@@ -368,8 +404,6 @@ QUIT
 221 2.0.0 Bye
 ```
 
-📷 **캡처**: `502 5.5.1 VRFY command is disabled` 화면
-
 | 확인 | 의미 |
 |---|---|
 | `EHLO` 기능 목록에서 **`250-VRFY` 줄이 사라짐** | 서버가 더 이상 VRFY 기능을 알리지 않음 |
@@ -377,6 +411,18 @@ QUIT
 
 > Postfix는 `EXPN` 명령을 처음부터 지원하지 않습니다. Sendmail 같은 다른 메일 서버는 `EXPN` 도 따로 막아야 합니다.
 {: .prompt-info }
+
+### 정리
+
+| 장비 | 한 일 | 결과 |
+|---|---|---|
+| Kali | `VRFY root`·`VRFY mailuser`·`VRFY nobodyhere` | 있는 계정 `252`, 없는 계정 `550` → 계정 목록 수집 가능 |
+| Ubuntu | `disable_vrfy_command = yes` 적용 후 `reload` | VRFY 비활성화 |
+| Kali | 다시 `VRFY root` | `502 ... disabled`, EHLO 목록에서 `VRFY` 사라짐 |
+
+> - `VRFY`·`EXPN` 은 서버에 **실제 있는 계정**을 알려 주는 명령입니다. 알아낸 계정은 비밀번호 무차별 대입과 스팸 발송 대상이 됩니다.
+> - 응답 코드가 계정 유무에 따라 **다르게** 나오는 것 자체가 정보 유출입니다. 그래서 명령을 꺼서 아무것도 알려 주지 않게 합니다.
+{: .prompt-tip }
 
 ---
 
@@ -394,6 +440,15 @@ QUIT
 | 대책 | 메일 프로그램에서 **스크립트 기능을 사용하지 않도록 설정** |
 
 > 웹메일 서비스는 메일 본문의 `<script>` 를 지우고 보여 주며, Outlook 같은 메일 프로그램도 기본으로 스크립트 실행과 외부 이미지 자동 표시를 막습니다. 이 설정을 함부로 풀지 않는 것이 중요합니다.
+{: .prompt-tip }
+
+### 정리
+
+이 절은 Kali·Ubuntu 실습 없이 이론으로만 다룹니다.
+
+> - Active Contents 공격은 메일 **서버가 아니라 메일을 여는 사용자(클라이언트)** 를 노립니다.
+> - 메일을 **열기만 해도** 스크립트가 실행될 수 있다는 점이 첨부파일 공격과 다릅니다.
+> - 대책은 메일 프로그램의 **스크립트 기능을 끄는 것**입니다.
 {: .prompt-tip }
 
 ---
@@ -579,15 +634,13 @@ swaks --server 192.168.0.30 --from kali@kali.lab.local --to mailuser@ubuntu.lab.
 > ` -> EHLO kali` 의 `kali` 자리에는 Kali의 호스트 이름이 나옵니다. 큐 번호(`CE9C57AB`)는 실행할 때마다 다릅니다.
 {: .prompt-info }
 
-📷 **캡처**: `.exe` 는 `550 ... Attachment type not allowed`, `.txt` 는 `queued as` 로 나오는 두 화면
-
 | 첨부파일 | 결과 |
 |---|---|
 | `invoice.exe` | **`550` 거부** — 실행파일이라 차단 |
 | `note.txt` | **`250` 접수** — 정상 전달 |
 
 
-### [확인] (Ubuntu) 메일 로그
+### [실습 3] (Ubuntu) 메일 로그에서 차단 기록 확인
 
 ```bash
 # === Ubuntu ===
@@ -608,6 +661,19 @@ sudo grep -E 'reject:|status=sent' /var/log/mail.log | tail -2
 - 첫 줄: `name="invoice.exe"` 첨부가 **`reject`** 되었고, 보낸 곳 IP(`192.168.0.10`)와 주소가 기록되었습니다.
 - 둘째 줄: `.txt` 첨부 메일은 **`status=sent (delivered to mailbox)`**, 메일함에 전달되었습니다.
 
+### 정리
+
+| 장비 | 한 일 | 결과 |
+|---|---|---|
+| Ubuntu | `mime_header_checks` 에 실행파일 확장자 차단 규칙 등록 | 첨부파일 이름 검사 시작 |
+| Kali | swaks로 `invoice.exe`, `note.txt` 첨부 메일 발송 | `.exe` 는 `550` 거부, `.txt` 는 `250` 접수 |
+| Ubuntu | `/var/log/mail.log` 확인 | 거부된 파일 이름과 보낸 곳 IP가 기록됨 |
+
+> - 악성 첨부·트로이 목마는 정상 파일처럼 보이는 첨부로 **사용자**를 노립니다. 서버 앞단에서 **위험한 확장자를 미리 막는 것**이 1차 대책입니다.
+> - 확장자 검사는 파일 **이름**만 봅니다. 이름을 바꾸거나 압축한 악성 파일은 통과할 수 있으므로 **백신 검사**를 함께 씁니다.
+> - 스팸 필터 솔루션은 헤더·제목뿐 아니라 **본문**까지 검사하고, 내부에서 **나가는** 메일의 정보 유출도 막습니다.
+{: .prompt-tip }
+
 ---
 
 ## 4.2 SPF·DKIM·DMARC — 발신 도메인 확인
@@ -619,7 +685,7 @@ sudo grep -E 'reject:|status=sent' /var/log/mail.log | tail -2
 | 단계 | 하는 일 |
 |---|---|
 | ① 등록 | 도메인 관리자가 **자기 메일 발송 서버의 IP**를 DNS에 **TXT 레코드**로 등록 |
-| ② 수신 | 받는 메일 서버가 메일의 발신 도메인을 확인 |
+| ② 수신 | 받는 메일 서버가 메일의 발신 도메인(봉투의 `MAIL FROM` 주소에서 `@` 뒤)을 확인 |
 | ③ 조회 | 그 도메인의 SPF 레코드를 DNS에서 조회 |
 | ④ 비교 | 메일을 실제로 보내온 서버의 IP(`Received` 에 남는 IP)가 목록에 있는지 비교 |
 | ⑤ 판정 | 목록에 없으면 **위조로 판단**해 거부하거나 스팸으로 분류 |
@@ -630,7 +696,7 @@ SPF는 **허용된 도메인과 IP에서 온 메일인지 확인해 스팸을 �
 |---|---|---|
 | **SPF** | 보낸 서버의 **IP**가 허용 목록에 있는가 | 허용 IP 목록 (TXT) |
 | **DKIM** | 메일에 붙은 **전자서명**이 도메인의 공개키로 맞는가 | 서명 확인용 공개키 (TXT) |
-| **DMARC** | SPF·DKIM 검사에 실패한 메일을 **어떻게 처리할지** | 처리 정책 `none`/`quarantine`/`reject` (TXT) |
+| **DMARC** | SPF·DKIM 결과가 화면에 보이는 `From` 도메인과 맞지 않는 메일을 **어떻게 처리할지** | 처리 정책 `none`/`quarantine`/`reject` (TXT) |
 
 ### [실습] (Kali) 실제 도메인의 SPF·DMARC 조회
 
@@ -654,8 +720,6 @@ dig TXT _spf.google.com +short
 "v=spf1 include:_spf.google.com ~all"
 "v=spf1 ip4:74.125.0.0/16 ip4:209.85.128.0/17 ip6:2001:4860:4864::/56 ip6:2404:6800:4864::/56 ip6:2607:f8b0:4864::/56 ip6:2800:3f0:4864::/56 ip6:2a00:1450:4864::/56 ip6:2c0f:fb50:4864::/56 ~all"
 ```
-
-📷 **캡처**: naver.com의 `v=spf1 ip4:...` 레코드
 
 | 부분 | 의미 |
 |---|---|
@@ -695,7 +759,16 @@ dig MX naver.com +short
 | naver.com `p=none` | 실패해도 처리는 하지 않고 `rua` 주소로 **보고만** 받음 |
 | `MX` 레코드 | 이 도메인의 **메일을 받는 서버**. 숫자가 작을수록 먼저 사용 |
 
-> 3.2절의 `admin@bank.com` 위조 메일이 SPF를 확인하는 서버에 도착하면, `bank.com` 의 SPF 목록에 `192.168.0.10` 이 없으므로 위조로 판정됩니다.
+### 정리
+
+| 장비 | 한 일 | 결과 |
+|---|---|---|
+| Kali | `dig TXT` 로 naver.com·google.com의 SPF 조회 | 메일을 보낼 수 있는 IP 목록과 `~all` 확인 |
+| Kali | `dig TXT _dmarc.도메인`, `dig MX` 조회 | google `p=reject`, naver `p=none`, 메일 수신 서버 목록 확인 |
+
+> - 3.2절의 `admin@bank.com` 위조 메일이 SPF를 확인하는 서버에 도착했다고 합시다. `bank.com` 이 SPF 레코드를 공개해 두었다면 그 목록에 `192.168.0.10` 이 없으므로 **위조(fail·softfail)** 로 판정됩니다.
+> - 반대로 도메인 주인이 SPF 레코드를 **등록하지 않으면** 받는 서버는 판정할 근거가 없습니다. SPF·DMARC는 **보내는 쪽 도메인이 등록해야** 효과가 있는 대책입니다.
+> - SPF는 보낸 서버의 **IP**, DKIM은 메일의 **전자서명**, DMARC는 두 검사에 실패했을 때의 **처리 정책**을 담당합니다.
 {: .prompt-tip }
 
 ---
@@ -711,7 +784,7 @@ PGP·S/MIME(03-1)은 **메일 내용 자체**를 암호화합니다. 이와 별�
 | **STARTTLS**          | 평문으로 접속한 뒤 `STARTTLS` 명령으로 **TLS 암호화로 전환** (25, 587번) |
 | SMTPS / POP3S / IMAPS | 처음부터 TLS로 접속 (465 / 995 / 993번)                       |
 
-### [확인] (Kali) 서버가 STARTTLS를 지원하는지 확인
+### [실습] (Kali) 서버가 STARTTLS를 지원하는지 확인
 
 ```bash
 # === Kali ===
@@ -751,6 +824,16 @@ QUIT
 
 > Ubuntu의 Postfix는 설치할 때 자체 서명 인증서(`ssl-cert-snakeoil`)를 사용하도록 설정되어 있어서 STARTTLS가 처음부터 켜져 있습니다. 실제 운영 서버에서는 공인 인증기관이 발급한 인증서로 바꾸어야 상대 서버와 사용자가 인증서를 신뢰할 수 있습니다.
 {: .prompt-info }
+
+### 정리
+
+| 장비 | 한 일 | 결과 |
+|---|---|---|
+| Kali | `nc` 로 접속해 `EHLO` | `250-STARTTLS` 로 암호화 전환 기능 확인 |
+
+> - 서버가 STARTTLS를 **지원해도 클라이언트가 `STARTTLS` 명령을 보내지 않으면 평문**으로 오갑니다(03-1 1.4절의 `nc` 실습).
+> - STARTTLS·SMTPS는 **회선 구간**을, PGP·S/MIME은 **메일 내용**을 보호합니다. 서로 대신할 수 없어 함께 씁니다.
+{: .prompt-tip }
 
 ---
 
@@ -813,7 +896,7 @@ QUIT
 # 체크리스트
 
 - [ ] 클라이언트 대상 공격(Active Contents, 트로이 목마)과 서버 대상 공격(버퍼 오버플로우, DoS)을 구분
-- [ ] (Kali) `admin@bank.com` 위조 메일이 `250` 으로 접수됨을 확인
+- [ ] (Kali) `admin@bank.com` 위조 메일이 `250` 으로 접수되는지 확인
 - [ ] (Ubuntu) 위조 메일의 `Received` 에서 실제 IP `192.168.0.10` 확인
 - [ ] (Kali) 외부 도메인 릴레이가 `Relay access denied` 로 막힘을 확인
 - [ ] (Ubuntu) `disable_vrfy_command = yes` 적용 후 `502 ... disabled` 확인
