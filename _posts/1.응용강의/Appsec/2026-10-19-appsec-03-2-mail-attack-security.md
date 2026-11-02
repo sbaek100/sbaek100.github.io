@@ -680,10 +680,10 @@ Setting up swaks (20240103.0-2)…
 | 표시 | 의미 |
 |---|---|
 | `===` | swaks 자신의 안내 메시지 |
-| ` ->` | Kali(swaks)가 **보낸** 명령 |
+| `->` | Kali(swaks)가 **보낸** 명령 |
 | `<-` | 서버의 **정상 응답** |
 
-> ` -> EHLO kali` 의 `kali` 자리에는 Kali의 호스트 이름이 나옵니다. 큐 번호(`56D9D7AB`)는 실행할 때마다 다릅니다.
+> `-> EHLO kali` 의 `kali` 자리에는 Kali의 호스트 이름이 나옵니다. 큐 번호(`56D9D7AB`)는 실행할 때마다 다릅니다.
 {: .prompt-info }
 
 마지막에 **`250 2.0.0 Ok: queued as ...`** 가 나왔습니다. 실행파일이 붙은 메일을 서버가 **아무 검사 없이 받아 준 것**입니다.
@@ -1073,7 +1073,7 @@ swaks --server 192.168.0.30 --from kali@kali.lab.local --to mailuser@ubuntu.lab.
 | 화면 | 의미 |
 |---|---|
 | `<-  250-STARTTLS` | 서버는 TLS 암호화로 전환하는 기능을 **제안함** |
-| ` -> MAIL FROM:...` 이 바로 이어짐 | 클라이언트가 `STARTTLS` 를 보내지 않고 **평문으로 계속 진행** |
+| `-> MAIL FROM:...` 이 바로 이어짐 | 클라이언트가 `STARTTLS` 를 보내지 않고 **평문으로 계속 진행** |
 | `250 2.0.0 Ok: queued as ...` | 서버가 **평문 메일을 그대로 받아 줌** |
 
 03-1 1.4절에서 Wireshark로 본 것처럼, 이 메일은 경로 위의 누구나 읽을 수 있습니다. 서버가 STARTTLS를 지원해도 **쓸지 말지를 클라이언트에게 맡기기 때문**입니다.
@@ -1208,7 +1208,7 @@ swaks --server 192.168.0.30 --from kali@kali.lab.local --to mailuser@ubuntu.lab.
 
 | 화면 | 의미 |
 |---|---|
-| ` -> STARTTLS` / `<-  220 2.0.0 Ready to start TLS` | 클라이언트가 암호화를 요청하고 서버가 수락 |
+| `-> STARTTLS` / `<-  220 2.0.0 Ready to start TLS` | 클라이언트가 암호화를 요청하고 서버가 수락 |
 | `TLS started with cipher TLSv1.3:...` | **TLS 1.3** 으로 암호화 시작 |
 | `failed CA verification (self-signed certificate)` | 서버 인증서가 **자체 서명** 인증서라 신뢰할 수 있는 기관이 보증하지 않음. 실습 환경에서는 정상이며 암호화는 됨 |
 | `~>` / `<~` | 물결(`~`) 표시는 **암호화된 구간**에서 보내고 받은 내용 |
