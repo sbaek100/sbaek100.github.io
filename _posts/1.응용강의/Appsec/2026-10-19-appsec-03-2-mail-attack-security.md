@@ -35,12 +35,15 @@ mermaid: false
 | 절 | Kali에서 할 일 | Ubuntu에서 할 일 |
 |---|---|---|
 | 3.2 발신자 위조 | `admin@bank.com` 으로 위장한 메일 보내기 | 받은 메일의 `Received` 에서 실제 IP 찾기 |
-| 3.3 오픈 릴레이 | 외부 도메인으로 메일 보내 보기 | 릴레이 허용 설정(`mynetworks`) 확인 |
-| 3.4 VRFY | 계정 확인 → 차단 후 다시 확인 | `disable_vrfy_command = yes` 로 차단 |
+| 3.3 오픈 릴레이 | 외부 도메인으로 보내기: 성공(취약) → 거부(안전) | `mynetworks` 를 넓혀 릴레이를 열었다가 되돌림 |
+| 3.4 VRFY | 계정 확인: 구별됨(취약) → 막힘(안전) | `disable_vrfy_command = yes` 로 차단 |
 | 3.5 Active Contents | (이론만) | (이론만) |
-| 4.1 첨부파일 필터링 | `.exe`·`.txt` 첨부 메일 보내기 | 차단 규칙 만들기, 메일 로그 확인 |
+| 4.1 첨부파일 필터링 | `.exe` 첨부: 접수(취약) → 거부(안전) | 메일함 확인, 차단 규칙 만들기, 로그 확인 |
 | 4.2 SPF·DMARC | 실제 도메인의 레코드 조회 | — |
-| 4.3 STARTTLS | 서버가 STARTTLS를 지원하는지 확인 | — |
+| 4.3 STARTTLS | 평문 메일: 접수(취약) → 거부(안전) | 암호화 필수(`encrypt`)로 바꿨다가 되돌림 |
+
+> 3.3·4.1·4.3·3.4는 모두 **취약한 상태에서 공격이 통하는 것을 먼저 보고, 설정을 바꿔 막히는 것을 확인**하는 순서입니다. 3.3과 4.3은 실습 끝에 설정을 **원래대로 되돌리는 단계**가 있으니 빠뜨리지 않습니다.
+{: .prompt-info }
 
 ---
 
@@ -52,18 +55,26 @@ mermaid: false
 
 메일 공격은 **누구를 노리느냐**에 따라 두 갈래로 나눕니다. 어느 쪽에 속하는지 구분하는 것이 중요합니다.
 
-| 대상 | 공격 | 원리 | 대책 |
-|---|---|---|---|
+| 대상                | 공격                     | 원리                                                       | 대책                      |
+| ----------------- | ---------------------- | -------------------------------------------------------- | ----------------------- |
 | **메일 클라이언트**(사용자) | **Active Contents 공격** | 메일을 열 때 HTML을 해석하는 메일 프로그램·웹 브라우저에서 **스크립트가 실행**되어 정보 유출 | 메일 프로그램의 **스크립트 기능을 끔** |
-| | **트로이 목마·악성 첨부** | 정상 파일처럼 보이는 첨부파일을 열면 악성코드 실행 | 첨부파일 필터링, 백신 검사 |
-| | 피싱 | 위조한 발신자로 속여 비밀번호·금융정보 입력을 유도 | SPF·DMARC, 사용자 교육 |
-| **메일 서버** | **버퍼 오버플로우 공격** | Sendmail 같은 **메일 서버 프로그램의 취약점**을 이용해 서버 권한 획득 | 최신 버전·패치 |
-| | **서비스 거부(DoS) 공격** | 대량 메일(메일 폭탄)·대량 접속으로 서버를 마비 | 스팸 필터, 접속·크기 제한 |
-| | 스팸 릴레이 악용 | 외부인이 서버를 **스팸 중계소**로 사용 | 릴레이 제한 |
-| | 계정 정보 수집 | `VRFY`·`EXPN` 명령으로 있는 계정을 알아냄 | 명령 비활성화 |
+|                   | **트로이 목마·악성 첨부**       | 정상 파일처럼 보이는 첨부파일을 열면 악성코드 실행                             | 첨부파일 필터링, 백신 검사         |
+|                   | 피싱                     | 위조한 발신자로 속여 비밀번호·금융정보 입력을 유도                             | SPF·DMARC, 사용자 교육       |
+| **메일 서버**         | **버퍼 오버플로우 공격**        | Sendmail 같은 **메일 서버 프로그램의 취약점**을 이용해 서버 권한 획득            | 최신 버전·패치                |
+|                   | **서비스 거부(DoS) 공격**     | 대량 메일(메일 폭탄)·대량 접속으로 서버를 마비                              | 스팸 필터, 접속·크기 제한         |
+|                   | 스팸 릴레이 악용              | 외부인이 서버를 **스팸 중계소**로 사용                                  | 릴레이 제한                  |
+|                   | 계정 정보 수집               | `VRFY`·`EXPN` 명령으로 있는 계정을 알아냄                            | 명령 비활성화                 |
 
 > **Active Contents 공격과 트로이 목마 공격은 클라이언트**를 노리는 공격이고, **버퍼 오버플로우와 서비스 거부 공격은 서버**를 노리는 공격입니다. 바이러스 메일은 메일 서버를 공격하는 것이 아니라 **사용자**를 노립니다.
 {: .prompt-warning }
+
+> **피싱 대책 "SPF·DMARC, 사용자 교육"의 뜻**
+>
+> - **SPF·DMARC**: 받는 서버가 위조 메일을 **자동으로 걸러 내는** 기술입니다. SPF는 도메인 주인이 "우리 메일은 이 IP에서만 나간다"는 목록을 DNS에 공개해, 목록에 없는 곳에서 온 메일을 가려냅니다. DMARC는 검사에 실패한 메일을 보고만 할지(`none`), 스팸함에 넣을지(`quarantine`), 거부할지(`reject`) 정합니다(4.2절).
+> - **사용자 교육**: 서버를 빠져나온 메일에 **사람이 속지 않게** 하는 대책입니다. 보낸 사람 주소를 끝까지 확인하고, 링크에 마우스를 올려 실제 주소를 보고, 메일로 비밀번호를 요구하거나 급하게 재촉하면 의심하며, 의심스러우면 공식 홈페이지·전화로 따로 확인하도록 가르칩니다. 회사에서는 가짜 피싱 메일을 보내 보는 **모의 피싱 훈련**으로 연습합니다.
+>
+> SPF·DMARC는 도메인 주인이 **미리 등록해야** 작동하고, `bank-security.com` 처럼 **비슷한 진짜 도메인**을 사서 보내면 통과합니다. 그래서 두 대책을 함께 씁니다.
+{: .prompt-info }
 
 ---
 
@@ -83,6 +94,9 @@ nc -C 192.168.0.30 25
 ```
 
 `nc -C` 는 03-1에서 쓴 것과 같은 명령입니다. Kali에서 Ubuntu의 25번 포트로 TCP 연결을 열고, 입력한 SMTP 명령을 그대로 보냅니다. `-C` 는 줄 끝을 SMTP 규칙(CR+LF)에 맞추는 옵션입니다.
+
+> `nc` 로 접속한 상태에서는 **프롬프트(`$`)가 나오지 않고** 커서만 깜빡입니다. 정상이며, 그대로 명령을 입력하면 됩니다. 오타를 냈거나 `QUIT` 뒤에도 프롬프트가 돌아오지 않으면 `Ctrl+C` 로 빠져나와 다시 접속합니다. 이 글의 다른 `nc` 실습도 같습니다.
+{: .prompt-info }
 
 아래를 한 줄씩 입력합니다. 공격자가 `bank.com` 이라는 은행의 관리자를 사칭하는 상황입니다. Kali는 `bank.com` 과 아무 관계가 없습니다.
 
@@ -199,9 +213,20 @@ Please log in to confirm your password.
 
 그래서 메일 서버는 **허용한 네트워크(내부 사용자)나 인증한 사용자에게만** 릴레이를 허용합니다.
 
-### [실습 1] (Ubuntu) 릴레이 허용 설정 확인
+이 절은 **설정을 잘못 넣어 오픈 릴레이를 직접 만든 뒤, 다시 닫는** 순서로 진행합니다.
 
-먼저 Ubuntu에서 릴레이를 허용하는 네트워크를 봅니다.
+| 순서 | 장비 | 할 일 | 상태 |
+|---|---|---|---|
+| 실습 1 | Ubuntu | 릴레이 허용 범위에 실습망 전체를 넣음 | **취약**하게 만듦 |
+| 실습 2 | Kali | 외부 도메인으로 메일 보내기 | 접수됨 = 오픈 릴레이 |
+| 실습 3 | Ubuntu | 허용 범위를 원래대로 되돌림 | **안전**하게 되돌림 |
+| 실습 4 | Kali | 같은 메일을 다시 보내기 | 거부됨 |
+
+### [실습 1] (Ubuntu) 릴레이 허용 범위를 넓혀 오픈 릴레이 만들기
+
+사내 PC에서 메일이 나가지 않는다는 문의를 받은 관리자가, 원인을 찾지 않고 **실습망 전체(`192.168.0.0/24`)를 릴레이 허용 범위에 넣은** 상황을 흉내 냅니다.
+
+먼저 현재 설정을 봅니다.
 
 ```bash
 # === Ubuntu ===
@@ -218,21 +243,41 @@ smtpd_relay_restrictions = permit_mynetworks permit_sasl_authenticated defer_una
 
 | 설정 | 의미 |
 |---|---|
-| `mynetworks = 127.0.0.0/8 ...` | 릴레이를 허용할 네트워크는 **서버 자신(localhost)뿐** |
+| `mynetworks = 127.0.0.0/8 ...` | 릴레이를 허용할 네트워크. `127.0.0.0/8` 은 서버 자신(localhost), 뒤의 `[::ffff:127.0.0.0]/104`, `[::1]/128` 은 같은 서버 자신을 IPv6 형식으로 적은 것 → **서버 자신뿐** |
 | `permit_mynetworks` | `mynetworks` 에서 온 메일은 릴레이 허용 |
 | `permit_sasl_authenticated` | 아이디·비밀번호로 **인증한 사용자**는 릴레이 허용 |
 | `defer_unauth_destination` | 그 밖의 사람이 **남의 도메인**으로 보내려 하면 **일시적 실패(4xx)** 로 거부 |
 
-### [실습 2] (Kali) 외부 도메인으로 메일 보내 보기
+이제 `mynetworks` 끝에 `192.168.0.0/24` 를 덧붙입니다. 앞부분은 원래 값을 그대로 적고 **맨 뒤에만 한 칸 띄어** 추가합니다.
 
-Kali는 `mynetworks` 에 없습니다. Kali에서 외부 도메인(`example.com`)으로 보내 봅니다.
+```bash
+# === Ubuntu ===
+sudo postconf -e 'mynetworks = 127.0.0.0/8 [::ffff:127.0.0.0]/104 [::1]/128 192.168.0.0/24'
+sudo systemctl reload postfix
+postconf mynetworks
+```
+
+`postconf -e` 와 `systemctl reload` 는 아무것도 출력하지 않습니다. 마지막 조회 결과입니다.
+
+```
+mynetworks = 127.0.0.0/8 [::ffff:127.0.0.0]/104 [::1]/128 192.168.0.0/24
+```
+
+| 명령·옵션 | 설명 |
+|---|---|
+| `192.168.0.0/24` | `192.168.0.0` ~ `192.168.0.255` 전체. **Kali(192.168.0.10)도 여기에 들어감** |
+| `systemctl reload postfix` | 서비스를 멈추지 않고 **바뀐 설정만 다시 읽음**. `restart` 는 서비스를 껐다 켜므로 그 사이 접속이 잠깐 끊기지만, `reload` 는 끊기지 않음 |
+
+### [실습 2] (Kali) 외부 도메인으로 메일 보내기 — 릴레이 성공
+
+Kali에서 이 서버가 담당하지 않는 외부 도메인(`example.com`)으로 메일을 보내 봅니다.
 
 ```bash
 # === Kali ===
 nc -C 192.168.0.30 25
 ```
 
-접속한 뒤 아래를 한 줄씩 입력합니다.
+접속한 뒤 아래를 한 줄씩 입력합니다. `RCPT TO` 의 응답만 확인하고 `DATA` 는 보내지 않으므로 **실제 메일은 나가지 않습니다.**
 
 ```
 EHLO kali
@@ -260,24 +305,87 @@ EHLO kali
 MAIL FROM:<kali@kali.lab.local>
 250 2.1.0 Ok
 RCPT TO:<someone@example.com>
+250 2.1.5 Ok
+QUIT
+221 2.0.0 Bye
+```
+
+`RCPT TO:<someone@example.com>` 에 **`250 2.1.5 Ok`** 가 나왔습니다. 내 서버가 남의 도메인으로 가는 메일을 대신 전달하겠다고 받아 준 것이므로 **오픈 릴레이 상태**입니다. 이 상태에서는 실습망 안의 아무 PC나, 예를 들어 악성코드에 감염된 PC가 이 서버를 통해 스팸을 보낼 수 있습니다.
+
+> 인터넷에 연결된 서버에서 `mynetworks` 에 `0.0.0.0/0`(모든 IP)을 넣으면, 전 세계 누구나 쓰는 오픈 릴레이가 됩니다. 스패머는 이런 서버를 자동으로 찾아다닙니다.
+{: .prompt-danger }
+
+### [실습 3] (Ubuntu) 릴레이 허용 범위를 원래대로 되돌리기
+
+`mynetworks` 를 실습 1에서 처음 본 값(서버 자신만)으로 되돌립니다.
+
+```bash
+# === Ubuntu ===
+sudo postconf -e 'mynetworks = 127.0.0.0/8 [::ffff:127.0.0.0]/104 [::1]/128'
+sudo systemctl reload postfix
+postconf mynetworks
+```
+
+`postconf -e` 와 `systemctl reload` 는 아무것도 출력하지 않습니다. 마지막 조회 결과입니다.
+
+```
+mynetworks = 127.0.0.0/8 [::ffff:127.0.0.0]/104 [::1]/128
+```
+
+### [실습 4] (Kali) 같은 메일을 다시 보내기 — 릴레이 거부
+
+실습 2와 똑같이 접속해 같은 내용을 입력합니다.
+
+```bash
+# === Kali ===
+nc -C 192.168.0.30 25
+```
+
+```
+EHLO kali
+MAIL FROM:<kali@kali.lab.local>
+RCPT TO:<someone@example.com>
+QUIT
+```
+
+전체 화면은 다음과 같습니다.
+
+```
+220 ubuntu.lab.local ESMTP Postfix (Ubuntu)
+EHLO kali
+250-ubuntu.lab.local
+250-PIPELINING
+250-SIZE 10240000
+250-VRFY
+250-ETRN
+250-STARTTLS
+250-ENHANCEDSTATUSCODES
+250-8BITMIME
+250-DSN
+250-SMTPUTF8
+250 CHUNKING
+MAIL FROM:<kali@kali.lab.local>
+250 2.1.0 Ok
+RCPT TO:<someone@example.com>
 454 4.7.1 <someone@example.com>: Relay access denied
 QUIT
 221 2.0.0 Bye
 ```
 
-`RCPT TO` 단계에서 **`Relay access denied`** 로 거부되었습니다. 이 서버는 오픈 릴레이가 아닙니다. 반면 3.2절처럼 **이 서버가 받는 주소**(`@ubuntu.lab.local`)로 보내는 메일은 정상적으로 받습니다.
+이번에는 `RCPT TO` 단계에서 **`Relay access denied`** 로 거부되었습니다. 반면 3.2절처럼 **이 서버가 받는 주소**(`@ubuntu.lab.local`)로 보내는 메일은 여전히 정상적으로 받습니다.
 
 > 응답 코드가 `5xx` 가 아니라 `454`(일시적 실패)인 것은 `defer_unauth_destination` 의 `defer`(미룸) 때문입니다. 설정이 잘못된 경우에 대비해 영구 거부 대신 "나중에 다시 시도하라"고 답하는 Postfix의 기본 동작입니다.
 {: .prompt-info }
 
 ### 정리
 
-| 장비 | 한 일 | 결과 |
+| 상태 | `mynetworks` | Kali → `someone@example.com` |
 |---|---|---|
-| Ubuntu | `postconf mynetworks smtpd_relay_restrictions` 로 설정 확인 | 릴레이는 서버 자신과 인증한 사용자에게만 허용 |
-| Kali | 외부 도메인(`someone@example.com`)으로 `RCPT TO` | `454 ... Relay access denied` 로 거부 |
+| **취약** (실습 1·2) | `... 192.168.0.0/24` (실습망 전체) | `250 2.1.5 Ok` — 릴레이 허용 |
+| **안전** (실습 3·4) | `127.0.0.0/8 ...` (서버 자신만, 기본값) | `454 ... Relay access denied` |
 
 > - **오픈 릴레이**는 아무나 내 서버를 거쳐 남의 도메인으로 메일을 보낼 수 있는 상태입니다. 스팸 발송지로 찍혀 블랙리스트에 오르고, 정상 메일까지 거부됩니다.
+> - Postfix의 기본값은 안전합니다. 위험은 관리자가 `mynetworks` 를 **필요 이상으로 넓힐 때** 생깁니다.
 > - 메일 서버는 **자기 도메인으로 오는 메일은 누구에게서나 받고**, **다른 도메인으로 보내는 메일(릴레이)은 허용한 네트워크나 인증한 사용자에게만** 허용해야 합니다.
 {: .prompt-tip }
 
@@ -345,6 +453,9 @@ QUIT
 
 응답 코드가 다르기 때문에 공격자는 계정이 있는지 없는지 구별할 수 있습니다.
 
+> `252` 는 원래 "확인해 줄 수는 없지만 이 주소로 오는 메일은 받겠다"는 뜻입니다. Postfix는 **있는 계정에만** `252` 를, 없는 계정에는 `550` 을 돌려주므로 결과적으로 계정 유무가 드러납니다.
+{: .prompt-info }
+
 ### [실습 2] (Ubuntu) VRFY 비활성화
 
 ```bash
@@ -359,7 +470,7 @@ postconf disable_vrfy_command
 |---|---|
 | `postconf disable_vrfy_command` | 현재 값 조회(처음에는 `no` = VRFY 허용) |
 | `postconf -e 'disable_vrfy_command = yes'` | 값을 `yes`(VRFY 막기)로 수정 |
-| `systemctl reload postfix` | 서비스를 멈추지 않고 **설정만 다시 읽음**. `restart` 는 서비스를 껐다 켜므로 그 사이 접속이 잠깐 끊기지만, `reload` 는 끊기지 않음 |
+| `systemctl reload postfix` | 바뀐 설정을 다시 읽어 적용(3.3절 실습 1) |
 
 `postconf -e` 와 `systemctl reload` 는 아무것도 출력하지 않습니다. 첫 줄은 수정 전, 둘째 줄은 수정 후 조회 결과입니다.
 
@@ -432,6 +543,8 @@ QUIT
 
 요즘 메일은 글자만 있는 것이 아니라 **HTML 문서**로 꾸며져 있습니다. 메일 프로그램이나 웹 브라우저는 이 HTML을 해석해서 보여 줍니다. 이때 메일 안에 **자바스크립트, 비주얼베이직 스크립트** 같은 실행 코드가 들어 있으면 메일을 **열기만 해도** 스크립트가 실행될 수 있습니다.
 
+![](/assets/img/posts/2026-10-19-appsec-03-2-mail-attack-security-1793602644444.png)
+
 | 항목 | 내용 |
 |---|---|
 | 대상 | 메일을 열 때 **HTML 기능이 있는 메일 클라이언트나 웹 브라우저**를 쓰는 사용자 |
@@ -473,44 +586,19 @@ QUIT
 > 스팸 필터는 메일의 **본문까지** 검사합니다. "헤더와 제목만 필터링하고 본문은 하지 못한다"는 설명은 틀립니다.
 {: .prompt-warning }
 
-### [실습 1] (Ubuntu) 실행파일 첨부 차단 규칙 만들기
+이 절은 **차단 규칙이 없을 때 실행파일이 그대로 들어오는 것을 먼저 확인한 뒤, 규칙을 넣어 막는** 순서로 진행합니다.
 
-Postfix의 **`mime_header_checks`** 는 첨부파일의 헤더를 검사하는 기능입니다. 첨부파일 이름이 `.exe`, `.bat`, `.scr`, `.js`, `.vbs` 로 끝나면 거부하는 규칙을 만듭니다.
+| 순서 | 장비 | 할 일 | 상태 |
+|---|---|---|---|
+| 실습 1 | Kali | 규칙이 없는 서버로 `.exe` 첨부 메일 보내기 | **취약** — 접수됨 |
+| 실습 2 | Ubuntu | 실행파일이 메일함까지 들어왔는지 확인 | 사용자에게 도착 |
+| 실습 3 | Ubuntu | 실행파일 첨부 차단 규칙 만들기 | **안전**하게 바꿈 |
+| 실습 4 | Kali | `.exe`, `.txt` 첨부 메일 다시 보내기 | `.exe` 만 거부됨 |
+| 실습 5 | Ubuntu | 메일 로그에서 차단 기록 확인 | 기록 확인 |
 
-```bash
-# === Ubuntu ===
-sudo tee /etc/postfix/mime_header_checks > /dev/null <<'EOF'
-# block dangerous attachment extensions
-/name="?.*\.(exe|bat|scr|js|vbs)"?$/   REJECT Attachment type not allowed
-EOF
+### [실습 1] (Kali) 차단 규칙이 없을 때 실행파일 첨부 보내기
 
-sudo postconf -e 'mime_header_checks = regexp:/etc/postfix/mime_header_checks'
-sudo systemctl reload postfix
-postconf mime_header_checks
-```
-
-`tee`, `postconf -e`, `systemctl reload` 는 아무것도 출력하지 않습니다. 마지막 조회 명령의 결과만 나옵니다.
-
-```
-mime_header_checks = regexp:/etc/postfix/mime_header_checks
-```
-
-| 명령·옵션 | 설명 |
-|---|---|
-| `tee 파일 > /dev/null <<'EOF' ... EOF` | `EOF` 두 줄 사이의 내용을 파일로 저장. `sudo tee` 를 써야 관리자만 쓸 수 있는 `/etc` 아래에 저장 가능. `> /dev/null` 은 같은 내용이 화면에 한 번 더 나오지 않게 버림 |
-| `postconf -e 'mime_header_checks = regexp:파일'` | 첨부파일 헤더 검사 규칙으로 이 파일을 사용. `regexp:` 는 파일 안의 규칙이 **정규표현식**(문자 패턴)이라는 뜻 |
-| `systemctl reload postfix` | 설정을 다시 읽어 규칙 적용 |
-
-규칙 한 줄의 뜻은 다음과 같습니다.
-
-| 부분 | 의미 |
-|---|---|
-| `/name="?.*\.(...)"?$/` | 첨부파일 이름(`name=`)이 괄호 안의 확장자(`exe`, `bat`, `scr`, `js`, `vbs`) 가운데 하나로 끝나는 줄 |
-| `REJECT Attachment type not allowed` | 그런 메일은 **거부**하고 이 문구를 돌려줌 |
-
-### [실습 2] (Kali) 첨부파일을 붙여 보내기
-
-첨부파일이 있는 메일은 손으로 입력하기 어려우므로 메일 테스트 도구 **swaks** 를 씁니다.
+첨부파일이 있는 메일은 `nc` 로 손으로 입력하기 어려우므로 메일 테스트 도구 **swaks** 를 씁니다. 설치하고, 시험용 파일 두 개를 만든 뒤, `.exe` 를 붙여 보냅니다.
 
 ```bash
 # === Kali ===
@@ -524,14 +612,14 @@ swaks --server 192.168.0.30 --from kali@kali.lab.local --to mailuser@ubuntu.lab.
 | 명령·옵션 | 설명 |
 |---|---|
 | `apt install -y swaks` | **swaks**(Swiss Army Knife for SMTP) 설치. SMTP 명령을 대신 입력해 주는 메일 테스트 도구 |
-| `cd ~ && echo ... > invoice.exe` | 홈 디렉터리로 이동한 뒤 시험용 파일 두 개를 만듦. 내용은 의미 없는 글자이고, **확장자만** 실행파일(`.exe`)과 문서(`.txt`)로 다름 |
+| `cd ~ && echo ... > invoice.exe` | 홈 디렉터리로 이동한 뒤 시험용 파일 두 개를 만듦. 내용은 의미 없는 글자이고, **확장자만** 실행파일(`.exe`)과 문서(`.txt`)로 다름. `&&` 는 앞 명령이 성공하면 이어서 실행하라는 뜻 |
 | `--server 192.168.0.30` | 접속할 메일 서버 |
 | `--from` / `--to` | 보내는 사람 / 받는 사람 주소 (`MAIL FROM` / `RCPT TO` 에 해당) |
 | `--header "Subject: ..."` | 메일 헤더 추가(여기서는 제목) |
 | `--body "..."` | 메일 본문 |
 | `--attach @invoice.exe` | 파일을 첨부. `@` 는 "이 이름의 파일 내용을 읽어서 붙이라"는 뜻 |
 | `--suppress-data` | 보낸 메일 내용(헤더·본문·첨부를 인코딩한 글자) 수십 줄을 화면에 다 찍지 않고 `25 lines sent` 한 줄로 줄여 표시 |
-| 줄 끝의 `\` | 명령이 길어서 다음 줄에 이어 쓴다는 표시 |
+| 줄 끝의 `\` | 명령이 길어서 다음 줄에 이어 쓴다는 표시. 두 줄을 **함께** 복사해 붙여 넣음 |
 
 `apt install` 은 설치 과정을 출력합니다. 패키지 크기와 디스크 용량 줄은 환경마다 달라서 `...` 로 줄였습니다. swaks가 이미 설치되어 있으면 `swaks is already the newest version` 이 나옵니다.
 
@@ -555,7 +643,134 @@ Unpacking swaks (20240103.0-2)…
 Setting up swaks (20240103.0-2)…
 ```
 
+> `Unable to locate package swaks` 나 `404 Not Found` 가 나오면 패키지 목록이 오래된 것입니다. `sudo apt update` 를 먼저 실행한 뒤 다시 설치합니다.
+{: .prompt-warning }
+
 `cd` 와 `echo` 는 아무것도 출력하지 않습니다. `swaks` 의 출력은 다음과 같습니다.
+
+```
+=== Trying 192.168.0.30:25...
+=== Connected to 192.168.0.30.
+<-  220 ubuntu.lab.local ESMTP Postfix (Ubuntu)
+ -> EHLO kali
+<-  250-ubuntu.lab.local
+<-  250-PIPELINING
+<-  250-SIZE 10240000
+<-  250-ETRN
+<-  250-STARTTLS
+<-  250-ENHANCEDSTATUSCODES
+<-  250-8BITMIME
+<-  250-DSN
+<-  250-SMTPUTF8
+<-  250 CHUNKING
+ -> MAIL FROM:<kali@kali.lab.local>
+<-  250 2.1.0 Ok
+ -> RCPT TO:<mailuser@ubuntu.lab.local>
+<-  250 2.1.5 Ok
+ -> DATA
+<-  354 End data with <CR><LF>.<CR><LF>
+ -> 25 lines sent
+<-  250 2.0.0 Ok: queued as 56D9D7AB
+ -> QUIT
+<-  221 2.0.0 Bye
+=== Connection closed with remote host.
+```
+
+| 표시 | 의미 |
+|---|---|
+| `===` | swaks 자신의 안내 메시지 |
+| ` ->` | Kali(swaks)가 **보낸** 명령 |
+| `<-` | 서버의 **정상 응답** |
+
+> ` -> EHLO kali` 의 `kali` 자리에는 Kali의 호스트 이름이 나옵니다. 큐 번호(`56D9D7AB`)는 실행할 때마다 다릅니다.
+{: .prompt-info }
+
+마지막에 **`250 2.0.0 Ok: queued as ...`** 가 나왔습니다. 실행파일이 붙은 메일을 서버가 **아무 검사 없이 받아 준 것**입니다.
+
+### [실습 2] (Ubuntu) 실행파일이 메일함까지 들어왔는지 확인
+
+```bash
+# === Ubuntu ===
+sudo grep 'name="invoice.exe"' /var/mail/mailuser
+```
+
+```
+Content-Type: application/octet-stream; name="invoice.exe"
+Content-Disposition: attachment; filename="invoice.exe"
+```
+
+| 명령·옵션 | 설명 |
+|---|---|
+| `grep '찾을글자' 파일` | 파일에서 찾을 글자가 들어 있는 줄만 출력 |
+| `'name="invoice.exe"'` | 큰따옴표까지 찾을 글자에 포함하려고 바깥을 작은따옴표(`'`)로 감쌈 |
+
+| 화면의 줄 | 의미 |
+|---|---|
+| `Content-Type: application/octet-stream; name="invoice.exe"` | 첨부파일의 형식과 **파일 이름** |
+| `Content-Disposition: attachment; filename="invoice.exe"` | 이 부분이 **첨부파일**이라는 표시 |
+
+`invoice.exe` 가 **사용자 메일함까지 들어왔습니다.** 사용자가 메일 프로그램에서 이 첨부를 열면 악성코드가 실행될 수 있는 상태입니다. 이 두 줄이 다음 실습에서 차단 규칙이 검사할 **첨부파일 헤더**입니다.
+
+### [실습 3] (Ubuntu) 실행파일 첨부 차단 규칙 만들기
+
+Postfix의 **`mime_header_checks`** 는 첨부파일의 헤더(실습 2에서 본 줄)를 검사하는 기능입니다. 첨부파일 이름이 `.exe`, `.bat`, `.scr`, `.js`, `.vbs` 로 끝나면 거부하는 규칙을 만듭니다.
+
+```bash
+# === Ubuntu ===
+sudo tee /etc/postfix/mime_header_checks > /dev/null <<'EOF'
+# block dangerous attachment extensions
+/name="?.*\.(exe|bat|scr|js|vbs)"?$/   REJECT Attachment type not allowed
+EOF
+
+sudo postconf -e 'mime_header_checks = regexp:/etc/postfix/mime_header_checks'
+sudo systemctl reload postfix
+postconf mime_header_checks
+```
+
+> 첫 줄 `sudo tee ...` 부터 `EOF` 줄까지는 **하나의 명령**입니다. 블록 전체를 한 번에 복사해 붙여 넣습니다. `EOF` 줄 앞뒤에 공백이 있으면 끝을 알아보지 못해 `>` 표시만 계속 나오므로, 그때는 `Ctrl+C` 로 빠져나와 다시 붙여 넣습니다.
+{: .prompt-warning }
+
+`tee`, `postconf -e`, `systemctl reload` 는 아무것도 출력하지 않습니다. 마지막 조회 명령의 결과만 나옵니다.
+
+```
+mime_header_checks = regexp:/etc/postfix/mime_header_checks
+```
+
+| 명령·옵션 | 설명 |
+|---|---|
+| `tee 파일 > /dev/null <<'EOF' ... EOF` | `EOF` 두 줄 사이의 내용을 파일로 저장. `sudo tee` 를 써야 관리자만 쓸 수 있는 `/etc` 아래에 저장 가능. `> /dev/null` 은 같은 내용이 화면에 한 번 더 나오지 않게 버림 |
+| `postconf -e 'mime_header_checks = regexp:파일'` | 첨부파일 헤더 검사 규칙으로 이 파일을 사용. `regexp:` 는 파일 안의 규칙이 **정규표현식**(글자 패턴)이라는 뜻 |
+| `systemctl reload postfix` | 설정을 다시 읽어 규칙 적용 |
+
+파일에 저장한 두 줄의 뜻은 다음과 같습니다.
+
+| 부분 | 의미 |
+|---|---|
+| `# block ...` (첫 줄) | 설명(주석). `#` 으로 시작하는 줄은 Postfix가 읽지 않음 |
+| `/ ... /` | 규칙(패턴)의 시작과 끝 |
+| `name=` | 실습 2에서 본 첨부파일 헤더의 **파일 이름** 부분 |
+| `"?` | 큰따옴표(`"`)가 있어도 되고 없어도 됨. `?` 는 바로 앞 글자가 **없거나 하나**라는 뜻 |
+| `.*` | 아무 글자나 몇 개든(파일 이름의 앞부분, 예: `invoice`) |
+| `\.` | 진짜 점(`.`). `\` 없이 `.` 만 쓰면 "아무 글자 하나"라는 뜻이 됨 |
+| <code>(exe&#124;bat&#124;scr&#124;js&#124;vbs)</code> | 괄호 안의 확장자 가운데 하나. <code>&#124;</code> 는 "또는" |
+| `$` | 줄의 끝. 확장자가 이름의 **맨 끝**에 있을 때만 해당 |
+| `REJECT Attachment type not allowed` | 패턴에 맞으면 메일을 **거부**하고 이 문구를 돌려줌 |
+
+> Postfix의 정규표현식 규칙은 **대소문자를 구별하지 않습니다.** `INVOICE.EXE` 처럼 대문자로 바꿔도 걸립니다.
+{: .prompt-info }
+
+### [실습 4] (Kali) 같은 첨부를 다시 보내기 — 실행파일 거부
+
+실습 1과 같은 명령으로 `.exe` 를 다시 보냅니다.
+
+```bash
+# === Kali ===
+cd ~
+swaks --server 192.168.0.30 --from kali@kali.lab.local --to mailuser@ubuntu.lab.local \
+  --header "Subject: Invoice" --body "See attached invoice." --attach @invoice.exe --suppress-data
+```
+
+`cd` 는 출력이 없고, `swaks` 의 출력은 다음과 같습니다.
 
 ```
 === Trying 192.168.0.30:25...
@@ -587,12 +802,9 @@ Setting up swaks (20240103.0-2)…
 
 | 표시 | 의미 |
 |---|---|
-| `===` | swaks 자신의 안내 메시지 |
-| ` ->` | Kali(swaks)가 **보낸** 명령 |
-| `<-` | 서버의 **정상 응답** |
-| `<**` | 서버의 **오류 응답** |
+| `<**` | 서버의 **오류 응답**. 실습 1의 `<-  250 ... queued` 자리에 `<** 550` 이 나옴 |
 
-이번에는 `.txt` 파일을 붙여 보냅니다.
+규칙이 정상 파일까지 막지는 않는지 `.txt` 파일을 붙여 보냅니다.
 
 ```bash
 # === Kali ===
@@ -631,16 +843,12 @@ swaks --server 192.168.0.30 --from kali@kali.lab.local --to mailuser@ubuntu.lab.
 === Connection closed with remote host.
 ```
 
-> ` -> EHLO kali` 의 `kali` 자리에는 Kali의 호스트 이름이 나옵니다. 큐 번호(`CE9C57AB`)는 실행할 때마다 다릅니다.
-{: .prompt-info }
+| 첨부파일 | 규칙 없음 (실습 1) | 규칙 적용 (실습 4) |
+|---|---|---|
+| `invoice.exe` | `250` 접수 → 메일함 도착 | **`550` 거부** |
+| `note.txt` | — | **`250` 접수** — 정상 전달 |
 
-| 첨부파일 | 결과 |
-|---|---|
-| `invoice.exe` | **`550` 거부** — 실행파일이라 차단 |
-| `note.txt` | **`250` 접수** — 정상 전달 |
-
-
-### [실습 3] (Ubuntu) 메일 로그에서 차단 기록 확인
+### [실습 5] (Ubuntu) 메일 로그에서 차단 기록 확인
 
 ```bash
 # === Ubuntu ===
@@ -658,19 +866,19 @@ sudo grep -E 'reject:|status=sent' /var/log/mail.log | tail -2
 2026-10-19T22:47:42.853472+09:00 ubuntu postfix/local[924]: CE9C57AB: to=<mailuser@ubuntu.lab.local>, relay=local, delay=0.01, delays=0/0/0/0, dsn=2.0.0, status=sent (delivered to mailbox)
 ```
 
-- 첫 줄: `name="invoice.exe"` 첨부가 **`reject`** 되었고, 보낸 곳 IP(`192.168.0.10`)와 주소가 기록되었습니다.
+- 첫 줄: `name="invoice.exe"` 첨부가 **`reject`** 되었고, 보낸 곳 IP(`192.168.0.10`)와 주소가 기록되었습니다. 실습 2에서 본 `Content-Type` 줄이 규칙에 걸린 것입니다.
 - 둘째 줄: `.txt` 첨부 메일은 **`status=sent (delivered to mailbox)`**, 메일함에 전달되었습니다.
 
 ### 정리
 
-| 장비 | 한 일 | 결과 |
+| 상태 | `mime_header_checks` | `invoice.exe` 첨부 메일 |
 |---|---|---|
-| Ubuntu | `mime_header_checks` 에 실행파일 확장자 차단 규칙 등록 | 첨부파일 이름 검사 시작 |
-| Kali | swaks로 `invoice.exe`, `note.txt` 첨부 메일 발송 | `.exe` 는 `550` 거부, `.txt` 는 `250` 접수 |
-| Ubuntu | `/var/log/mail.log` 확인 | 거부된 파일 이름과 보낸 곳 IP가 기록됨 |
+| **취약** (실습 1·2) | 없음 (Postfix 기본값) | `250` 접수, 사용자 메일함에 도착 |
+| **안전** (실습 3~5) | 실행파일 확장자 차단 규칙 | `550` 거부, 로그에 `reject` 기록 |
 
+> - Postfix는 기본적으로 **첨부파일을 검사하지 않습니다.** 관리자가 규칙을 넣지 않으면 실행파일도 그대로 사용자에게 갑니다.
 > - 악성 첨부·트로이 목마는 정상 파일처럼 보이는 첨부로 **사용자**를 노립니다. 서버 앞단에서 **위험한 확장자를 미리 막는 것**이 1차 대책입니다.
-> - 확장자 검사는 파일 **이름**만 봅니다. 이름을 바꾸거나 압축한 악성 파일은 통과할 수 있으므로 **백신 검사**를 함께 씁니다.
+> - 확장자 검사는 파일 **이름**만 봅니다. 목록에 없는 확장자, 이름을 바꾸거나 압축한 악성 파일은 통과할 수 있으므로 **백신 검사**를 함께 씁니다.
 > - 스팸 필터 솔루션은 헤더·제목뿐 아니라 **본문**까지 검사하고, 내부에서 **나가는** 메일의 정보 유출도 막습니다.
 {: .prompt-tip }
 
@@ -700,6 +908,35 @@ SPF는 **허용된 도메인과 IP에서 온 메일인지 확인해 스팸을 �
 
 ### [실습] (Kali) 실제 도메인의 SPF·DMARC 조회
 
+조회하기 전에 세 기술의 이름과, 이 정보가 들어 있는 **DNS 레코드**를 정리합니다.
+
+| 약어 | 풀이 | 우리말 뜻 |
+|---|---|---|
+| **SPF** | **S**ender **P**olicy **F**ramework | 발신자 정책 프레임워크 — 이 도메인의 메일을 보낼 수 있는 서버 목록 |
+| **DKIM** | **D**omain**K**eys **I**dentified **M**ail | 도메인 키로 식별되는 메일 — 전자서명으로 보낸 도메인과 내용의 변조 여부 확인 |
+| **DMARC** | **D**omain-based **M**essage **A**uthentication, **R**eporting and **C**onformance | 도메인 기반 메시지 인증·보고·준수 — SPF·DKIM 결과로 처리 정책을 정하고 보고를 받음 |
+
+**DNS** 는 `naver.com` 같은 이름에 대한 정보를 알려 주는 인터넷의 전화번호부입니다. 정보는 **레코드(record)** 라는 단위로 저장되며, 종류마다 담는 내용이 다릅니다.
+
+| 레코드 | 담는 내용 | 예 |
+|---|---|---|
+| **A** | 도메인의 **IPv4 주소** | `www.example.com` → `192.0.2.10` |
+| **AAAA** | 도메인의 **IPv6 주소** | `www.example.com` → `2001:db8::10` |
+| **MX** | 이 도메인의 **메일을 받는 서버** (Mail eXchanger) | `naver.com` → `mx1.mail.naver.com` |
+| **TXT** | 아무 **글자(text)** 나 적을 수 있는 칸. 메일 보안 정책을 여기에 적음 | `v=spf1 ...`, `v=DMARC1; ...` |
+| **CNAME** | 다른 도메인 이름의 **별명** | `www.example.com` → `example.com` |
+
+SPF·DKIM·DMARC는 전용 레코드가 따로 있지 않고 모두 **TXT 레코드**에 정해진 형식으로 적습니다. 그래서 어느 기술의 값인지는 **글자의 시작 부분**과 **조회하는 이름**으로 구분합니다.
+
+| 기술 | 조회하는 이름 | TXT 값의 시작 |
+|---|---|---|
+| SPF | 도메인 그대로 (`naver.com`) | `v=spf1` |
+| DKIM | `선택자._domainkey.도메인` | `v=DKIM1` |
+| DMARC | `_dmarc.도메인` (`_dmarc.naver.com`) | `v=DMARC1` |
+
+> DKIM은 앞의 `선택자`(selector) 이름을 메일 헤더를 보고서야 알 수 있어서 이 실습에서는 조회하지 않습니다.
+{: .prompt-info }
+
 ```bash
 # === Kali ===
 dig TXT naver.com +short | grep spf
@@ -707,12 +944,12 @@ dig TXT google.com +short | grep spf
 dig TXT _spf.google.com +short
 ```
 
-| 명령·옵션 | 설명 |
-|---|---|
-| `dig` | DNS 서버에 레코드를 물어보는 조회 도구 |
-| `TXT` | 조회할 레코드 종류. SPF는 **TXT 레코드**에 들어 있음 |
-| `naver.com` | 조회할 도메인 |
-| `+short` | 설명 없이 **결과 값만** 짧게 출력 |
+| 명령·옵션                        | 설명                                                  |
+| ---------------------------- | --------------------------------------------------- |
+| `dig`                        | DNS 서버에 레코드를 물어보는 조회 도구                             |
+| `TXT`                        | 조회할 레코드 종류. SPF는 **TXT 레코드**에 들어 있음                 |
+| `naver.com`                  | 조회할 도메인                                             |
+| `+short`                     | 설명 없이 **결과 값만** 짧게 출력                               |
 | <code>&#124; grep spf</code> | 한 도메인에 TXT 레코드가 여러 개 있을 수 있으므로 `spf` 가 들어 있는 줄만 골라냄 |
 
 ```
@@ -784,54 +1021,229 @@ PGP·S/MIME(03-1)은 **메일 내용 자체**를 암호화합니다. 이와 별�
 | **STARTTLS**          | 평문으로 접속한 뒤 `STARTTLS` 명령으로 **TLS 암호화로 전환** (25, 587번) |
 | SMTPS / POP3S / IMAPS | 처음부터 TLS로 접속 (465 / 995 / 993번)                       |
 
-### [실습] (Kali) 서버가 STARTTLS를 지원하는지 확인
+이 절은 **평문 메일을 받아 주는 기본 상태를 확인한 뒤, 암호화를 필수로 바꿔 평문을 막는** 순서로 진행합니다. 4.1절에서 설치한 **swaks** 를 씁니다.
+
+| 순서 | 장비 | 할 일 | 상태 |
+|---|---|---|---|
+| 실습 1 | Kali | 암호화 없이 메일 보내기 | **취약** — 평문 메일도 접수됨 |
+| 실습 2 | Ubuntu | 암호화를 필수로 설정 | **안전**하게 바꿈 |
+| 실습 3 | Kali | 평문으로, 그리고 STARTTLS로 다시 보내기 | 평문은 거부, 암호화는 접수 |
+| 실습 4 | Ubuntu | 설정을 원래대로 되돌리기 | 다른 실습을 위해 복구 |
+
+### [실습 1] (Kali) 암호화 없이 메일 보내기 — 평문 접수
 
 ```bash
 # === Kali ===
-nc -C 192.168.0.30 25
+swaks --server 192.168.0.30 --from kali@kali.lab.local --to mailuser@ubuntu.lab.local \
+  --header "Subject: Plain" --body "This mail is not encrypted." --suppress-data
 ```
 
-접속한 뒤 아래를 한 줄씩 입력합니다.
+옵션은 4.1절과 같고, 첨부파일만 없습니다.
 
 ```
-EHLO kali
-QUIT
-```
-
-터미널에는 입력한 줄과 서버 응답이 번갈아 나타납니다. 전체 화면은 다음과 같습니다.
-
-```
-220 ubuntu.lab.local ESMTP Postfix (Ubuntu)
-EHLO kali
-250-ubuntu.lab.local
-250-PIPELINING
-250-SIZE 10240000
-250-ETRN
-250-STARTTLS
-250-ENHANCEDSTATUSCODES
-250-8BITMIME
-250-DSN
-250-SMTPUTF8
-250 CHUNKING
-QUIT
-221 2.0.0 Bye
+=== Trying 192.168.0.30:25...
+=== Connected to 192.168.0.30.
+<-  220 ubuntu.lab.local ESMTP Postfix (Ubuntu)
+ -> EHLO kali
+<-  250-ubuntu.lab.local
+<-  250-PIPELINING
+<-  250-SIZE 10240000
+<-  250-ETRN
+<-  250-STARTTLS
+<-  250-ENHANCEDSTATUSCODES
+<-  250-8BITMIME
+<-  250-DSN
+<-  250-SMTPUTF8
+<-  250 CHUNKING
+ -> MAIL FROM:<kali@kali.lab.local>
+<-  250 2.1.0 Ok
+ -> RCPT TO:<mailuser@ubuntu.lab.local>
+<-  250 2.1.5 Ok
+ -> DATA
+<-  354 End data with <CR><LF>.<CR><LF>
+ -> 11 lines sent
+<-  250 2.0.0 Ok: queued as 1D0317AB
+ -> QUIT
+<-  221 2.0.0 Bye
+=== Connection closed with remote host.
 ```
 
 | 화면 | 의미 |
 |---|---|
-| **`250-STARTTLS`** | 이 서버는 평문으로 접속한 뒤 **TLS 암호화로 전환하는 기능**을 지원함 |
-| `250-VRFY` 줄이 없음 | 3.4절에서 VRFY를 비활성화했기 때문 |
+| `<-  250-STARTTLS` | 서버는 TLS 암호화로 전환하는 기능을 **제안함** |
+| ` -> MAIL FROM:...` 이 바로 이어짐 | 클라이언트가 `STARTTLS` 를 보내지 않고 **평문으로 계속 진행** |
+| `250 2.0.0 Ok: queued as ...` | 서버가 **평문 메일을 그대로 받아 줌** |
+
+03-1 1.4절에서 Wireshark로 본 것처럼, 이 메일은 경로 위의 누구나 읽을 수 있습니다. 서버가 STARTTLS를 지원해도 **쓸지 말지를 클라이언트에게 맡기기 때문**입니다.
+
+### [실습 2] (Ubuntu) 암호화를 필수로 설정
+
+먼저 현재 설정을 확인합니다.
+
+```bash
+# === Ubuntu ===
+postconf smtpd_tls_security_level
+```
+
+```
+smtpd_tls_security_level = may
+```
+
+| 값 | 의미 |
+|---|---|
+| `may` (Ubuntu 기본값) | 암호화를 **제안만** 함. 클라이언트가 원하지 않으면 평문으로 받음 |
+| `encrypt` | 암호화를 **필수**로 함. `STARTTLS` 를 하지 않으면 메일을 받지 않음 |
+
+값을 `encrypt` 로 바꿉니다.
+
+```bash
+# === Ubuntu ===
+sudo postconf -e 'smtpd_tls_security_level = encrypt'
+sudo systemctl reload postfix
+postconf smtpd_tls_security_level
+```
+
+`postconf -e` 와 `systemctl reload` 는 아무것도 출력하지 않습니다. 마지막 조회 결과입니다.
+
+```
+smtpd_tls_security_level = encrypt
+```
+
+### [실습 3] (Kali) 평문으로, 그리고 STARTTLS로 다시 보내기
+
+먼저 실습 1과 **똑같은 명령**(암호화 없음)으로 보냅니다.
+
+```bash
+# === Kali ===
+swaks --server 192.168.0.30 --from kali@kali.lab.local --to mailuser@ubuntu.lab.local \
+  --header "Subject: Plain" --body "This mail is not encrypted." --suppress-data
+```
+
+```
+=== Trying 192.168.0.30:25...
+=== Connected to 192.168.0.30.
+<-  220 ubuntu.lab.local ESMTP Postfix (Ubuntu)
+ -> EHLO kali
+<-  250-ubuntu.lab.local
+<-  250-PIPELINING
+<-  250-SIZE 10240000
+<-  250-ETRN
+<-  250-STARTTLS
+<-  250-ENHANCEDSTATUSCODES
+<-  250-8BITMIME
+<-  250-DSN
+<-  250-SMTPUTF8
+<-  250 CHUNKING
+ -> MAIL FROM:<kali@kali.lab.local>
+<** 530 5.7.0 Must issue a STARTTLS command first
+ -> QUIT
+<-  221 2.0.0 Bye
+=== Connection closed with remote host.
+```
+
+`MAIL FROM` 단계에서 **`530 5.7.0 Must issue a STARTTLS command first`**("먼저 STARTTLS 명령을 보내라")로 거부되었습니다. 평문으로는 메일을 보낼 수 없습니다.
+
+이번에는 끝에 **`--tls`** 를 붙여 STARTTLS로 암호화한 뒤 보냅니다.
+
+```bash
+# === Kali ===
+swaks --server 192.168.0.30 --from kali@kali.lab.local --to mailuser@ubuntu.lab.local \
+  --header "Subject: TLS" --body "This mail is encrypted." --suppress-data --tls
+```
+
+| 명령·옵션 | 설명 |
+|---|---|
+| `--tls` | `EHLO` 다음에 **`STARTTLS` 명령을 보내 암호화를 시작**한 뒤 메일을 보냄 |
+
+```
+=== Trying 192.168.0.30:25...
+=== Connected to 192.168.0.30.
+<-  220 ubuntu.lab.local ESMTP Postfix (Ubuntu)
+ -> EHLO kali
+<-  250-ubuntu.lab.local
+<-  250-PIPELINING
+<-  250-SIZE 10240000
+<-  250-ETRN
+<-  250-STARTTLS
+<-  250-ENHANCEDSTATUSCODES
+<-  250-8BITMIME
+<-  250-DSN
+<-  250-SMTPUTF8
+<-  250 CHUNKING
+ -> STARTTLS
+<-  220 2.0.0 Ready to start TLS
+=== TLS started with cipher TLSv1.3:TLS_AES_256_GCM_SHA384:256
+=== TLS client certificate not requested and not sent
+=== TLS no client certificate set
+=== TLS peer[0]   subject=[/CN=ubuntu]
+===               commonName=[ubuntu], subjectAltName=[DNS:ubuntu] notAfter=[2036-10-15T07:08:28Z]
+=== TLS peer certificate failed CA verification (self-signed certificate), failed host verification (using host 192.168.0.30 to verify)
+ ~> EHLO kali
+<~  250-ubuntu.lab.local
+<~  250-PIPELINING
+<~  250-SIZE 10240000
+<~  250-ETRN
+<~  250-ENHANCEDSTATUSCODES
+<~  250-8BITMIME
+<~  250-DSN
+<~  250-SMTPUTF8
+<~  250 CHUNKING
+ ~> MAIL FROM:<kali@kali.lab.local>
+<~  250 2.1.0 Ok
+ ~> RCPT TO:<mailuser@ubuntu.lab.local>
+<~  250 2.1.5 Ok
+ ~> DATA
+<~  354 End data with <CR><LF>.<CR><LF>
+ ~> 11 lines sent
+<~  250 2.0.0 Ok: queued as 2C5607AB
+ ~> QUIT
+<~  221 2.0.0 Bye
+=== Connection closed with remote host.
+```
+
+> `CN=ubuntu` 자리에는 각자의 Ubuntu 호스트 이름이, `notAfter=` 에는 Postfix를 설치한 날로부터 약 10년 뒤 날짜가 나옵니다. 큐 번호도 실행할 때마다 다릅니다.
+{: .prompt-info }
+
+| 화면 | 의미 |
+|---|---|
+| ` -> STARTTLS` / `<-  220 2.0.0 Ready to start TLS` | 클라이언트가 암호화를 요청하고 서버가 수락 |
+| `TLS started with cipher TLSv1.3:...` | **TLS 1.3** 으로 암호화 시작 |
+| `failed CA verification (self-signed certificate)` | 서버 인증서가 **자체 서명** 인증서라 신뢰할 수 있는 기관이 보증하지 않음. 실습 환경에서는 정상이며 암호화는 됨 |
+| `~>` / `<~` | 물결(`~`) 표시는 **암호화된 구간**에서 보내고 받은 내용 |
+| `250 2.0.0 Ok: queued as ...` | 암호화한 메일은 정상 접수 |
+
+STARTTLS 뒤에는 `EHLO` 부터 `QUIT` 까지 모든 명령과 메일 내용이 **암호화되어** 오갑니다. 같은 메일을 Wireshark로 캡처하면 `STARTTLS` 이후는 TLS 패킷으로만 보이고 내용은 읽을 수 없습니다.
+
+### [실습 4] (Ubuntu) 설정을 원래대로 되돌리기
+
+```bash
+# === Ubuntu ===
+sudo postconf -e 'smtpd_tls_security_level = may'
+sudo systemctl reload postfix
+postconf smtpd_tls_security_level
+```
+
+`postconf -e` 와 `systemctl reload` 는 아무것도 출력하지 않습니다. 마지막 조회 결과입니다.
+
+```
+smtpd_tls_security_level = may
+```
+
+> 25번 포트는 **다른 메일 서버가 메일을 넘겨주는** 포트입니다. 인터넷에는 아직 TLS를 쓰지 못하는 메일 서버도 있어서, 25번에서 `encrypt` 로 강제하면 그런 서버가 보내는 정상 메일까지 받지 못합니다. 그래서 실무에서는 25번은 `may` 로 두고, **사용자가 로그인해 메일을 보내는 587번(Submission)** 에서 암호화를 필수로 합니다.
+{: .prompt-warning }
 
 > Ubuntu의 Postfix는 설치할 때 자체 서명 인증서(`ssl-cert-snakeoil`)를 사용하도록 설정되어 있어서 STARTTLS가 처음부터 켜져 있습니다. 실제 운영 서버에서는 공인 인증기관이 발급한 인증서로 바꾸어야 상대 서버와 사용자가 인증서를 신뢰할 수 있습니다.
 {: .prompt-info }
 
 ### 정리
 
-| 장비 | 한 일 | 결과 |
-|---|---|---|
-| Kali | `nc` 로 접속해 `EHLO` | `250-STARTTLS` 로 암호화 전환 기능 확인 |
+| 상태 | `smtpd_tls_security_level` | 암호화 없이 보낸 메일 | `--tls`(STARTTLS)로 보낸 메일 |
+|---|---|---|---|
+| **취약** (실습 1) | `may` (기본값) | `250` 접수 — 평문으로 오감 | 접수 |
+| **안전** (실습 2·3) | `encrypt` | **`530` 거부** | `250` 접수 — 암호화되어 오감 |
 
-> - 서버가 STARTTLS를 **지원해도 클라이언트가 `STARTTLS` 명령을 보내지 않으면 평문**으로 오갑니다(03-1 1.4절의 `nc` 실습).
+> - 화면에 `250-STARTTLS` 가 보인다고 **안전한 것은 아닙니다.** 암호화를 쓸 수 있다는 뜻일 뿐, 클라이언트가 요청하지 않으면 평문으로 오갑니다.
+> - 암호화를 **필수**로 해야 평문 전송을 막을 수 있습니다. 실무에서는 사용자가 메일을 보내는 587번에 적용합니다.
 > - STARTTLS·SMTPS는 **회선 구간**을, PGP·S/MIME은 **메일 내용**을 보호합니다. 서로 대신할 수 없어 함께 씁니다.
 {: .prompt-tip }
 
@@ -852,44 +1264,6 @@ QUIT
 
 ---
 
-# 확인 문제
-
-> 1. 메일 서비스 공격 유형 중 메일 서버에 대한 공격 기법은?
->    ① Active Contents 공격
->    ② 서비스 거부 공격
->    ③ 트로이 목마 공격
->    ④ 바이러스 메일
->
-> 2. 이메일을 열람할 때 HTML 기능이 있는 클라이언트나 웹 브라우저 사용자를 대상으로, 자바스크립트 등을 이용해 정보를 유출하는 공격 기법은?
->
-> 3. 스팸 필터 솔루션에 대한 설명으로 가장 부적절한 것은?
->    ① 메일 서버 앞단에 위치하며 프록시 메일 서버로 동작한다
->    ② SMTP 프로토콜을 이용한 DoS 공격이나 폭탄 메일, 스팸 메일을 차단한다
->    ③ 메일 헤더와 제목 필터링은 제공하지만 본문에 대한 필터링은 제공하지 못한다
->    ④ 첨부파일 필터링 기능으로 특정 확장자를 가진 파일만 전송되도록 설정할 수 있다
->
-> 4. SPF(Sender Policy Framework)에 대한 설명으로 옳은 것은?
->    ① IP 보안 정책을 위한 프레임워크이다
->    ② 웹 서버에 업로드하는 송신자를 통제하는 웹 보안 정책이다
->    ③ VoIP에서 서비스 거부 공격을 완화하기 위해 송신자를 제한한다
->    ④ 메일 송신자가 허용된 도메인이나 IP 주소인지 확인하여 스팸을 통제한다
->
-> 5. 메일 서버에서 `VRFY` 명령을 막아야 하는 이유를 쓰시오.
->
-> 6. 외부 사용자가 자기 메일 서버를 거쳐 다른 도메인으로 메일을 보낼 수 있는 상태를 무엇이라 하며, 어떤 위험이 있는가?
-{: .prompt-tip }
-
-<details>
-<summary>정답 보기</summary>
-
-1. <strong>②</strong> Active Contents·트로이 목마는 클라이언트 공격, 바이러스 메일은 메일 서버 공격으로 보지 않는다.<br>
-2. <strong>Active Contents 공격</strong> (대책: 스크립트 기능을 사용하지 않도록 설정)<br>
-3. <strong>③</strong> 스팸 필터는 본문까지 검색하며, 내부에서 나가는 메일의 정보 유출도 막는다.<br>
-4. <strong>④</strong><br>
-5. 응답 코드의 차이로 서버에 <strong>실제 있는 계정</strong>을 알아낼 수 있어, 무차별 대입·스팸 대상 수집에 쓰이기 때문이다.<br>
-6. <strong>오픈 릴레이(Open Relay)</strong>. 스팸 중계에 악용되어 서버가 블랙리스트에 오르고 정상 메일까지 거부된다.
-
-</details>
 
 ---
 
@@ -898,7 +1272,9 @@ QUIT
 - [ ] 클라이언트 대상 공격(Active Contents, 트로이 목마)과 서버 대상 공격(버퍼 오버플로우, DoS)을 구분
 - [ ] (Kali) `admin@bank.com` 위조 메일이 `250` 으로 접수되는지 확인
 - [ ] (Ubuntu) 위조 메일의 `Received` 에서 실제 IP `192.168.0.10` 확인
-- [ ] (Kali) 외부 도메인 릴레이가 `Relay access denied` 로 막힘을 확인
-- [ ] (Ubuntu) `disable_vrfy_command = yes` 적용 후 `502 ... disabled` 확인
-- [ ] (Ubuntu·Kali) `.exe` 첨부 `550` 거부, `.txt` 첨부 `250` 접수, 로그의 `reject` 확인
+- [ ] (Ubuntu·Kali) `mynetworks` 를 넓히면 외부 도메인 릴레이가 `250` 으로 허용되고, 되돌리면 `Relay access denied` 로 막힘을 확인
+- [ ] (Ubuntu) `mynetworks` 를 기본값(서버 자신만)으로 되돌렸는지 확인
+- [ ] (Ubuntu·Kali) `disable_vrfy_command` 를 `no` → `yes` 로 바꾸면 `252`/`550` 이 `502 ... disabled` 로 바뀜을 확인
+- [ ] (Ubuntu·Kali) 규칙이 없을 때 `.exe` 첨부가 메일함까지 들어오고, 규칙 적용 후 `550` 거부·`.txt` 는 `250` 접수, 로그의 `reject` 확인
 - [ ] (Kali) `dig TXT` 로 SPF·DMARC 레코드를 조회하고 `~all`, `-all`, `p=reject` 를 설명
+- [ ] (Ubuntu·Kali) `smtpd_tls_security_level` 을 `encrypt` 로 바꾸면 평문 메일은 `530`, `--tls` 메일은 `250` 임을 확인하고 `may` 로 되돌림
