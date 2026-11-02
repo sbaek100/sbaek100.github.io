@@ -40,7 +40,7 @@ mermaid: false
 | 3.5 Active Contents | (이론만) | (이론만) |
 | 4.1 첨부파일 필터링 | `.exe` 첨부: 접수(취약) → 거부(안전) | 메일함 확인, 차단 규칙 만들기, 로그 확인 |
 | 4.2 SPF·DMARC | 실제 도메인의 레코드 조회 | — |
-| 4.3 STARTTLS | 평문 메일: 접수(취약) → 거부(안전) | 암호화 필수(`encrypt`)로 바꿨다가 되돌림 |
+| 4.3 STARTTLS | 평문 메일: 접수(취약) → 거부(안전) | 암호화 필수(`encrypt`)로 바꾸고, 받은 메일의 암호화 흔적 확인 후 되돌림 |
 
 > 3.3·4.1·4.3·3.4는 모두 **취약한 상태에서 공격이 통하는 것을 먼저 보고, 설정을 바꿔 막히는 것을 확인**하는 순서입니다. 3.3과 4.3은 실습 끝에 설정을 **원래대로 되돌리는 단계**가 있으니 빠뜨리지 않습니다.
 {: .prompt-info }
@@ -599,6 +599,7 @@ QUIT
 ### [실습 1] (Kali) 차단 규칙이 없을 때 실행파일 첨부 보내기
 
 첨부파일이 있는 메일은 `nc` 로 손으로 입력하기 어려우므로 메일 테스트 도구 **swaks** 를 씁니다. 설치하고, 시험용 파일 두 개를 만든 뒤, `.exe` 를 붙여 보냅니다.
+(**swaks**는 **S**wiss **A**rmy **K**nife for **S**MTP의 약자로, 메일을 보내는 과정을 명령 한 줄로 시험해 볼 수 있는 도구)
 
 ```bash
 # === Kali ===
@@ -1028,7 +1029,8 @@ PGP·S/MIME(03-1)은 **메일 내용 자체**를 암호화합니다. 이와 별�
 | 실습 1 | Kali | 암호화 없이 메일 보내기 | **취약** — 평문 메일도 접수됨 |
 | 실습 2 | Ubuntu | 암호화를 필수로 설정 | **안전**하게 바꿈 |
 | 실습 3 | Kali | 평문으로, 그리고 STARTTLS로 다시 보내기 | 평문은 거부, 암호화는 접수 |
-| 실습 4 | Ubuntu | 설정을 원래대로 되돌리기 | 다른 실습을 위해 복구 |
+| 실습 4 | Ubuntu | 받은 메일과 로그에서 암호화 여부 확인 | `ESMTPS`, `starttls=1` 확인 |
+| 실습 5 | Ubuntu | 설정을 원래대로 되돌리기 | 다른 실습을 위해 복구 |
 
 ### [실습 1] (Kali) 암호화 없이 메일 보내기 — 평문 접수
 
@@ -1214,7 +1216,58 @@ swaks --server 192.168.0.30 --from kali@kali.lab.local --to mailuser@ubuntu.lab.
 
 STARTTLS 뒤에는 `EHLO` 부터 `QUIT` 까지 모든 명령과 메일 내용이 **암호화되어** 오갑니다. 같은 메일을 Wireshark로 캡처하면 `STARTTLS` 이후는 TLS 패킷으로만 보이고 내용은 읽을 수 없습니다.
 
-### [실습 4] (Ubuntu) 설정을 원래대로 되돌리기
+### [실습 4] (Ubuntu) 받은 메일에서 암호화 여부 확인
+
+받는 쪽에서는 메일이 **암호화된 연결로 들어왔는지** 두 곳에서 확인할 수 있습니다. 먼저 메일함의 `Received` 헤더를 봅니다.
+
+```bash
+# === Ubuntu ===
+sudo grep -E 'with ESMTP|^Subject:' /var/mail/mailuser | tail -n 4
+```
+
+| 명령·옵션 | 설명 |
+|---|---|
+| <code>grep -E 'with ESMTP&#124;^Subject:'</code> | `with ESMTP` 가 들어 있는 줄(`Received` 헤더의 둘째 줄) **또는** `Subject:` 로 시작하는 줄(`^` = 줄의 시작)만 골라냄 |
+| <code>&#124; tail -n 4</code> | 마지막 4줄 = 가장 최근에 받은 메일 두 통(실습 1의 평문 메일, 실습 3의 암호화 메일) |
+
+```
+	by ubuntu.lab.local (Postfix) with ESMTP id 1D0317AB
+Subject: Plain
+	by ubuntu.lab.local (Postfix) with ESMTPS id 2C5607AB
+Subject: TLS
+```
+
+> 실습 3에서 처음 보낸 평문 메일은 `530` 으로 거부되어 메일함에 없습니다. 큐 번호는 실행할 때마다 다릅니다.
+{: .prompt-info }
+
+| 메일 | `Received` 의 표시 | 의미 |
+|---|---|---|
+| `Subject: Plain` (실습 1) | `with ESMTP` | 평문 연결로 받음 |
+| `Subject: TLS` (실습 3) | `with ESMTP`**`S`** | 끝의 **S**(Secure)는 **STARTTLS로 암호화된 연결**로 받았다는 뜻 |
+
+다음은 메일 로그입니다. Postfix는 접속이 끝날 때마다 그 접속에서 받은 명령의 개수를 한 줄로 남깁니다.
+
+```bash
+# === Ubuntu ===
+sudo grep 'disconnect from' /var/log/mail.log | tail -n 3
+```
+
+```
+2026-10-19T22:52:10.303698+09:00 ubuntu postfix/smtpd[716]: disconnect from unknown[192.168.0.10] ehlo=1 mail=1 rcpt=1 data=1 quit=1 commands=5
+2026-10-19T22:53:31.245405+09:00 ubuntu postfix/smtpd[745]: disconnect from unknown[192.168.0.10] ehlo=1 mail=0/1 quit=1 commands=2/3
+2026-10-19T22:53:42.877454+09:00 ubuntu postfix/smtpd[745]: disconnect from unknown[192.168.0.10] ehlo=2 starttls=1 mail=1 rcpt=1 data=1 quit=1 commands=7
+```
+
+| 줄 | 실습 | 읽는 법 |
+|---|---|---|
+| 첫 줄 | 실습 1 평문 메일 | `starttls` 가 없음 → **평문**으로 메일 1통 받음 |
+| 둘째 줄 | 실습 3 평문 메일 | `mail=0/1` → `MAIL FROM` 1번 중 **0번 성공**(530 거부) |
+| 셋째 줄 | 실습 3 `--tls` 메일 | **`starttls=1`** → 암호화 후 받음. 암호화 뒤 인사를 다시 해서 `ehlo=2` |
+
+> **연결이 암호화되었다고 메일 자체가 암호화된 것은 아닙니다.** 메일함에 저장된 메일은 `Subject: TLS` 처럼 서버에서 그대로 읽힙니다. STARTTLS는 **오가는 길**만 보호하므로, 서버에 저장된 내용까지 보호하려면 PGP·S/MIME(03-1)이 필요합니다.
+{: .prompt-warning }
+
+### [실습 5] (Ubuntu) 설정을 원래대로 되돌리기
 
 ```bash
 # === Ubuntu ===
@@ -1239,8 +1292,8 @@ smtpd_tls_security_level = may
 
 | 상태 | `smtpd_tls_security_level` | 암호화 없이 보낸 메일 | `--tls`(STARTTLS)로 보낸 메일 |
 |---|---|---|---|
-| **취약** (실습 1) | `may` (기본값) | `250` 접수 — 평문으로 오감 | 접수 |
-| **안전** (실습 2·3) | `encrypt` | **`530` 거부** | `250` 접수 — 암호화되어 오감 |
+| **취약** (실습 1) | `may` (기본값) | `250` 접수 — 평문으로 오감, `Received` 에 `with ESMTP` | 접수 |
+| **안전** (실습 2~4) | `encrypt` | **`530` 거부** | `250` 접수 — 암호화되어 오감, `Received` 에 `with ESMTPS` |
 
 > - 화면에 `250-STARTTLS` 가 보인다고 **안전한 것은 아닙니다.** 암호화를 쓸 수 있다는 뜻일 뿐, 클라이언트가 요청하지 않으면 평문으로 오갑니다.
 > - 암호화를 **필수**로 해야 평문 전송을 막을 수 있습니다. 실무에서는 사용자가 메일을 보내는 587번에 적용합니다.
@@ -1278,3 +1331,4 @@ smtpd_tls_security_level = may
 - [ ] (Ubuntu·Kali) 규칙이 없을 때 `.exe` 첨부가 메일함까지 들어오고, 규칙 적용 후 `550` 거부·`.txt` 는 `250` 접수, 로그의 `reject` 확인
 - [ ] (Kali) `dig TXT` 로 SPF·DMARC 레코드를 조회하고 `~all`, `-all`, `p=reject` 를 설명
 - [ ] (Ubuntu·Kali) `smtpd_tls_security_level` 을 `encrypt` 로 바꾸면 평문 메일은 `530`, `--tls` 메일은 `250` 임을 확인하고 `may` 로 되돌림
+- [ ] (Ubuntu) 암호화해 받은 메일은 `Received` 에 `with ESMTPS`, 로그에 `starttls=1` 이 남는 것을 확인
