@@ -65,16 +65,6 @@ mermaid: false
 |                   | 스팸 릴레이 악용              | 외부인이 서버를 **스팸 중계소**로 사용                                  | 릴레이 제한                  |
 |                   | 계정 정보 수집               | `VRFY`·`EXPN` 명령으로 있는 계정을 알아냄                            | 명령 비활성화                 |
 
-> **Active Contents 공격과 트로이 목마 공격은 클라이언트**를 노리는 공격이고, **버퍼 오버플로우와 서비스 거부 공격은 서버**를 노리는 공격입니다. 바이러스 메일은 메일 서버를 공격하는 것이 아니라 **사용자**를 노립니다.
-{: .prompt-warning }
-
-> **피싱 대책 "SPF·DMARC, 사용자 교육"의 뜻**
->
-> - **SPF·DMARC**: 받는 서버가 위조 메일을 **자동으로 걸러 내는** 기술입니다. SPF는 도메인 주인이 "우리 메일은 이 IP에서만 나간다"는 목록을 DNS에 공개해, 목록에 없는 곳에서 온 메일을 가려냅니다. DMARC는 검사에 실패한 메일을 보고만 할지(`none`), 스팸함에 넣을지(`quarantine`), 거부할지(`reject`) 정합니다(4.2절).
-> - **사용자 교육**: 서버를 빠져나온 메일에 **사람이 속지 않게** 하는 대책입니다. 보낸 사람 주소를 끝까지 확인하고, 링크에 마우스를 올려 실제 주소를 보고, 메일로 비밀번호를 요구하거나 급하게 재촉하면 의심하며, 의심스러우면 공식 홈페이지·전화로 따로 확인하도록 가르칩니다. 회사에서는 가짜 피싱 메일을 보내 보는 **모의 피싱 훈련**으로 연습합니다.
->
-> SPF·DMARC는 도메인 주인이 **미리 등록해야** 작동하고, `bank-security.com` 처럼 **비슷한 진짜 도메인**을 사서 보내면 통과합니다. 그래서 두 대책을 함께 씁니다.
-{: .prompt-info }
 
 ---
 
@@ -204,6 +194,8 @@ Please log in to confirm your password.
 ### [이론]
 
 **릴레이(relay)** 는 메일 서버가 자기 도메인이 아닌 **다른 도메인으로 가는 메일을 대신 전달**하는 것입니다. 아무나 릴레이를 쓸 수 있는 서버를 **오픈 릴레이(Open Relay)** 라고 합니다.
+
+![](/assets/img/posts/2026-10-19-appsec-03-2-mail-attack-security-1794281149506.png)
 
 | 오픈 릴레이일 때 | 결과 |
 |---|---|
@@ -388,6 +380,9 @@ QUIT
 > - Postfix의 기본값은 안전합니다. 위험은 관리자가 `mynetworks` 를 **필요 이상으로 넓힐 때** 생깁니다.
 > - 메일 서버는 **자기 도메인으로 오는 메일은 누구에게서나 받고**, **다른 도메인으로 보내는 메일(릴레이)은 허용한 네트워크나 인증한 사용자에게만** 허용해야 합니다.
 {: .prompt-tip }
+
+
+참고) https://www.postfix.org/SMTPD_ACCESS_README.html
 
 ---
 
@@ -917,6 +912,8 @@ SPF는 **허용된 도메인과 IP에서 온 메일인지 확인해 스팸을 �
 | **DKIM** | **D**omain**K**eys **I**dentified **M**ail | 도메인 키로 식별되는 메일 — 전자서명으로 보낸 도메인과 내용의 변조 여부 확인 |
 | **DMARC** | **D**omain-based **M**essage **A**uthentication, **R**eporting and **C**onformance | 도메인 기반 메시지 인증·보고·준수 — SPF·DKIM 결과로 처리 정책을 정하고 보고를 받음 |
 
+![](data:image/svg+xml;charset=utf-8,%3Csvg%20font-family%3D%22-apple-system%2C%20BlinkMacSystemFont%2C%20%26quot%3BSegoe%20UI%26quot%3B%2C%20sans-serif%22%20font-weight%3D%22430%22%20data-d-component%3D%22svg%22%20fill%3D%22currentColor%22%20style%3D%22color%3Argb\(26%2C%2028%2C%2031\)%22%20viewBox%3D%220%200%20350%20332%22%20width%3D%22100%25%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%3E%3Crect%20x%3D%22100%22%20y%3D%228%22%20width%3D%22150%22%20height%3D%2240%22%20rx%3D%229%22%20fill%3D%22%23234B80%22%2F%3E%3Ctext%20x%3D%22175%22%20y%3D%2224%22%20fill%3D%22%23FFF%22%20font-size%3D%2212%22%20text-anchor%3D%22middle%22%20font-weight%3D%22bold%22%3E%EB%B0%9C%EC%8B%A0%20%EB%A9%94%EC%9D%BC%20%EC%84%9C%EB%B2%84%3C%2Ftext%3E%3Ctext%20x%3D%22175%22%20y%3D%2239%22%20fill%3D%22%23DAEBFF%22%20font-size%3D%2210%22%20text-anchor%3D%22middle%22%3E%EB%A9%94%EC%9D%BC%20%EC%A0%84%EC%86%A1%3C%2Ftext%3E%3Cpath%20d%3D%22M175%2048%20V73%22%20stroke%3D%22%236E859D%22%20stroke-width%3D%222.5%22%2F%3E%3Cpath%20d%3D%22M170%2068%20L175%2076%20L180%2068%22%20fill%3D%22none%22%20stroke%3D%22%236E859D%22%20stroke-width%3D%222%22%2F%3E%3Crect%20x%3D%2295%22%20y%3D%2278%22%20width%3D%22160%22%20height%3D%2235%22%20rx%3D%228%22%20fill%3D%22%23DDE9F5%22%20stroke%3D%22%2385A9CD%22%2F%3E%3Ctext%20x%3D%22175%22%20y%3D%22100%22%20fill%3D%22%23244C79%22%20font-size%3D%2212%22%20font-weight%3D%22bold%22%20text-anchor%3D%22middle%22%3E%EC%88%98%EC%8B%A0%20%EB%A9%94%EC%9D%BC%20%EC%84%9C%EB%B2%84%3C%2Ftext%3E%3Cpath%20d%3D%22M175%20113%20V132%20H62%20V148%22%20fill%3D%22none%22%20stroke%3D%22%231674C5%22%20stroke-width%3D%222%22%2F%3E%3Crect%20x%3D%228%22%20y%3D%22150%22%20width%3D%22108%22%20height%3D%2295%22%20rx%3D%229%22%20fill%3D%22%23EAF4FE%22%20stroke%3D%22%231674C5%22%20stroke-width%3D%221.5%22%2F%3E%3Ctext%20x%3D%2262%22%20y%3D%22176%22%20text-anchor%3D%22middle%22%20fill%3D%22%231674C5%22%20font-size%3D%2216%22%20font-weight%3D%22bold%22%3ESPF%3C%2Ftext%3E%3Ctext%20x%3D%2262%22%20y%3D%22200%22%20text-anchor%3D%22middle%22%20fill%3D%22%2330445A%22%20font-size%3D%2211%22%3E%EB%B0%9C%EC%8B%A0%20IP%3C%2Ftext%3E%3Ctext%20x%3D%2262%22%20y%3D%22217%22%20text-anchor%3D%22middle%22%20fill%3D%22%2330445A%22%20font-size%3D%2211%22%3E%ED%97%88%EA%B0%80%20%EC%97%AC%EB%B6%80%3C%2Ftext%3E%3Ctext%20x%3D%2262%22%20y%3D%22235%22%20text-anchor%3D%22middle%22%20fill%3D%22%231674C5%22%20font-size%3D%2213%22%20font-weight%3D%22bold%22%3EIP%3C%2Ftext%3E%3Cpath%20d%3D%22M175%20113%20V132%20H175%20V148%22%20fill%3D%22none%22%20stroke%3D%22%23258566%22%20stroke-width%3D%222%22%2F%3E%3Crect%20x%3D%22121%22%20y%3D%22150%22%20width%3D%22108%22%20height%3D%2295%22%20rx%3D%229%22%20fill%3D%22%23E5F6EE%22%20stroke%3D%22%23258566%22%20stroke-width%3D%221.5%22%2F%3E%3Ctext%20x%3D%22175%22%20y%3D%22176%22%20text-anchor%3D%22middle%22%20fill%3D%22%23258566%22%20font-size%3D%2216%22%20font-weight%3D%22bold%22%3EDKIM%3C%2Ftext%3E%3Ctext%20x%3D%22175%22%20y%3D%22200%22%20text-anchor%3D%22middle%22%20fill%3D%22%2330445A%22%20font-size%3D%2211%22%3E%EC%A0%84%EC%9E%90%EC%84%9C%EB%AA%85%3C%2Ftext%3E%3Ctext%20x%3D%22175%22%20y%3D%22217%22%20text-anchor%3D%22middle%22%20fill%3D%22%2330445A%22%20font-size%3D%2211%22%3E%EC%9C%A0%ED%9A%A8%20%EC%97%AC%EB%B6%80%3C%2Ftext%3E%3Ctext%20x%3D%22175%22%20y%3D%22235%22%20text-anchor%3D%22middle%22%20fill%3D%22%23258566%22%20font-size%3D%2213%22%20font-weight%3D%22bold%22%3E%EC%84%9C%EB%AA%85%3C%2Ftext%3E%3Cpath%20d%3D%22M175%20113%20V132%20H288%20V148%22%20fill%3D%22none%22%20stroke%3D%22%23A36517%22%20stroke-width%3D%222%22%2F%3E%3Crect%20x%3D%22234%22%20y%3D%22150%22%20width%3D%22108%22%20height%3D%2295%22%20rx%3D%229%22%20fill%3D%22%23FFF4DF%22%20stroke%3D%22%23A36517%22%20stroke-width%3D%221.5%22%2F%3E%3Ctext%20x%3D%22288%22%20y%3D%22176%22%20text-anchor%3D%22middle%22%20fill%3D%22%23A36517%22%20font-size%3D%2216%22%20font-weight%3D%22bold%22%3EDMARC%3C%2Ftext%3E%3Ctext%20x%3D%22288%22%20y%3D%22200%22%20text-anchor%3D%22middle%22%20fill%3D%22%2330445A%22%20font-size%3D%2211%22%3E%EB%8F%84%EB%A9%94%EC%9D%B8%20%EC%A0%95%EB%A0%AC%3C%2Ftext%3E%3Ctext%20x%3D%22288%22%20y%3D%22217%22%20text-anchor%3D%22middle%22%20fill%3D%22%2330445A%22%20font-size%3D%2211%22%3E%EC%B2%98%EB%A6%AC%20%EC%A0%95%EC%B1%85%3C%2Ftext%3E%3Ctext%20x%3D%22288%22%20y%3D%22235%22%20text-anchor%3D%22middle%22%20fill%3D%22%23A36517%22%20font-size%3D%2213%22%20font-weight%3D%22bold%22%3E%EC%A0%95%EC%B1%85%3C%2Ftext%3E%3Cpath%20d%3D%22M62%20245%20V264%20H175%20M175%20245%20V264%20M288%20245%20V264%20H175%20V277%22%20fill%3D%22none%22%20stroke%3D%22%238295A9%22%20stroke-width%3D%222%22%2F%3E%3Cpath%20d%3D%22M170%20272%20L175%20280%20L180%20272%22%20fill%3D%22none%22%20stroke%3D%22%238295A9%22%20stroke-width%3D%222%22%2F%3E%3Crect%20x%3D%2268%22%20y%3D%22282%22%20width%3D%22214%22%20height%3D%2240%22%20rx%3D%228%22%20fill%3D%22%23E9EFF6%22%20stroke%3D%22%23A7B8CB%22%2F%3E%3Ctext%20x%3D%22175%22%20y%3D%22299%22%20fill%3D%22%23263E56%22%20font-size%3D%2212%22%20text-anchor%3D%22middle%22%20font-weight%3D%22bold%22%3E%EC%B5%9C%EC%A2%85%20%EB%A9%94%EC%9D%BC%20%EC%B2%98%EB%A6%AC%3C%2Ftext%3E%3Ctext%20x%3D%22175%22%20y%3D%22313%22%20fill%3D%22%23435A72%22%20font-size%3D%2210%22%20text-anchor%3D%22middle%22%3E%EC%88%98%EB%9D%BD%20%C2%B7%20%EC%8A%A4%ED%8C%B8%20%EB%B6%84%EB%A5%98%20%C2%B7%20%EA%B1%B0%EB%B6%80%20%EB%93%B1%3C%2Ftext%3E%3C%2Fsvg%3E)
+
 **DNS** 는 `naver.com` 같은 이름에 대한 정보를 알려 주는 인터넷의 전화번호부입니다. 정보는 **레코드(record)** 라는 단위로 저장되며, 종류마다 담는 내용이 다릅니다.
 
 | 레코드 | 담는 내용 | 예 |
@@ -934,6 +931,7 @@ SPF·DKIM·DMARC는 전용 레코드가 따로 있지 않고 모두 **TXT 레코
 | SPF | 도메인 그대로 (`naver.com`) | `v=spf1` |
 | DKIM | `선택자._domainkey.도메인` | `v=DKIM1` |
 | DMARC | `_dmarc.도메인` (`_dmarc.naver.com`) | `v=DMARC1` |
+
 
 > DKIM은 앞의 `선택자`(selector) 이름을 메일 헤더를 보고서야 알 수 있어서 이 실습에서는 조회하지 않습니다.
 {: .prompt-info }
@@ -1015,12 +1013,16 @@ dig MX naver.com +short
 
 ### [이론]
 
-PGP·S/MIME(03-1)은 **메일 내용 자체**를 암호화합니다. 이와 별도로 **메일 서버 사이, 사용자와 서버 사이의 통신 구간**도 암호화해야 SMTP 명령과 로그인 정보가 노출되지 않습니다.
+PGP·S/MIME(03-1)은 **메일 내용 자체**를 암호화합니다. 이와 별도로 **메일 서버 사이, 사용자와 서버 사이의 통신 구간**도 암호화해야 SMTP 명령과 로그인 정보가 노출되지 않습니다. 
+
+![594](data:image/svg+xml;charset=utf-8,%3Csvg%20font-family%3D%22-apple-system%2C%20BlinkMacSystemFont%2C%20%26quot%3BSegoe%20UI%26quot%3B%2C%20sans-serif%22%20font-weight%3D%22430%22%20data-d-component%3D%22svg%22%20fill%3D%22currentColor%22%20style%3D%22color%3Argb\(26%2C%2028%2C%2031\)%22%20viewBox%3D%220%200%20340%20286%22%20width%3D%22100%25%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%3E%3Crect%20x%3D%2210%22%20y%3D%228%22%20width%3D%22116%22%20height%3D%2236%22%20rx%3D%228%22%20fill%3D%22%23244F83%22%2F%3E%3Crect%20x%3D%22214%22%20y%3D%228%22%20width%3D%22116%22%20height%3D%2236%22%20rx%3D%228%22%20fill%3D%22%23244F83%22%2F%3E%3Ctext%20x%3D%2268%22%20y%3D%2230%22%20fill%3D%22white%22%20font-size%3D%2212%22%20font-weight%3D%22bold%22%20text-anchor%3D%22middle%22%3E%EB%A9%94%EC%9D%BC%20%ED%81%B4%EB%9D%BC%EC%9D%B4%EC%96%B8%ED%8A%B8%3C%2Ftext%3E%3Ctext%20x%3D%22272%22%20y%3D%2230%22%20fill%3D%22white%22%20font-size%3D%2212%22%20font-weight%3D%22bold%22%20text-anchor%3D%22middle%22%3ESMTP%20%EC%84%9C%EB%B2%84%3C%2Ftext%3E%3Cline%20x1%3D%2268%22%20y1%3D%2244%22%20x2%3D%2268%22%20y2%3D%22266%22%20stroke%3D%22%239BAABD%22%20stroke-dasharray%3D%224%204%22%2F%3E%3Cline%20x1%3D%22272%22%20y1%3D%2244%22%20x2%3D%22272%22%20y2%3D%22266%22%20stroke%3D%22%239BAABD%22%20stroke-dasharray%3D%224%204%22%2F%3E%3Crect%20x%3D%2283%22%20y%3D%2250%22%20width%3D%22174%22%20height%3D%2222%22%20rx%3D%225%22%20fill%3D%22%23FCE8D8%22%2F%3E%3Ctext%20x%3D%22170%22%20y%3D%2265%22%20font-size%3D%2210%22%20fill%3D%22%23A65B25%22%20text-anchor%3D%22middle%22%3E%EC%B4%88%EA%B8%B0%20%EC%97%B0%EA%B2%B0%3A%20%ED%8F%89%EB%AC%B8%20SMTP%3C%2Ftext%3E%3Cpath%20d%3D%22M68%2085%20H272%22%20stroke%3D%22%23B77A3E%22%20stroke-width%3D%221.8%22%2F%3E%3Cpath%20d%3D%22M265%2081%20L272%2085%20L265%2089%22%20fill%3D%22none%22%20stroke%3D%22%23B77A3E%22%20stroke-width%3D%221.8%22%2F%3E%3Ctext%20x%3D%22170%22%20y%3D%2281%22%20font-size%3D%2211%22%20text-anchor%3D%22middle%22%20fill%3D%22%23874C1C%22%3EEHLO%3C%2Ftext%3E%3Cpath%20d%3D%22M272%20111%20H68%22%20stroke%3D%22%23B77A3E%22%20stroke-width%3D%221.8%22%2F%3E%3Cpath%20d%3D%22M75%20107%20L68%20111%20L75%20115%22%20fill%3D%22none%22%20stroke%3D%22%23B77A3E%22%20stroke-width%3D%221.8%22%2F%3E%3Ctext%20x%3D%22170%22%20y%3D%22105%22%20font-size%3D%2211%22%20text-anchor%3D%22middle%22%20fill%3D%22%23874C1C%22%3E250-STARTTLS%3C%2Ftext%3E%3Cpath%20d%3D%22M68%20137%20H272%22%20stroke%3D%22%23B77A3E%22%20stroke-width%3D%221.8%22%2F%3E%3Cpath%20d%3D%22M265%20133%20L272%20137%20L265%20141%22%20fill%3D%22none%22%20stroke%3D%22%23B77A3E%22%20stroke-width%3D%221.8%22%2F%3E%3Ctext%20x%3D%22170%22%20y%3D%22131%22%20font-size%3D%2211%22%20font-weight%3D%22bold%22%20text-anchor%3D%22middle%22%20fill%3D%22%23874C1C%22%3ESTARTTLS%3C%2Ftext%3E%3Cpath%20d%3D%22M272%20159%20H68%22%20stroke%3D%22%23B77A3E%22%20stroke-width%3D%221.8%22%2F%3E%3Cpath%20d%3D%22M75%20155%20L68%20159%20L75%20163%22%20fill%3D%22none%22%20stroke%3D%22%23B77A3E%22%20stroke-width%3D%221.8%22%2F%3E%3Ctext%20x%3D%22170%22%20y%3D%22153%22%20font-size%3D%2210%22%20text-anchor%3D%22middle%22%20fill%3D%22%23874C1C%22%3E220%20Ready%20to%20start%20TLS%3C%2Ftext%3E%3Crect%20x%3D%2279%22%20y%3D%22169%22%20width%3D%22182%22%20height%3D%2231%22%20rx%3D%226%22%20fill%3D%22%23DCECFD%22%20stroke%3D%22%23448BC7%22%2F%3E%3Ctext%20x%3D%22170%22%20y%3D%22182%22%20text-anchor%3D%22middle%22%20font-size%3D%2211%22%20font-weight%3D%22bold%22%20fill%3D%22%23195A96%22%3ETLS%20Handshake%3C%2Ftext%3E%3Ctext%20x%3D%22170%22%20y%3D%22193%22%20text-anchor%3D%22middle%22%20font-size%3D%229%22%20fill%3D%22%23195A96%22%3E%ED%82%A4%20%EA%B5%90%ED%99%98%20%C2%B7%20%EC%95%94%ED%98%B8%ED%99%94%20%ED%98%91%EC%83%81%3C%2Ftext%3E%3Crect%20x%3D%2283%22%20y%3D%22208%22%20width%3D%22174%22%20height%3D%2221%22%20rx%3D%225%22%20fill%3D%22%23DFF5E7%22%2F%3E%3Ctext%20x%3D%22170%22%20y%3D%22223%22%20font-size%3D%2210%22%20fill%3D%22%23167448%22%20text-anchor%3D%22middle%22%3E%EC%95%94%ED%98%B8%ED%99%94%EB%90%9C%20SMTP%20%ED%86%B5%EC%8B%A0%3C%2Ftext%3E%3Cpath%20d%3D%22M68%20245%20H272%22%20stroke%3D%22%23188657%22%20stroke-width%3D%222.4%22%2F%3E%3Cpath%20d%3D%22M265%20241%20L272%20245%20L265%20249%22%20fill%3D%22none%22%20stroke%3D%22%23188657%22%20stroke-width%3D%222%22%2F%3E%3Ctext%20x%3D%22170%22%20y%3D%22240%22%20font-size%3D%2210%22%20text-anchor%3D%22middle%22%20fill%3D%22%23167448%22%3E%EB%A9%94%EC%9D%BC%20%EB%8D%B0%EC%9D%B4%ED%84%B0%20%EC%A0%84%EC%86%A1%3C%2Ftext%3E%3Ctext%20x%3D%22170%22%20y%3D%22273%22%20font-size%3D%2210%22%20text-anchor%3D%22middle%22%20fill%3D%22%23487187%22%3ETLS%20%EC%97%B0%EA%B2%B0%20%EC%A2%85%EB%A3%8C%EA%B9%8C%EC%A7%80%20%EC%95%94%ED%98%B8%ED%99%94%20%EC%9C%A0%EC%A7%80%3C%2Ftext%3E%3C%2Fsvg%3E)
 
 | 방식                    | 내용                                                    |
 | --------------------- | ----------------------------------------------------- |
 | **STARTTLS**          | 평문으로 접속한 뒤 `STARTTLS` 명령으로 **TLS 암호화로 전환** (25, 587번) |
 | SMTPS / POP3S / IMAPS | 처음부터 TLS로 접속 (465 / 995 / 993번)                       |
+
+앞서 살펴보신 SPF·DKIM·DMARC가 메일의 발신 도메인을 검증하는 기술이라면, STARTTLS는 메일을 전송하는 과정의 통신 구간을 암호화하는 기술입니다.
 
 이 절은 **평문 메일을 받아 주는 기본 상태를 확인한 뒤, 암호화를 필수로 바꿔 평문을 막는** 순서로 진행합니다. 4.1절에서 설치한 **swaks** 를 씁니다.
 
