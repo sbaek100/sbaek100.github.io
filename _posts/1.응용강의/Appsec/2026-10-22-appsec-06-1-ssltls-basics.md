@@ -28,7 +28,7 @@ mermaid: false
 
 > 코드 블록 첫 줄의 `# === Ubuntu ===` / `# === Kali ===` 를 보고 **어느 VM에서 칠지** 확인한 뒤 붙여 넣습니다.
 >
-> 명령과 예상 화면은 **Ubuntu 24.04.4 LTS(Apache 2.4.58, OpenSSL 3.0.13)** 와 **Kali Rolling(OpenSSL 3.6.2, curl 8.21.0, Wireshark 4.6.6)** 에서 실행해 확인했습니다. 날짜·시각, 인증서 일련번호와 지문, 키를 만들 때 나오는 점(`.`)과 `+` 기호, 프로세스 번호는 실행할 때마다 다릅니다.
+> 명령과 예상 화면은 **Ubuntu 24.04.4 LTS(Apache 2.4.58, OpenSSL 3.0.13)** 와 **Kali Rolling(OpenSSL 3.6.2, curl 8.21.0, Wireshark 4.6.6)** 에서 실행해 확인했습니다. 날짜·시각, 인증서 일련번호와 지문, 키를 만들 때 나오는 점(`.`)과 `+` 기호, 프로세스 번호, 웹 응답의 `ETag` 값은 실행할 때마다 다릅니다.
 {: .prompt-warning }
 
 > 이 글의 실습은 **모두 무료 오픈소스**만 씁니다. 웹 서버는 **Apache**, 인증서는 **OpenSSL** 로 직접 만든 **실습용 인증기관(Lab Root CA)** 이 발급합니다. 돈을 내고 인증서를 사거나, 인터넷에 공개된 도메인을 준비할 필요가 없습니다(2.1절 끝의 "인증서를 얻는 방법" 참고).
@@ -120,7 +120,7 @@ sudo ufw status
 sudo ufw allow from 192.168.0.10 to any port 80,443 proto tcp
 ```
 
-방화벽이 꺼져 있는(Ubuntu 기본값) 경우의 화면입니다.
+방화벽이 꺼져 있는(Ubuntu 기본값) 경우의 화면입니다. 같은 규칙을 전에 넣은 적이 있으면 `Rules updated` 대신 `Skipping adding existing rule` 이 나오며, 그대로 진행하면 됩니다.
 
 ```
 Status: inactive
@@ -260,7 +260,7 @@ SSL/TLS는 **응용 계층(HTTP 등)과 전송 계층(TCP) 사이**에서 동작
 | 평문 | 포트 | TLS를 더한 것 | 포트 |
 |---|---|---|---|
 | HTTP | 80 | **HTTPS** | **443** |
-| SMTP(메일 제출) | 587 | **SMTPS** | **465** |
+| SMTP(메일 제출) | 25·587 | **SMTPS** | **465** |
 | IMAP | 143 | **IMAPS** | **993** |
 | POP3 | 110 | **POP3S** | **995** |
 | LDAP | 389 | **LDAPS** | **636** |
@@ -374,6 +374,9 @@ Record 프로토콜은 보낼 데이터를 다음 순서로 처리합니다.
 > 순서 **"단편화 → 압축 → MAC → 암호화 → 헤더"** 는 그대로 외워 둡니다. 압축을 암호화 **뒤에** 하면 효과가 없고(암호문은 압축되지 않음), MAC은 암호화 **앞에** 붙입니다.
 {: .prompt-warning }
 
+> 이 순서는 SSL과 TLS 1.2까지의 기본 구조입니다. 요즘 쓰는 **AES-GCM·ChaCha20** 같은 AEAD 암호는 암호화와 무결성 확인을 한 번에 처리해 MAC 단계가 따로 없고, TLS 1.3에서는 압축 단계도 없어졌습니다.
+{: .prompt-info }
+
 | 자주 헷갈리는 점 | 바른 설명 |
 |---|---|
 | 암호 알고리즘은 어느 프로토콜이 **고르나**? | **Handshake** 가 협상해서 고름. Record는 정해진 대로 **실행**만 함 |
@@ -451,7 +454,7 @@ Record 프로토콜은 보낼 데이터를 다음 순서로 처리합니다.
 |---|---|---|---|
 | **자체서명 인증서** | 무료 | **항상 경고** | 잠깐 시험할 때 |
 | **사설 CA**(직접 만든 CA)로 발급 | 무료(**OpenSSL**, easy-rsa, mkcert 등 오픈소스) | CA 인증서를 **설치한 PC에서는 경고 없음** | 회사 내부망, **이 실습** |
-| **Let's Encrypt** 등 무료 공인 CA | 무료(발급 도구 **certbot** 도 오픈소스) | 없음 | **인터넷에 공개된 도메인**이 있는 서버. 인증서 유효기간이 90일이라 자동 갱신 |
+| **Let's Encrypt** 등 무료 공인 CA | 무료(발급 도구 **certbot** 도 오픈소스) | 없음 | **인터넷에 공개된 도메인**이 있는 서버. 인증서 유효기간이 90일(점점 짧아지는 중)이라 자동 갱신 |
 | 유료 공인 CA | 유료 | 없음 | 기관 확인(OV)·확장 확인(EV)이 필요한 곳 |
 
 > Let's Encrypt는 무료지만 "이 도메인의 주인이 맞는지"를 **인터넷에서 그 서버(또는 DNS)에 접속해** 확인합니다. 그래서 `192.168.0.30` 같은 **내부 IP나 인터넷에 없는 이름**(`ubuntu.lab.local`)에는 발급하지 않습니다. 내부망에서는 이 글처럼 **사설 CA** 를 만들고, 그 CA의 인증서를 직원 PC에 설치해 씁니다.
@@ -539,6 +542,7 @@ openssl req -x509 -newkey rsa:2048 -nodes -days 3650 \
 
 ```bash
 # === Ubuntu ===
+cd ~/lab-ca
 openssl x509 -in ca.crt -noout -subject -issuer -ext basicConstraints
 ```
 
@@ -616,6 +620,7 @@ server.crt: OK
 
 ```bash
 # === Ubuntu ===
+cd ~/lab-ca
 openssl x509 -in server.crt -noout -subject -issuer -dates -ext subjectAltName
 ls -l
 ```
@@ -999,7 +1004,7 @@ OpenSSL은 같은 암호군을 `ECDHE-RSA-AES256-GCM-SHA384` 처럼 짧게 표�
 | 항목 | TLS 1.2 | TLS 1.3 |
 |---|---|---|
 | Handshake 왕복 | 2번(2-RTT) | **1번(1-RTT)**. 다시 접속할 때는 0-RTT도 가능 |
-| 키 교환 | RSA, DHE, ECDHE | **(EC)DHE만**(항상 PFS) |
+| 키 교환 | RSA, DHE, ECDHE | **(EC)DHE만**(전체 Handshake는 항상 PFS) |
 | 서버 인증서 | **평문**으로 전송(도청자가 볼 수 있음) | ServerHello 직후부터 **암호화**(인증서도 숨김) |
 | 암호군 | 수십 가지(약한 것 포함) | **5가지**(AES-GCM, ChaCha20 등 AEAD만) |
 | 압축, 재협상 | 있음 | **제거** |

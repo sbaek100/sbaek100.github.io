@@ -28,7 +28,7 @@ mermaid: false
 | Kali | **192.168.0.10** | 공격자·점검자, 그리고 피해자 역할의 클라이언트 |
 | Ubuntu | **192.168.0.30** | HTTPS 웹 서버(Apache) |
 
-> 명령과 예상 화면은 **Ubuntu 24.04.4 LTS(Apache 2.4.58, OpenSSL 3.0.13)** 와 **Kali Rolling(OpenSSL 3.6.2, curl 8.21.0, Nmap 7.99)** 에서 실행해 확인했습니다. 날짜·시각, 인증서 지문, 오류 메시지 앞의 16진수 번호(`40E7A4C5...`)는 실행할 때마다 다릅니다.
+> 명령과 예상 화면은 **Ubuntu 24.04.4 LTS(Apache 2.4.58, OpenSSL 3.0.13)** 와 **Kali Rolling(OpenSSL 3.6.2, curl 8.21.0, Nmap 7.99)** 에서 실행해 확인했습니다. 날짜·시각, 인증서 지문, 웹 응답의 `ETag` 값, 오류 메시지 앞의 16진수 번호(`40E7A4C5...`)는 실행할 때마다 다릅니다.
 {: .prompt-warning }
 
 이 글의 실습도 04-2처럼 **취약한 상태를 먼저 보고, 설정을 바꿔 막히는 것을 확인**하는 순서입니다.
@@ -54,9 +54,10 @@ SSL/TLS는 잘 만든 프로토콜이지만, **설정·사용자·구현** 가�
 | 노리는 곳 | 공격 | 원리 | 대책 |
 |---|---|---|---|
 | **인증서·사용자** | **중간자 공격**(MITM) | 가짜 인증서로 서버인 척 끼어듦. 사용자가 **경고를 무시**하면 성공 | 공인·사내 CA 인증서, 경고 무시 금지, CA 개인키 보호 |
-| **프로토콜 버전** | **다운그레이드**(POODLE, DROWN 등) | 약한 **옛 버전**(SSL 2.0·3.0)으로 협상하게 끌어내린 뒤 깨뜨림 | SSL 2.0·3.0, TLS 1.0·1.1 끄기 |
+| **프로토콜 버전** | **다운그레이드**(POODLE), 옛 버전 약점(DROWN, BEAST) | 약한 **옛 버전**(SSL 2.0·3.0, TLS 1.0)으로 협상하게 끌어내리거나, 켜져 있는 옛 버전을 이용해 깨뜨림 | SSL 2.0·3.0, TLS 1.0·1.1 끄기 |
 | **암호 알고리즘** | 약한 암호군 공격(FREAK, Logjam, BEAST, Sweet32, RC4 등) | 짧은 키(수출용 40·512비트), 깨진 알고리즘(RC4, DES·3DES), 약한 해시(MD5·SHA-1) | 강한 암호군만 허용, PFS(ECDHE) |
-| **압축 기능** | **CRIME**, BREACH | 압축된 길이의 변화로 쿠키 같은 비밀값을 한 글자씩 추측 | TLS 압축 끄기 |
+| **압축 기능** | **CRIME** | **TLS 압축** 후 길이의 변화로 쿠키 같은 비밀값을 한 글자씩 추측 | TLS 압축 끄기 |
+| **압축 기능** | BREACH | 같은 원리를 **HTTP 응답 압축**(gzip)에 적용. TLS 압축을 꺼도 성공 | 비밀값이 든 페이지의 HTTP 압축 끄기, CSRF 토큰을 요청마다 바꾸기 |
 | **구현 버그** | **Heartbleed** | OpenSSL의 버그로 서버 **메모리**가 새어 나감 | 라이브러리 업데이트, 키·인증서 재발급 |
 | **HTTPS 우회** | **SSL Strip** | 처음 HTTP 접속을 가로채 HTTPS로 **올라가지 못하게** 함 | HTTP→HTTPS 이동, **HSTS** |
 
@@ -206,12 +207,14 @@ Authorization: Basic c3R1ZGVudDpTdW1tZXIyMDI2IQ==
 User-Agent: curl/8.21.0
 Accept: */*
 
+4017439511790000:error:0A000126:SSL routines::unexpected eof while reading:../ssl/record/rec_layer_s3.c:698:
 ```
 
 > 📷 **캡처**: 터미널 A에 피해자의 `Authorization` 헤더가 복호화되어 출력된 화면.
 
 | 화면 | 의미 |
 |---|---|
+| 마지막 `unexpected eof while reading` | 피해자가 3초 만에 포기하고 연결을 끊었다는 뜻. 그 전에 요청은 이미 공격자에게 넘어감 |
 | `GET / HTTP/1.1 ...` | 피해자의 HTTPS 요청이 **공격자 손에서 복호화됨** |
 | `Authorization: Basic c3R1...` | 06-1 1.1절처럼 `base64 -d` 하면 `student:Summer2026!` |
 
@@ -249,7 +252,7 @@ rm -f ~/fake.key ~/fake.crt
 | 공격 | 노리는 것 | 내용 |
 |---|---|---|
 | **POODLE**(2014) | **SSL 3.0** | SSL 3.0으로 끌어내린 뒤, CBC 모드 **패딩** 검사의 허점으로 쿠키를 한 바이트씩 알아냄 |
-| **DROWN**(2016) | **SSL 2.0** | 같은 키를 쓰는 서버가 SSL 2.0을 켜 두면, 그것을 이용해 TLS 통신까지 복호화 |
+| **DROWN**(2016) | **SSL 2.0** | 같은 키를 쓰는 서버가 SSL 2.0을 켜 두면, 그것을 이용해 TLS 통신까지 복호화. 연결을 끌어내리는 대신 **다른 프로토콜(SSL 2.0)을 이용**하는 교차 프로토콜 공격 |
 | **FREAK**, **Logjam**(2015) | 수출용 약한 암호 | 512비트 RSA·DH 같은 **수출용(EXPORT) 암호군**으로 끌어내린 뒤 키를 계산해 냄 |
 | **BEAST**(2011) | TLS 1.0 | TLS 1.0의 CBC 모드 초기화 벡터(IV) 약점으로 쿠키를 알아냄 |
 
@@ -336,7 +339,7 @@ DONE
 | **RSA 키 교환** | **PFS 없음**: 서버 개인키가 유출되면 녹화해 둔 과거 통신까지 복호화 | `TLS_RSA_WITH_...` 암호군 |
 | TLS 압축 | **CRIME**: 압축 후 길이 변화로 비밀값 추측 | 압축 사용 |
 
-> 안전한 조합은 **키 교환 ECDHE(PFS) + 대칭 암호 AES-GCM 또는 ChaCha20(AEAD) + SHA-256 이상**입니다. TLS 1.3은 처음부터 이 조합만 허용합니다.
+> 안전한 조합은 **키 교환 ECDHE(PFS) + 대칭 암호 AES-GCM 또는 ChaCha20(AEAD) + SHA-256 이상**입니다. TLS 1.3은 대칭 암호로 AEAD(AES-GCM·AES-CCM·ChaCha20)만 허용하고, 전체 Handshake에서는 항상 (EC)DHE로 키를 교환합니다.
 {: .prompt-tip }
 
 ### [실습 1] (Kali) 서버의 암호군 점검 — 기본 설정
@@ -634,7 +637,7 @@ Nmap done: 1 IP address (1 host up) scanned in 0.66 seconds
 
 ### [이론]
 
-사용자는 주소창에 `https://` 를 잘 치지 않습니다. `naver.com` 만 치면 브라우저는 먼저 **HTTP(80)** 로 접속하고, 서버가 "HTTPS로 가라"고 알려 주면 그때 HTTPS로 옮겨 갑니다. **SSL Strip**(2009)은 이 **첫 HTTP 요청**을 노립니다.
+사용자는 주소창에 `https://` 를 잘 치지 않습니다. `naver.com` 만 치거나 `http://` 로 시작하는 링크를 누르면, 옛 브라우저나 HTTPS 우선 기능을 끈 브라우저는 먼저 **HTTP(80)** 로 접속하고, 서버가 "HTTPS로 가라"고 알려 주면 그때 HTTPS로 옮겨 갑니다. **SSL Strip**(2009)은 이 **첫 HTTP 요청**을 노립니다.
 
 | 순서 | 일어나는 일 |
 |---|---|
@@ -733,9 +736,9 @@ Content-Type: text/html
 | `301 Moved Permanently` + `Location: https://...` | HTTP로 오면 HTTPS 주소로 보냄 |
 | `Strict-Transport-Security: max-age=31536000` | HTTPS 응답에 **HSTS** 가 붙음. 브라우저는 1년 동안 이 사이트를 HTTPS로만 접속 |
 
-Kali의 Firefox 주소창에 `ubuntu.lab.local` 만 입력해 봅니다. 처음에는 서버의 `301` 응답으로 HTTPS로 넘어가고, 그 뒤로는 브라우저가 HSTS를 기억해 **서버에 묻기 전에 스스로** `https://` 로 바꿔 접속합니다.
+Kali의 Firefox 주소창에 `http://ubuntu.lab.local` 을 **`http://` 까지 직접** 입력해 봅니다(이름만 치면 최신 Firefox는 HTTPS부터 시도할 수 있음). 처음에는 서버의 `301` 응답으로 HTTPS로 넘어가고, 그 뒤로는 브라우저가 HSTS를 기억해 **서버에 묻기 전에 스스로** `https://` 로 바꿔 접속합니다.
 
-> 📷 **캡처**: Firefox 개발자 도구(F12) → **Network** 탭을 연 채 `ubuntu.lab.local` 을 두 번째로 입력했을 때 `307 Internal Redirect`(브라우저가 HSTS로 스스로 바꾼 이동)와 응답 헤더의 `Strict-Transport-Security` 가 보이는 화면.
+> 📷 **캡처**: Firefox 개발자 도구(F12) → **Network** 탭을 연 채 `http://ubuntu.lab.local` 을 두 번째로 입력했을 때 `307 Internal Redirect`(브라우저가 HSTS로 스스로 바꾼 이동)와 응답 헤더의 `Strict-Transport-Security` 가 보이는 화면.
 
 > HSTS는 **HTTPS 응답**에 붙어 있을 때만 브라우저가 받아들입니다. HTTP 응답에 넣으면 공격자가 지우거나 바꿀 수 있기 때문입니다. 또 인증서 경고가 있는 사이트에서는 HSTS를 무시하므로, 06-1처럼 CA를 신뢰 목록에 넣어 둔 상태여야 동작합니다.
 {: .prompt-info }
@@ -748,7 +751,7 @@ Kali의 Firefox 주소창에 `ubuntu.lab.local` 만 입력해 봅니다. 처음�
 |---|---|---|---|
 | 1 | 평문 통신 도청 | 모든 로그인·개인정보 페이지에 **HTTPS** | 06-1 1.1, 2.5 |
 | 2 | 가짜 인증서·중간자 공격 | 공인·사내 CA 인증서, **경고 무시 금지**, CA 개인키 보호, 앱에서 검증 끄지 않기 | 3.2 |
-| 3 | 다운그레이드(POODLE, DROWN 등) | SSL 2.0·3.0, TLS 1.0·1.1 끄기(`SSLProtocol -all +TLSv1.2 +TLSv1.3`) | 3.3 |
+| 3 | 다운그레이드·옛 버전 공격(POODLE, DROWN, BEAST) | SSL 2.0·3.0, TLS 1.0·1.1 끄기(`SSLProtocol -all +TLSv1.2 +TLSv1.3`) | 3.3 |
 | 4 | 약한 암호·키 교환 | **ECDHE(PFS) + AES-GCM/ChaCha20**, RC4·DES·3DES·수출용·MD5 금지, 서버 순서 우선 | 3.4 |
 | 5 | 압축 공격(CRIME) | TLS 압축 끄기 | 3.4 (`compressors: NULL`) |
 | 6 | 구현 버그(Heartbleed) | OpenSSL 등 라이브러리 **최신 유지**, 유출 의심 시 키·인증서 재발급 | 3.5 |
