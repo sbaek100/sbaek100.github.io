@@ -274,7 +274,7 @@ sudo apt purge -y nginx nginx-common 2>/dev/null; sudo apt autoremove -y
 sudo ss -tlnp | grep -E ":80|:443" || echo "80/443 비어 있음 — 정상"
 ```
 
-- **06-2에서 Apache를 설치**하므로, nginx가 남아 있으면 **같은 포트를 두 프로그램이 차지하려 하여 충돌**합니다.
+- **06-1에서 Apache를 설치**하므로, nginx가 남아 있으면 **같은 포트를 두 프로그램이 차지하려 하여 충돌**합니다.
 - 리눅스 기초 부록에서 만든 **Metasploitable 2는 이 과정에서 사용하지 않습니다.** 자원 절약을 위해 꺼 두어도 됩니다.
 
 ---
