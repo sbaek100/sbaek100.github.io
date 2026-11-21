@@ -112,7 +112,7 @@ Server built:   2026-11-12T12:58:56
 > 패키지 버전 숫자(`8.19`)와 빌드 날짜는 업데이트 시점에 따라 다를 수 있습니다. 01장 환경 점검에서 nginx를 지우지 않았다면 80번 포트가 겹쳐 Apache가 시작되지 않으니, 먼저 nginx를 제거합니다.
 {: .prompt-info }
 
-Ubuntu 방화벽(ufw)이 켜져 있다면 Kali에서 오는 웹 접속(80·443)을 허용합니다. `Status: inactive` 이면 건너뜁니다.
+Ubuntu 방화벽(ufw)에서 Kali가 웹(80·443)에 접속할 수 있도록 허용합니다.
 
 ```bash
 # === Ubuntu ===
@@ -120,12 +120,27 @@ sudo ufw status
 sudo ufw allow from 192.168.0.10 to any port 80,443 proto tcp
 ```
 
-방화벽이 꺼져 있는(Ubuntu 기본값) 경우의 화면입니다. 같은 규칙을 전에 넣은 적이 있으면 `Rules updated` 대신 `Skipping adding existing rule` 이 나오며, 그대로 진행하면 됩니다.
+01강에서 방화벽을 켜고 실습망(`192.168.0.0/24`)을 허용해 둔 경우의 화면입니다.
 
 ```
-Status: inactive
-Rules updated
+Status: active
+
+To                         Action      From
+--                         ------      ----
+OpenSSH                    ALLOW       Anywhere                  
+Anywhere                   ALLOW       192.168.0.0/24            
+OpenSSH (v6)               ALLOW       Anywhere (v6)             
+
+Rule added
 ```
+
+| 화면 | 의미 |
+|---|---|
+| `Anywhere ALLOW 192.168.0.0/24` | 01강에서 넣은 규칙. 이것만으로도 Kali의 웹 접속은 이미 허용됨 |
+| `Rule added` | 이번에 Kali(`192.168.0.10`)의 80·443번만 허용하는 규칙을 하나 더 넣음. 겹쳐도 문제없음 |
+
+> 규칙 목록은 이전 실습에서 무엇을 넣었는지에 따라 다를 수 있습니다(예: `OpenSSH` 대신 `22/tcp`). 방화벽이 꺼져 있으면 `Status: inactive` 다음에 `Rules updated` 가 나오고, 같은 규칙을 전에 넣은 적이 있으면 `Skipping adding existing rule` 이 나옵니다. 어느 경우든 그대로 진행합니다.
+{: .prompt-info }
 
 | 명령·옵션 | 설명 |
 |---|---|
@@ -522,6 +537,9 @@ openssl req -x509 -newkey rsa:2048 -nodes -days 3650 \
   -subj "/C=KR/O=LabOrg/CN=Lab Root CA"
 ```
 
+> 이 블록은 **한 번만** 실행합니다. 다시 실행하면 `ca.key`·`ca.crt` 가 **새 CA로 덮어써져**, 이미 발급한 서버 인증서와 Kali에 설치한 CA 인증서가 더 이상 맞지 않습니다. 실수로 다시 실행했다면 실습 2부터 2.4절 실습 4까지를 다시 진행합니다.
+{: .prompt-warning }
+
 키를 만드는 동안 점(`.`)과 `+` 가 몇 줄 출력되고 `-----` 로 끝납니다. 내용은 실행할 때마다 다릅니다.
 
 ```
@@ -648,6 +666,7 @@ total 28
 | `notAfter` | 1년 뒤 만료 |
 | `DNS:ubuntu.lab.local, IP Address:192.168.0.30` | 이 두 주소로 접속할 때만 인증서가 유효 |
 | `ca.key`, `server.key` 가 `-rw-------` | **개인키는 주인만 읽을 수 있음**(600). 인증서(`.crt`)는 공개해도 되므로 644 |
+| 파일 크기(`1704` 등) | 키 값에 따라 몇 바이트씩 달라질 수 있음(예: 1700) |
 
 > **`ca.key` 는 이 실습에서 가장 중요한 파일입니다.** 이 키를 가진 사람은 **어떤 사이트의 인증서든** 만들 수 있고, `ca.crt` 를 믿는 모든 PC가 그 가짜 인증서를 믿습니다. 실제 CA는 루트 키를 인터넷과 분리된 장비에 보관합니다.
 {: .prompt-danger }
@@ -1081,7 +1100,7 @@ curl -sv -o /dev/null https://192.168.0.30/ 2>&1 | grep -E '^\* (TLS|SSL conn)'
 
 ### [실습 2] (Kali) Wireshark로 Handshake 캡처 — 비밀번호가 숨는지 확인
 
-1.1절 실습 2처럼 캡처 필터 `tcp port 80 or tcp port 443` 으로 `eth0` 캡처를 시작하고, 디스플레이 필터에 `tls` 를 입력합니다. 1.1절과 **똑같은 아이디·비밀번호**를 이번에는 HTTPS로, TLS 1.2와 TLS 1.3 각각 한 번씩 보냅니다.
+Wireshark 위쪽의 파란 상어 지느러미 버튼(**Start capturing packets**)을 눌러 새 캡처를 시작합니다. 1.1절에서 잡은 패킷을 저장할지 묻는 창(**Unsaved packets...**)이 뜨면 **Continue without Saving** 을 누릅니다. 캡처 필터(`tcp port 80 or tcp port 443`)와 인터페이스(`eth0`)는 1.1절 설정이 그대로 쓰입니다. 캡처가 시작되면 디스플레이 필터에 `tls` 를 입력합니다. 1.1절과 **똑같은 아이디·비밀번호**를 이번에는 HTTPS로, TLS 1.2와 TLS 1.3 각각 한 번씩 보냅니다.
 
 ```bash
 # === Kali ===

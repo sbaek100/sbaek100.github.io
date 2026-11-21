@@ -660,9 +660,11 @@ Nmap done: 1 IP address (1 host up) scanned in 0.66 seconds
 ```bash
 # === Ubuntu ===
 sudo a2enmod headers
-sudo sed -i '/SSLEngine on/a Header always set Strict-Transport-Security "max-age=31536000"' \
+grep -q 'Strict-Transport' /etc/apache2/sites-available/default-ssl.conf || \
+  sudo sed -i '/SSLEngine on/a Header always set Strict-Transport-Security "max-age=31536000"' \
   /etc/apache2/sites-available/default-ssl.conf
-sudo sed -i '/DocumentRoot/a Redirect permanent / https://ubuntu.lab.local/' \
+grep -q 'Redirect permanent' /etc/apache2/sites-available/000-default.conf || \
+  sudo sed -i '/^\s*DocumentRoot/a Redirect permanent / https://ubuntu.lab.local/' \
   /etc/apache2/sites-available/000-default.conf
 grep -h -E 'Strict-Transport|Redirect' /etc/apache2/sites-available/default-ssl.conf /etc/apache2/sites-available/000-default.conf
 sudo apache2ctl configtest
@@ -681,7 +683,8 @@ Syntax OK
 | 명령·설정 | 설명 |
 |---|---|
 | `a2enmod headers` | 응답 헤더를 추가하는 모듈(`mod_headers`)을 켬 |
-| `sed -i '/찾을 글자/a 넣을 줄'` | `찾을 글자` 가 있는 줄 **바로 아래(a, append)** 에 한 줄을 넣음 |
+| `sed -i '/찾을 글자/a 넣을 줄'` | `찾을 글자` 가 있는 줄 **바로 아래(a, append)** 에 한 줄을 넣음. `^\s*DocumentRoot` 는 주석(`#`)이 아닌, 줄 앞이 공백뿐인 `DocumentRoot` 줄만 찾음 |
+| `grep -q '...' 파일` 과 세로 막대 두 개 | 그 줄이 **이미 있으면 sed를 실행하지 않음**. 블록을 실수로 두 번 실행해도 같은 줄이 두 번 들어가지 않음 |
 | `Header always set Strict-Transport-Security "max-age=31536000"` | HTTPS 사이트(443)의 모든 응답에 HSTS 헤더 추가. 31536000초 = **1년** |
 | `Redirect permanent / https://ubuntu.lab.local/` | HTTP 사이트(80)로 온 요청을 HTTPS로 **영구 이동(301)**. 이동할 주소는 IP가 아니라 **이름**으로 적음(아래 주의 참고) |
 
@@ -694,7 +697,7 @@ Kali가 `ubuntu.lab.local` 을 찾을 수 있도록 hosts 파일에 한 줄을 �
 
 ```bash
 # === Kali ===
-echo '192.168.0.30 ubuntu.lab.local' | sudo tee -a /etc/hosts
+grep -q 'ubuntu.lab.local' /etc/hosts || echo '192.168.0.30 ubuntu.lab.local' | sudo tee -a /etc/hosts
 ```
 
 ```
@@ -704,6 +707,7 @@ echo '192.168.0.30 ubuntu.lab.local' | sudo tee -a /etc/hosts
 | 명령·옵션 | 설명 |
 |---|---|
 | `sudo tee -a /etc/hosts` | 받은 줄을 hosts 파일 **끝에 덧붙임**(`-a`, append)과 동시에 화면에 출력 |
+| `grep -q ... /etc/hosts` 와 세로 막대 두 개 | 이미 그 이름이 hosts 파일에 있으면 덧붙이지 않음(이때는 **출력 없음**) |
 
 ```bash
 # === Kali ===
@@ -759,8 +763,27 @@ Kali의 Firefox 주소창에 `http://ubuntu.lab.local` 을 **`http://` 까지 �
 | 8 | 인증서 만료·폐지 | 유효기간 관리·자동 갱신(Let's Encrypt는 90일), CRL·OCSP 확인 | 06-1 2.1 |
 | 9 | 서버 정보 노출 | 정기 점검(`nmap ssl-enum-ciphers`, testssl.sh) | 3.4 |
 
-> 이 실습에서 바꾼 설정(`tls-hardening.conf`, HSTS, HTTP→HTTPS 이동)은 그대로 두어도 다음 강의 진행에 문제가 없습니다. 원래대로 돌리려면 `sudo a2disconf tls-hardening` 을 실행하고, 두 사이트 설정 파일에서 추가한 줄을 지운 뒤 Apache를 다시 시작합니다. HTTP(80)로 접속하면 이제 HTTPS로 넘어가므로, 이후 강의에서 평문 HTTP 실습이 필요하면 `Redirect` 줄을 먼저 지웁니다.
+> 이 실습에서 바꾼 설정(`tls-hardening.conf`, HSTS, HTTP→HTTPS 이동)과 Kali hosts 파일의 `ubuntu.lab.local` 줄은 그대로 두어도 다음 강의 진행에 문제가 없습니다. 다만 HTTP(80)로 접속하면 이제 HTTPS로 넘어가므로, 이후 강의에서 평문 HTTP 실습이 필요하면 아래 명령으로 되돌립니다.
 {: .prompt-info }
+
+```bash
+# === Ubuntu ===
+sudo a2disconf tls-hardening
+sudo sed -i '/Strict-Transport-Security/d' /etc/apache2/sites-available/default-ssl.conf
+sudo sed -i '/Redirect permanent/d' /etc/apache2/sites-available/000-default.conf
+sudo systemctl restart apache2
+```
+
+```
+Conf tls-hardening disabled.
+To activate the new configuration, you need to run:
+  systemctl reload apache2
+```
+
+| 명령·옵션 | 설명 |
+|---|---|
+| `a2disconf tls-hardening` | 3.4절에서 켠 TLS 강화 설정을 끔 |
+| `sed -i '/글자/d'` | `글자` 가 들어 있는 줄을 지움(`d`, delete) |
 
 ---
 
