@@ -861,5 +861,5 @@ To activate the new configuration, you need to run:
 - [ ] (Kali) `ubuntu.lab.local` 로 HTTP 접속하면 `301` 로 HTTPS로 이동하고, HTTPS 응답에 `Strict-Transport-Security` 가 붙는 것을 확인(IP 접속에는 HSTS가 적용되지 않는 이유 포함)
 - [ ] SSL Strip이 인증서 경고 없이 성공하는 이유와 HSTS가 이를 막는 원리를 설명 가능
 
-> 이로써 **06. SSL/TLS** 를 마칩니다. 다음은 **07. IPSec·SET·OTP** 입니다. 06-1 1.3절에서 남겨 둔 문제, 즉 **SSL로 카드번호를 보내면 상점에 그대로 노출되는 문제**를 SET이 어떻게 해결하는지 살펴봅니다.
+> 이로써 **06. SSL/TLS** 를 마칩니다.
 {: .prompt-info }
