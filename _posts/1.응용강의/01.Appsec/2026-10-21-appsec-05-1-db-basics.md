@@ -42,6 +42,7 @@ mermaid: false
 | `employees` | 테이블 | 직원 번호, 이름, 이메일, 부서 번호, **급여(민감 정보)** |
 | `appuser` / `apppass123` | DB 계정 | 웹 애플리케이션이 쓰는 계정. **최소 권한만** 줌 |
 | `emp_public` | 뷰 | 급여를 뺀 직원 목록 |
+| `hr_kim`, `hr_reader`, `hr_writer` | 계정·역할 | 2.5절 실습용. 실습 끝에 **지움** |
 
 | 절 | Ubuntu에서 할 일 |
 |---|---|
@@ -52,6 +53,7 @@ mermaid: false
 | 2.2 권한 부여·회수 | 최소 권한 계정 만들기, 권한 밖 작업 거부 확인 |
 | 2.3 뷰 | 급여를 숨긴 뷰만 보여 주기 |
 | 2.4 로그인 실패 잠금 | 비밀번호 3회 실패 시 계정 잠금과 해제 |
+| 2.5 관리자 권한 제한·암호 정책·역할 | 관리자급 계정 점검, 약한 암호 거부, 역할(Role)로 권한 묶어 주기 |
 
 ---
 
@@ -86,7 +88,7 @@ DB에는 개인정보, 급여, 카드번호 같은 **회사의 가장 중요한 
 
 | DB 보안 요구사항 | 뜻 | 이 과정에서 다루는 곳 |
 |---|---|---|
-| **부적절한 접근 방지** | 허가된 사용자만, 허가된 범위에서 접근 | 2.2·2.3절 |
+| **부적절한 접근 방지** | 허가된 사용자만, 허가된 범위에서 접근 | 2.2·2.3·2.5절 |
 | **사용자 인증** | 접속하는 사람이 누구인지 확인 | 2.1절 |
 | **무결성 보장** | 잘못된 값, 허가 없는 변경을 막음 | 1.2절(키), 1.3절(트랜잭션) |
 | **추론 방지** | 공개된 값으로 비밀 값을 알아내지 못하게 함 | 05-2 3.3절 |
@@ -912,7 +914,320 @@ sudo mariadb -e 'SET GLOBAL max_password_errors = 4294967295'
 
 ---
 
-## 2.5 DB 보안 정책
+## 2.5 관리자 권한 제한, 암호 정책, 역할(RBAC)
+
+### [이론]
+
+**접근통제**는 사용자가 가진 **접근 권한(읽기, 쓰기 등)에 따라 논리적인 DB를 나누어 통제**하는 것입니다. 2.2~2.3절의 `GRANT`·`REVOKE`·뷰가 모두 접근통제 수단입니다. DBMS를 설치한 뒤에는 다음도 점검합니다.
+
+| 점검 항목 | 방법 |
+|---|---|
+| **관리자(DBA) 권한 제한** | 불필요한 DBA 권한을 제거합니다. 관리자 권한은 여러 사람에게 **분산**하는 것이 아니라 **제한**합니다 |
+| 공용 관리자 계정 | 여러 명이 한 관리자 계정을 같이 쓰지 않고, **사용자별 계정**을 만들어 누가 했는지 추적합니다 |
+| 응용 프로그램 계정 | 응용 프로그램이 DBA 계정을 쓰지 않고 **일반 계정 권한**만 갖게 합니다(2.2절) |
+| 기본·guest 계정 | 쓰지 않는 기본 계정과 guest 계정은 막거나 지웁니다(2.1절) |
+| **복잡한 암호** | 모든 계정에 길이와 문자 종류 조건을 걸어 약한 암호를 거부합니다 |
+| 정기 백업 | 장애와 침해에 대비해 데이터를 정기적으로 백업합니다 |
+
+계정마다 권한을 하나씩 주면 사람이 늘수록 관리가 어렵습니다. **역할(Role)** 은 권한 묶음에 이름을 붙여 두고 사용자에게는 역할만 주는 방식이며, 2.6절의 **RBAC**(역할 기반 접근통제)에 해당합니다. MS-SQL의 고정 데이터베이스 역할과 이 실습의 역할은 다음처럼 대응합니다.
+
+| MS-SQL 역할 | 뜻 | 이 실습에서 |
+|---|---|---|
+| `db_owner` | **해당 DB**의 모든 유지관리·구성 작업 | `GRANT ALL ON companydb.*` 에 해당 |
+| `db_datareader` | 해당 DB의 모든 사용자 테이블 **읽기** | `hr_reader` (`SELECT`) |
+| `db_datawriter` | **해당 DB의** 모든 사용자 테이블에 데이터 **추가·수정·삭제**(모든 DB가 아님) | `hr_writer` (`INSERT`·`UPDATE`·`DELETE`) |
+| `sysadmin`(서버 역할) | 서버 전체 관리 | `SUPER` 같은 전체(`*.*`) 권한 |
+
+> `db_datawriter` 는 **쓰기 역할일 뿐 읽기 권한을 포함하지 않습니다.** 실습 3에서 `hr_writer` 로 `SELECT` 가 거부되는 것을 확인합니다.
+{: .prompt-warning }
+
+### [실습 1] (Ubuntu) 관리자급 계정 점검
+
+서버 전체를 관리할 수 있는 `SUPER` 권한을 가진 계정을 찾습니다.
+
+```bash
+# === Ubuntu ===
+sudo mariadb
+```
+
+```sql
+-- === Ubuntu: MariaDB console (sudo mariadb) ===
+SELECT GRANTEE, PRIVILEGE_TYPE FROM information_schema.USER_PRIVILEGES WHERE PRIVILEGE_TYPE = 'SUPER';
+```
+
+```
+MariaDB [(none)]> SELECT GRANTEE, PRIVILEGE_TYPE FROM information_schema.USER_PRIVILEGES WHERE PRIVILEGE_TYPE = 'SUPER';
++--------------------+----------------+
+| GRANTEE            | PRIVILEGE_TYPE |
++--------------------+----------------+
+| 'root'@'localhost' | SUPER          |
++--------------------+----------------+
+1 row in set (0.001 sec)
+```
+
+| 화면 | 의미 |
+|---|---|
+| `'root'@'localhost'` 한 줄 | 관리자 권한을 가진 계정이 **root 하나뿐**이고, 그것도 서버 자신(`localhost`)에서만 접속 가능. 1.2~2.4절에서 만든 `appuser` 는 목록에 없음 |
+
+> 이 목록에 **모르는 계정**이나 응용 프로그램 계정이 보이면 관리자 권한을 회수합니다. 같은 서버를 여러 사람이 관리해야 한다면 root를 같이 쓰지 말고 사람마다 계정을 만들어 권한을 나누어 줍니다.
+{: .prompt-tip }
+
+### [실습 2] (Ubuntu) 약한 암호 거부
+
+MariaDB에 들어 있는 `simple_password_check` 플러그인으로 암호 조건을 겁니다. 같은 콘솔에서 이어서 입력합니다.
+
+```sql
+-- === Ubuntu: MariaDB console (sudo mariadb) ===
+INSTALL SONAME 'simple_password_check';
+SHOW VARIABLES LIKE 'simple_password_check%';
+CREATE USER 'hr_kim'@'localhost' IDENTIFIED BY 'abc123';
+CREATE USER 'hr_kim'@'localhost' IDENTIFIED BY 'Summer#2026x';
+```
+
+```
+MariaDB [(none)]> INSTALL SONAME 'simple_password_check';
+Query OK, 0 rows affected (0.001 sec)
+
+MariaDB [(none)]> SHOW VARIABLES LIKE 'simple_password_check%';
++-----------------------------------------+-------+
+| Variable_name                           | Value |
++-----------------------------------------+-------+
+| simple_password_check_digits            | 1     |
+| simple_password_check_letters_same_case | 1     |
+| simple_password_check_minimal_length    | 8     |
+| simple_password_check_other_characters  | 1     |
++-----------------------------------------+-------+
+4 rows in set (0.000 sec)
+
+MariaDB [(none)]> CREATE USER 'hr_kim'@'localhost' IDENTIFIED BY 'abc123';
+ERROR 1819 (HY000): Your password does not satisfy the current policy requirements (simple_password_check)
+MariaDB [(none)]> CREATE USER 'hr_kim'@'localhost' IDENTIFIED BY 'Summer#2026x';
+Query OK, 0 rows affected (0.001 sec)
+```
+
+| 명령·화면 | 설명 |
+|---|---|
+| `INSTALL SONAME 'simple_password_check';` | 암호 검사 플러그인을 불러옴 |
+| `..._minimal_length 8` | 최소 **8글자** |
+| `..._digits 1` | **숫자** 1개 이상 |
+| `..._letters_same_case 1` | **대문자와 소문자** 각각 1개 이상 |
+| `..._other_characters 1` | **특수문자** 1개 이상 |
+| `ERROR 1819 ... policy requirements` | `abc123` 은 짧고 대문자·특수문자가 없어 **거부** |
+| `Summer#2026x` 성공 | 네 가지 조건을 모두 채워 **계정 생성** |
+
+> 암호 조건은 계정을 **새로 만들거나 암호를 바꿀 때** 검사합니다. 이미 있는 `appuser` 의 암호(`apppass123`)는 영향을 받지 않습니다.
+{: .prompt-info }
+
+### [실습 3] (Ubuntu) 역할로 권한 묶어 주기
+
+읽기 역할 `hr_reader` 와 쓰기 역할 `hr_writer` 를 만들고, `hr_kim` 에게 읽기 역할만 줍니다. 같은 콘솔에서 이어서 입력합니다.
+
+```sql
+-- === Ubuntu: MariaDB console (sudo mariadb) ===
+CREATE ROLE hr_reader;
+CREATE ROLE hr_writer;
+GRANT SELECT ON companydb.* TO hr_reader;
+GRANT INSERT, UPDATE, DELETE ON companydb.* TO hr_writer;
+GRANT hr_reader TO 'hr_kim'@'localhost';
+SET DEFAULT ROLE hr_reader FOR 'hr_kim'@'localhost';
+SHOW GRANTS FOR 'hr_kim'@'localhost';
+exit
+```
+
+```
+MariaDB [(none)]> CREATE ROLE hr_reader;
+Query OK, 0 rows affected (0.001 sec)
+
+MariaDB [(none)]> CREATE ROLE hr_writer;
+Query OK, 0 rows affected (0.001 sec)
+
+MariaDB [(none)]> GRANT SELECT ON companydb.* TO hr_reader;
+Query OK, 0 rows affected (0.001 sec)
+
+MariaDB [(none)]> GRANT INSERT, UPDATE, DELETE ON companydb.* TO hr_writer;
+Query OK, 0 rows affected (0.000 sec)
+
+MariaDB [(none)]> GRANT hr_reader TO 'hr_kim'@'localhost';
+Query OK, 0 rows affected (0.000 sec)
+
+MariaDB [(none)]> SET DEFAULT ROLE hr_reader FOR 'hr_kim'@'localhost';
+Query OK, 0 rows affected (0.000 sec)
+
+MariaDB [(none)]> SHOW GRANTS FOR 'hr_kim'@'localhost';
++---------------------------------------------------------------------------------------------------------------+
+| Grants for hr_kim@localhost                                                                                   |
++---------------------------------------------------------------------------------------------------------------+
+| GRANT `hr_reader` TO `hr_kim`@`localhost`                                                                     |
+| GRANT USAGE ON *.* TO `hr_kim`@`localhost` IDENTIFIED BY PASSWORD '*354E96573F31B9FE9E5C22A601D4B4EA5A77E704' |
+| SET DEFAULT ROLE `hr_reader` FOR `hr_kim`@`localhost`                                                         |
++---------------------------------------------------------------------------------------------------------------+
+3 rows in set (0.000 sec)
+
+MariaDB [(none)]> exit
+Bye
+```
+
+| 명령 | 설명 |
+|---|---|
+| `CREATE ROLE 역할;` | 권한을 담을 **역할**을 만듦(계정과 비슷하지만 로그인은 못 함) |
+| `GRANT 권한 ON companydb.* TO 역할;` | 권한을 사용자가 아니라 **역할에** 줌. `companydb.*` 는 `companydb` 의 모든 테이블 |
+| `GRANT 역할 TO 사용자;` | 사용자에게 역할을 줌 |
+| `SET DEFAULT ROLE ... FOR ...;` | 접속하면 **자동으로 켜질 역할**을 정함 |
+
+`hr_kim` 으로 접속해 읽기와 쓰기를 시험합니다. 암호는 `Summer#2026x` 입니다.
+
+```bash
+# === Ubuntu ===
+mariadb -u hr_kim -p companydb
+```
+
+```sql
+-- === Ubuntu: MariaDB console (hr_kim) ===
+SELECT CURRENT_ROLE();
+SELECT COUNT(*) FROM employees;
+INSERT INTO employees VALUES (9,'Test','test@lab.test',10,1);
+SET ROLE hr_writer;
+exit
+```
+
+```
+MariaDB [companydb]> SELECT CURRENT_ROLE();
++----------------+
+| CURRENT_ROLE() |
++----------------+
+| hr_reader      |
++----------------+
+1 row in set (0.000 sec)
+
+MariaDB [companydb]> SELECT COUNT(*) FROM employees;
++----------+
+| COUNT(*) |
++----------+
+|        6 |
++----------+
+1 row in set (0.000 sec)
+
+MariaDB [companydb]> INSERT INTO employees VALUES (9,'Test','test@lab.test',10,1);
+ERROR 1142 (42000): INSERT command denied to user 'hr_kim'@'localhost' for table `companydb`.`employees`
+MariaDB [companydb]> SET ROLE hr_writer;
+ERROR 1959 (OP000): Invalid role specification `hr_writer`
+MariaDB [companydb]> exit
+Bye
+```
+
+| 화면 | 의미 |
+|---|---|
+| `hr_reader` | 접속하면 읽기 역할이 자동으로 켜짐 |
+| `COUNT(*)` 6 | 읽기는 **성공** |
+| `INSERT command denied` | 읽기 역할에는 쓰기 권한이 없어 **거부** |
+| `Invalid role specification` | `hr_kim` 은 `hr_writer` 를 **받지 못했으므로** 스스로 켤 수 없음 |
+
+관리자가 쓰기 역할을 추가로 줍니다.
+
+```bash
+# === Ubuntu ===
+sudo mariadb -e "GRANT hr_writer TO 'hr_kim'@'localhost'"
+mariadb -u hr_kim -p companydb
+```
+
+```sql
+-- === Ubuntu: MariaDB console (hr_kim) ===
+SET ROLE hr_writer;
+SELECT CURRENT_ROLE();
+INSERT INTO employees VALUES (9,'Test','test@lab.test',10,1);
+SELECT COUNT(*) FROM employees;
+SET ROLE hr_reader;
+SELECT COUNT(*) FROM employees;
+exit
+```
+
+```
+MariaDB [companydb]> SET ROLE hr_writer;
+Query OK, 0 rows affected (0.000 sec)
+
+MariaDB [companydb]> SELECT CURRENT_ROLE();
++----------------+
+| CURRENT_ROLE() |
++----------------+
+| hr_writer      |
++----------------+
+1 row in set (0.000 sec)
+
+MariaDB [companydb]> INSERT INTO employees VALUES (9,'Test','test@lab.test',10,1);
+Query OK, 1 row affected (0.001 sec)
+
+MariaDB [companydb]> SELECT COUNT(*) FROM employees;
+ERROR 1142 (42000): SELECT command denied to user 'hr_kim'@'localhost' for table `companydb`.`employees`
+MariaDB [companydb]> SET ROLE hr_reader;
+Query OK, 0 rows affected (0.000 sec)
+
+MariaDB [companydb]> SELECT COUNT(*) FROM employees;
++----------+
+| COUNT(*) |
++----------+
+|        7 |
++----------+
+1 row in set (0.000 sec)
+
+MariaDB [companydb]> exit
+Bye
+```
+
+| 화면 | 의미 |
+|---|---|
+| `SET ROLE hr_writer` 성공 | 받은 역할은 사용자가 필요할 때 **전환**해서 씀 |
+| `INSERT` 성공 | 쓰기 역할로 **추가 성공** |
+| `SELECT command denied` | 쓰기 역할에는 읽기 권한이 없어 **조회 거부**. 한 번에 켜지는 역할은 **하나**이므로 `SET ROLE` 은 앞 역할을 **대체**함 |
+| `hr_reader` 로 되돌린 뒤 7 | 읽기 역할로 돌아오면 조회됨. 방금 넣은 행이 보임 |
+
+실습이 끝났으면 **관리자**가 시험 행과 실습용 계정·역할·플러그인을 지웁니다. 05-2의 통계 실습이 6명 기준이므로 시험 행은 반드시 지웁니다.
+
+```bash
+# === Ubuntu ===
+sudo mariadb
+```
+
+```sql
+-- === Ubuntu: MariaDB console (sudo mariadb) ===
+DELETE FROM companydb.employees WHERE emp_id = 9;
+DROP USER 'hr_kim'@'localhost';
+DROP ROLE hr_reader, hr_writer;
+UNINSTALL SONAME 'simple_password_check';
+SELECT COUNT(*) FROM companydb.employees;
+exit
+```
+
+```
+MariaDB [(none)]> DELETE FROM companydb.employees WHERE emp_id = 9;
+Query OK, 1 row affected (0.001 sec)
+
+MariaDB [(none)]> DROP USER 'hr_kim'@'localhost';
+Query OK, 0 rows affected (0.001 sec)
+
+MariaDB [(none)]> DROP ROLE hr_reader, hr_writer;
+Query OK, 0 rows affected (0.001 sec)
+
+MariaDB [(none)]> UNINSTALL SONAME 'simple_password_check';
+Query OK, 0 rows affected (0.000 sec)
+
+MariaDB [(none)]> SELECT COUNT(*) FROM companydb.employees;
++----------+
+| COUNT(*) |
++----------+
+|        6 |
++----------+
+1 row in set (0.000 sec)
+
+MariaDB [(none)]> exit
+Bye
+```
+
+> 역할을 쓰면 직원이 바뀔 때마다 권한을 일일이 고치지 않고 **역할만 주거나 회수**하면 됩니다.
+{: .prompt-tip }
+
+---
+
+## 2.6 DB 보안 정책
 
 ### [이론]
 
@@ -932,7 +1247,18 @@ DB 보안 정책은 회사 전체 정보보안 정책의 일부입니다. 정책
 |---|---|---|
 | **DAC**(임의적 접근통제) | **객체 소유자**가 다른 사용자에게 권한을 줌 | `GRANT`·`REVOKE`(이 글의 실습) |
 | **MAC**(강제적 접근통제) | 시스템이 **보안 등급**(비밀·대외비 등)에 따라 강제 | 다단계 보안 DB. 05-2의 다중 인스턴스화 |
-| **RBAC**(역할 기반 접근통제) | **역할(직무)** 에 권한을 주고, 사용자는 역할을 받음 | MS-SQL `sysadmin` 같은 역할, MariaDB `CREATE ROLE` |
+| **RBAC**(역할 기반 접근통제) | **역할(직무)** 에 권한을 주고, 사용자는 역할을 받음 | MS-SQL `sysadmin` 같은 역할, MariaDB `CREATE ROLE`(2.5절 실습) |
+
+DB 보안 대책은 성격에 따라 세 가지로 나눕니다.
+
+| 구분 | 내용 | 예 |
+|---|---|---|
+| **관리적** 대책 | 사람과 조직이 지킬 규칙 | **보안 표준지침**, 정책, 교육, 책임 분담 |
+| 물리적 대책 | 장비가 있는 장소의 보호 | 서버실 출입통제, 백업 매체 보관 |
+| 기술적 대책 | 시스템 기능으로 막기 | 접근통제, 암호화, 방화벽·IDS, 감사 로그 |
+
+> 가장 **강력하고 포괄적**인 방안은 기술적 수단(암호화, 접근통제, 방화벽)이 아니라 **보안 표준지침을 세우는 관리적 대책**입니다. 기술적 수단도 규칙과 책임이 없으면 제대로 운영되지 않기 때문입니다.
+{: .prompt-warning }
 
 ---
 
@@ -984,6 +1310,30 @@ DB 보안 정책은 회사 전체 정보보안 정책의 일부입니다. 정책
 >    (나) 모든 임직원이 최신 버전의 정책을 자유롭게 볼 수 있어야 한다
 >    (다) 모든 임직원이 목적과 내용을 이해하도록 교육·홍보해야 한다
 >    (라) 정기적으로 또는 필요할 때 검토하고 갱신해야 한다
+>
+> 9. 사용자가 가진 접근권한(읽기, 쓰기 등)에 따라 논리적인 DB를 분리하여 통제하는 것은?
+>    ① 추론 통제
+>    ② 접근통제
+>    ③ 흐름 통제
+>    ④ 직접 통제
+>
+> 10. 다음 중 가장 강력하고 포괄적인 DB 보안 방안은?
+>     ① sa 계정에 암호를 할당하고 데이터를 암호화
+>     ② DBMS 접근통제
+>     ③ 방화벽 및 IDS 운용
+>     ④ 보안 표준지침 구축
+>
+> 11. 데이터베이스 시스템에서 고려해야 할 보안 방안이 **아닌** 것은?
+>     ① 관리자 권한 분산
+>     ② 정기적으로 모든 데이터를 백업
+>     ③ guest 계정 사용 금지
+>     ④ 모든 SQL Server 계정에 복잡한 암호 사용
+>
+> 12. 다음 중 MS-SQL의 `db_datawriter` 역할에 대한 설명으로 옳은 것은?
+>     ① 서버의 모든 데이터베이스에서 데이터를 추가·삭제·변경할 수 있다
+>     ② 해당 데이터베이스의 모든 사용자 테이블에서 데이터를 추가·삭제·변경할 수 있다
+>     ③ 해당 데이터베이스에서 모든 유지관리와 구성 작업을 수행한다
+>     ④ 해당 데이터베이스의 모든 사용자 테이블을 읽을 수 있다
 {: .prompt-tip }
 
 <details>
@@ -996,7 +1346,11 @@ DB 보안 정책은 회사 전체 정보보안 정책의 일부입니다. 정책
 5. <strong>③</strong> system의 기본 비밀번호는 manager다(2.1절).<br>
 6. <strong>②</strong> sp_dropsrvrolemember는 user01을 sysadmin 역할에서 빼는 명령이며 계정을 지우지 않는다(2.1절).<br>
 7. <strong>CASCADE</strong> (2.2절)<br>
-8. <strong>가, 나, 다, 라 모두</strong> (2.5절)
+8. <strong>가, 나, 다, 라 모두</strong> (2.6절)<br>
+9. <strong>②</strong> (2.5절)<br>
+10. <strong>④</strong> DB 보안 방안은 관리적·물리적·기술적으로 나뉘며, 가장 강력하고 포괄적인 것은 보안 표준지침 같은 관리적 대책이다(2.6절).<br>
+11. <strong>①</strong> 관리자 권한은 분산이 아니라 제한해야 한다. 불필요한 DBA 권한 제거, 공용 DBA 계정 대신 사용자별 계정, 응용 프로그램은 일반 계정 권한을 쓴다(2.5절).<br>
+12. <strong>②</strong> ①은 "해당 DB"가 아니라 "모든 DB"라서 틀리고, ③은 db_owner, ④는 db_datareader의 설명이다(2.5절).
 
 </details>
 
@@ -1013,6 +1367,10 @@ DB 보안 정책은 회사 전체 정보보안 정책의 일부입니다. 정책
 - [ ] `WITH GRANT OPTION`, `CASCADE`, `RESTRICT` 의 뜻을 설명 가능
 - [ ] (Ubuntu) 급여를 뺀 뷰 `emp_public` 에만 권한을 주고, 원래 테이블 조회가 거부되는 것을 확인
 - [ ] (Ubuntu) `max_password_errors` 로 3회 실패 후 잠금(ERROR 4150)과 `FLUSH PRIVILEGES` 해제를 확인
+- [ ] (Ubuntu) `SUPER` 권한을 가진 계정을 조회해 관리자급 계정이 root뿐인 것을 확인, 관리자 권한은 분산이 아니라 제한한다는 점을 설명 가능
+- [ ] (Ubuntu) `simple_password_check` 로 약한 암호(ERROR 1819)가 거부되는 것을 확인
+- [ ] (Ubuntu) 읽기·쓰기 역할을 만들어 `hr_kim` 에게 주고, 쓰기 역할에는 읽기 권한이 없는 것(ERROR 1142)을 확인한 뒤 실습 계정·역할·시험 행을 정리
+- [ ] 관리적·물리적·기술적 대책을 구분하고, 가장 포괄적인 것이 보안 표준지침(관리적)임을 설명 가능
 
 > 다음 글 **05-2** 에서는 이 `companydb` 를 그대로 이어 써서, 권한을 지켜도 정보가 새는 **집성·추론** 공격과, DB 암호화·감사 같은 보안 대책을 실습합니다. 데이터베이스와 `appuser` 계정을 **지우지 마세요.**
 {: .prompt-info }
