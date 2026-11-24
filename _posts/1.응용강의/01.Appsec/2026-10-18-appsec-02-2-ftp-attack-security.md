@@ -473,21 +473,33 @@ sftp> bye
 >    ② bounce 공격
 >    ③ anonymous ftp 공격
 >    ④ ARP 스푸핑 공격
->    
+{: .prompt-tip }
+
+**정답:** **④** ARP 스푸핑은 FTP가 아니라 네트워크 계층의 스니핑·변조 기법이다. brute force는 로그인 시도, bounce는 PORT 명령 악용, anonymous는 익명 계정 악용으로 모두 FTP 서비스의 공격이다.
+
 > 2. FTP Bounce 공격에 대한 설명으로 옳은 것은?
 >    ① 분산 반사 공격(DRDoS)으로 악용된다
 >    ② PORT 명령을 악용하여 외부에서 직접 접근 불가능한 내부망 컴퓨터의 포트에 FTP 서버를 통해 접근한다
 >    ③ 로그인 응답 속도 차이로 계정 존재 여부를 추측한다
 >    ④ active, passive 모드를 임의로 변경한다
->    
+{: .prompt-tip }
+
+**정답:** **②** 공격자가 PORT 명령에 다른 호스트의 IP와 포트를 적어 FTP 서버가 대신 접속하게 만든다. 외부에서 직접 닿지 않는 내부망 포트를 FTP 서버를 중계로 스캔·접근하는 방식이다. ①은 UDP 증폭 같은 반사 공격, ③은 응답 시간 차이로 계정을 추측하는 계정 열거, ④는 모드와 무관한 설명이다.
+
 > 3. 익명 사용자가 서버에 쓰기 권한이 있을 때 악성코드 생성이 가능한 공격은?
->    
+{: .prompt-tip }
+
+**정답:** **Anonymous FTP 공격** — 익명 접속에 쓰기 권한이 있으면 누구나 악성 파일을 올릴 수 있다. 그래서 익명 사용자에게는 쓰기를 주지 않아야 한다.
+
 > 4. secure FTP(SFTP)에서 사용하는 보안 프로토콜은? 
 >    ① TLS
 >    ② SSL
 >    ③ SSH
 >    ④ RSA
->    
+{: .prompt-tip }
+
+**정답:** **③ SSH** SFTP는 SSH 연결(22번) 위에서 동작한다. TLS·SSL을 쓰는 것은 FTPS이고, RSA는 암호 알고리즘이다.
+
 > 5. TFTP를 꼭 사용해야 할 때의 보안 조치로 적당하지 **않은** 것은?
 >    ① -s 옵션(secure 모드)으로 데몬을 띄운다
 >    ② TCP Wrapper로 허용된 IP에서만 접근하게 한다
@@ -495,16 +507,7 @@ sftp> bye
 >    ④ 유추하기 쉬운 패스워드를 사용하지 못하게 제한한다
 {: .prompt-tip }
 
-<details>
-<summary>정답 보기</summary>
-
-1. <strong>④</strong> ARP 스푸핑은 FTP 공격이 아니라 스니핑 기법이다.<br>
-2. <strong>②</strong><br>
-3. <strong>Anonymous FTP 공격</strong><br>
-4. <strong>③ SSH</strong><br>
-5. <strong>④</strong> TFTP에는 패스워드(인증) 자체가 없으므로 패스워드 제한은 대책이 될 수 없다.
-
-</details>
+**정답:** **④** TFTP에는 패스워드(인증) 자체가 없으므로 패스워드 제한은 대책이 될 수 없다. ①·②·③은 접근 가능한 디렉터리와 IP를 좁히는 실제 대책이다.
 
 ---
 

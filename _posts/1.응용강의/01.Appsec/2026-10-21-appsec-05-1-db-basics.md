@@ -1269,66 +1269,98 @@ DB 보안 대책은 성격에 따라 세 가지로 나눕니다.
 >    ② GRANT READ ON STUDENT TO STAFF01
 >    ③ ALLOW SELECT ON STUDENT TO STAFF01
 >    ④ GRANT SELECT ON STUDENT TO STAFF01
->
+{: .prompt-tip }
+
+**정답:** **④** 읽기 권한은 SELECT이고 권한을 주는 명령은 GRANT이다. ①·③은 ALLOW라는 SQL 명령이 없고, ②는 READ라는 권한 이름이 없어 틀린다. 다시 줄 수 있게 하라는 조건이 없으므로 WITH GRANT OPTION은 붙이지 않는다(2.2절).
+
 > 2. 다음 설명에 해당하는 키는?
 >    - 여러 후보키 가운데 기본키로 선정되고 남은 나머지 키
 >    - 기본키를 `<학번>` 으로 선정하였다면 `<이름, 학과>` 를 가리킴
->
 >    ① Candidate Key
 >    ② Primary Key
 >    ③ Alternate Key
 >    ④ Foreign Key
->
+{: .prompt-tip }
+
+**정답:** **③** 후보키 중 기본키로 뽑히고 남은 키가 대체키(Alternate Key)이다. 학번이 기본키이면 같은 후보키였던 `<이름, 학과>` 가 대체키가 된다(1.2절).
+
 > 3. 다음 중 DDL(데이터 정의어)에 해당하는 것은?
 >    ① CREATE
 >    ② SELECT
 >    ③ INSERT
 >    ④ UPDATE
->
+{: .prompt-tip }
+
+**정답:** **①** 구조를 만들고 바꾸고 지우는 CREATE·ALTER·DROP이 DDL이다. SELECT·INSERT·UPDATE는 데이터를 다루는 DML이다(1.3절).
+
 > 4. 사용자별로 볼 수 있는 열을 정하기 위해, 하나 이상의 기본 테이블로부터 만들어 사용자에게 보여 주는 가상 테이블은?
 >    ① DDL
 >    ② 뷰(View)
 >    ③ SQL
 >    ④ DCL
->
+{: .prompt-tip }
+
+**정답:** **②** 하나 이상의 테이블에서 필요한 열만 골라 보여 주는 가상 테이블은 뷰이다. 사용자마다 다른 뷰를 주면 볼 수 있는 열을 제한할 수 있다. DDL·DCL은 명령의 분류이고, SQL은 언어 이름이다(2.3절).
+
 > 5. Oracle을 설치할 때 생기는 기본 계정과 기본 비밀번호의 연결이 **틀린** 것은?
 >    ① sys – change_on_install
 >    ② scott – tiger
 >    ③ system – manage
 >    ④ dbsnmp – dbsnmp
->
+{: .prompt-tip }
+
+**정답:** **③** system의 기본 비밀번호는 manage가 아니라 manager이다. 나머지 sys-change_on_install, scott-tiger, dbsnmp-dbsnmp는 맞는 연결이다. 그래서 설치 직후 기본 비밀번호를 바꿔야 한다(2.1절).
+
 > 6. DB 보안 설정 명령과 그 의미의 연결이 **틀린** 것은?
 >    ① `ALTER LOGIN sa WITH PASSWORD = 'test_password'` – sa 계정의 비밀번호 변경
 >    ② `EXEC sp_dropsrvrolemember 'user01', 'sysadmin'` – user01 계정과 sysadmin 계정을 삭제
 >    ③ `CREATE PROFILE grace_5 LIMIT FAILED_LOGIN_ATTEMPTS 3` – 비밀번호를 3번까지 틀릴 수 있음
 >    ④ `CREATE PROFILE grace_5 LIMIT PASSWORD_LOCK_TIME 1` – 잠긴 계정을 1일 동안 잠가 둠
->
+{: .prompt-tip }
+
+**정답:** **②** sp_dropsrvrolemember는 user01을 sysadmin 역할에서 빼는 명령이다. 계정이나 역할을 삭제하지 않으므로 틀린 설명이다. ①은 ALTER LOGIN으로 비밀번호 변경, ③은 실패 허용 횟수 3회, ④는 잠금 유지 기간 1일이라 맞다(2.1절).
+
 > 7. `REVOKE` 로 권한을 회수할 때, 그 사용자가 다른 사용자에게 다시 부여한 권한까지 **연쇄적으로 회수**하는 옵션은?
->
+{: .prompt-tip }
+
+**정답:** **CASCADE** — REVOKE에 CASCADE를 붙이면 그 사용자가 다시 부여한 권한까지 연쇄적으로 회수된다. 붙이지 않으면 그 사용자의 권한만 회수된다(2.2절).
+
 > 8. DB 보안 정책을 작성·운영할 때의 고려 사항으로 옳은 것을 **모두** 고르면?
 >    (가) 최고경영자의 승인을 받아야 한다
 >    (나) 모든 임직원이 최신 버전의 정책을 자유롭게 볼 수 있어야 한다
 >    (다) 모든 임직원이 목적과 내용을 이해하도록 교육·홍보해야 한다
 >    (라) 정기적으로 또는 필요할 때 검토하고 갱신해야 한다
->
+{: .prompt-tip }
+
+**정답:** **가, 나, 다, 라 모두** — 보안 정책은 경영진 승인으로 권위를 얻고(가), 최신본을 모두가 볼 수 있어야 하며(나), 이해하도록 교육해야 지켜지고(다), 환경이 바뀌므로 정기 검토·갱신이 필요하다(라)(2.6절).
+
 > 9. 사용자가 가진 접근권한(읽기, 쓰기 등)에 따라 논리적인 DB를 분리하여 통제하는 것은?
 >    ① 추론 통제
 >    ② 접근통제
 >    ③ 흐름 통제
 >    ④ 직접 통제
->
+{: .prompt-tip }
+
+**정답:** **②** 접근권한에 따라 논리적 DB를 분리해 통제하는 것이 접근통제이다. 추론 통제는 낱개 정보를 모아 숨긴 정보를 알아내는 것을 막고, 흐름 통제는 정보가 허용되지 않은 곳으로 흘러가는 것을 막는다. 직접 통제는 보안 용어가 아니다(2.5절).
+
 > 10. 다음 중 가장 강력하고 포괄적인 DB 보안 방안은?
 >     ① sa 계정에 암호를 할당하고 데이터를 암호화
 >     ② DBMS 접근통제
 >     ③ 방화벽 및 IDS 운용
 >     ④ 보안 표준지침 구축
->
+{: .prompt-tip }
+
+**정답:** **④** DB 보안 방안은 관리적·물리적·기술적으로 나뉜다. 계정 암호·암호화·접근통제·방화벽은 모두 기술적 대책으로 일부분만 막는다. 정책과 절차를 담은 보안 표준지침은 관리적 대책으로 가장 포괄적이다(2.6절).
+
 > 11. 데이터베이스 시스템에서 고려해야 할 보안 방안이 **아닌** 것은?
 >     ① 관리자 권한 분산
 >     ② 정기적으로 모든 데이터를 백업
 >     ③ guest 계정 사용 금지
 >     ④ 모든 SQL Server 계정에 복잡한 암호 사용
->
+{: .prompt-tip }
+
+**정답:** **①** 관리자 권한은 분산이 아니라 제한해야 한다. 불필요한 DBA 권한을 없애고, 공용 DBA 계정 대신 사용자별 계정을 쓰며, 응용 프로그램은 일반 계정 권한으로 동작시킨다. ②·③·④는 권장 사항이다(2.5절).
+
 > 12. 다음 중 MS-SQL의 `db_datawriter` 역할에 대한 설명으로 옳은 것은?
 >     ① 서버의 모든 데이터베이스에서 데이터를 추가·삭제·변경할 수 있다
 >     ② 해당 데이터베이스의 모든 사용자 테이블에서 데이터를 추가·삭제·변경할 수 있다
@@ -1336,23 +1368,7 @@ DB 보안 대책은 성격에 따라 세 가지로 나눕니다.
 >     ④ 해당 데이터베이스의 모든 사용자 테이블을 읽을 수 있다
 {: .prompt-tip }
 
-<details>
-<summary>정답 보기</summary>
-
-1. <strong>④</strong> 읽기 권한은 SELECT, 부여 명령은 GRANT. 다시 줄 수 있게 하라는 조건이 없으므로 WITH GRANT OPTION은 붙이지 않는다(2.2절).<br>
-2. <strong>③</strong> (1.2절)<br>
-3. <strong>①</strong> SELECT·INSERT·UPDATE는 DML이다(1.3절).<br>
-4. <strong>②</strong> (2.3절)<br>
-5. <strong>③</strong> system의 기본 비밀번호는 manager다(2.1절).<br>
-6. <strong>②</strong> sp_dropsrvrolemember는 user01을 sysadmin 역할에서 빼는 명령이며 계정을 지우지 않는다(2.1절).<br>
-7. <strong>CASCADE</strong> (2.2절)<br>
-8. <strong>가, 나, 다, 라 모두</strong> (2.6절)<br>
-9. <strong>②</strong> (2.5절)<br>
-10. <strong>④</strong> DB 보안 방안은 관리적·물리적·기술적으로 나뉘며, 가장 강력하고 포괄적인 것은 보안 표준지침 같은 관리적 대책이다(2.6절).<br>
-11. <strong>①</strong> 관리자 권한은 분산이 아니라 제한해야 한다. 불필요한 DBA 권한 제거, 공용 DBA 계정 대신 사용자별 계정, 응용 프로그램은 일반 계정 권한을 쓴다(2.5절).<br>
-12. <strong>②</strong> ①은 "해당 DB"가 아니라 "모든 DB"라서 틀리고, ③은 db_owner, ④는 db_datareader의 설명이다(2.5절).
-
-</details>
+**정답:** **②** db_datawriter는 해당 DB의 모든 사용자 테이블에 대해 추가·삭제·변경을 허용한다. ①은 "해당 DB"가 아니라 "모든 DB"라서 틀리고, ③은 db_owner, ④는 db_datareader의 설명이다. 쓰기 역할에는 읽기가 포함되지 않는다(2.5절).
 
 ---
 

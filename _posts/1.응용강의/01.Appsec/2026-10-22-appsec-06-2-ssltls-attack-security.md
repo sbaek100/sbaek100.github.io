@@ -794,39 +794,60 @@ To activate the new configuration, you need to run:
 >    ② 사용자가 브라우저의 인증서 경고를 무시하고 접속을 계속한 경우
 >    ③ 서버가 TLS 1.3만 허용한 경우
 >    ④ 서버가 HSTS 헤더를 보낸 경우
->
+{: .prompt-tip }
+
+**정답:** **②** 사용자가 경고를 무시하고 접속을 계속하면 가짜 서버와 암호화 연결이 맺어져 공격자가 복호화할 수 있다. ①은 신뢰 목록에 없는 발급자의 인증서이므로 거부된다는 뜻이고, ③·④는 오히려 공격을 막는 설정이다(3.2절 실습 3).
+
 > 2. SSL 3.0으로 협상을 끌어내린 뒤 CBC 모드의 패딩 검사 약점을 이용해 암호문을 해독하는 공격은?
 >    ① Heartbleed
 >    ② POODLE
 >    ③ CRIME
 >    ④ SSL Strip
->
+{: .prompt-tip }
+
+**정답:** **②** SSL 3.0으로 협상을 끌어내린 뒤 CBC 패딩 검사 약점을 쓰는 것이 POODLE이다. Heartbleed는 메모리 노출, CRIME은 압축 길이 추측, SSL Strip은 HTTPS를 HTTP로 바꾸는 공격이다(3.3절).
+
 > 3. Heartbleed 취약점에 대한 설명으로 **틀린** 것은?
 >    ① OpenSSL의 하트비트 확장에서 길이 값의 경계 검사를 하지 않아 발생하였다
 >    ② 한 번에 최대 64KB의 서버 메모리 내용이 노출될 수 있다
 >    ③ 서버의 개인키가 노출될 수 있으므로 인증서 재발급이 필요하다
 >    ④ TLS 프로토콜 설계의 결함이므로 TLS 1.3으로 바꾸어야만 해결된다
->
+{: .prompt-tip }
+
+**정답:** **④** Heartbleed는 프로토콜 설계가 아니라 OpenSSL 구현의 버그이며, 라이브러리 업데이트(1.0.1g 이상)로 해결한다. TLS 1.3으로 바꾸지 않아도 된다(3.5절).
+
 > 4. 사용자의 첫 HTTP 요청을 가로채 HTTPS 링크를 HTTP로 바꾸어 전달하는 공격과, 이를 막기 위해 서버가 보내는 응답 헤더를 바르게 짝지은 것은?
 >    ① SSL Strip – Strict-Transport-Security
 >    ② SSL Strip – Content-Security-Policy
 >    ③ POODLE – Strict-Transport-Security
 >    ④ DROWN – X-Frame-Options
->
+{: .prompt-tip }
+
+**정답:** **①** 첫 HTTP 요청을 가로채 HTTPS 링크를 HTTP로 바꾸는 것이 SSL Strip이다. 서버가 Strict-Transport-Security(HSTS) 헤더를 보내면 브라우저가 이후 HTTPS로만 접속한다. ②·④의 헤더는 다른 공격(XSS, 클릭재킹)을 막는다(3.6절).
+
 > 5. 서버의 개인키가 나중에 유출되더라도 과거에 녹화된 통신 내용을 복호화할 수 없게 하는 성질과, 이를 제공하는 키 교환 방식으로 옳은 것은?
 >    ① 부인방지 – RSA 키 교환
 >    ② PFS(전방향 안전성) – ECDHE 키 교환
 >    ③ 무결성 – HMAC
 >    ④ PFS(전방향 안전성) – RSA 키 교환
->
+{: .prompt-tip }
+
+**정답:** **②** 개인키가 나중에 유출돼도 과거 통신이 풀리지 않는 성질이 PFS이다. RSA 키 교환은 서버 개인키로 과거 통신까지 복호화할 수 있다. ECDHE는 연결마다 임시 키를 쓰고 버려 PFS를 제공한다(06-1 2.5절, 3.4절).
+
 > 6. TLS의 압축 기능을 이용해 압축된 길이의 변화로 쿠키 등 비밀값을 추측하는 공격과 그 대책은?
->
+{: .prompt-tip }
+
+**정답:** **CRIME 공격, TLS 압축 기능 끄기** — 압축된 길이가 달라지는 것을 관찰해 쿠키 등 비밀값을 추측한다. 그래서 압축을 끈다(3.4절, `compressors: NULL`).
+
 > 7. 웹 서버의 SSL/TLS 보안 설정으로 적절하지 **않은** 것은?
 >    ① SSL 2.0, SSL 3.0을 비활성화한다
 >    ② ECDHE 키 교환과 AES-GCM 암호군을 우선 사용한다
 >    ③ 오래된 클라이언트 호환을 위해 RC4와 수출용(EXPORT) 암호군을 허용한다
 >    ④ OpenSSL 등 암호 라이브러리를 최신 버전으로 유지한다
->
+{: .prompt-tip }
+
+**정답:** **③** RC4와 수출용(EXPORT) 암호군은 이미 깨진 약한 암호이다. 호환을 위해 허용하면 이를 노린 다운그레이드 공격에 노출되므로 허용하면 안 된다(3.4절).
+
 > 8. 서버에 TLS 1.0으로 접속을 시도했더니 "alert protocol version" 오류가 발생하였다. 이 오류를 보낸 SSL/TLS의 하위 프로토콜은?
 >    ① Record
 >    ② Handshake
@@ -834,19 +855,7 @@ To activate the new configuration, you need to run:
 >    ④ Alert
 {: .prompt-tip }
 
-<details>
-<summary>정답 보기</summary>
-
-1. <strong>②</strong> 경고를 무시하면 가짜 서버와 암호화 연결이 맺어져 공격자가 복호화한다(3.2절 실습 3).<br>
-2. <strong>②</strong> (3.3절)<br>
-3. <strong>④</strong> Heartbleed는 프로토콜 설계가 아니라 OpenSSL 구현의 버그이며, 라이브러리 업데이트(1.0.1g 이상)로 해결한다(3.5절).<br>
-4. <strong>①</strong> (3.6절)<br>
-5. <strong>②</strong> RSA 키 교환은 서버 개인키로 과거 통신까지 복호화할 수 있다. ECDHE는 연결마다 임시 키를 쓰고 버린다(06-1 2.5절, 3.4절).<br>
-6. <strong>CRIME 공격, TLS 압축 기능 끄기</strong> (3.4절, `compressors: NULL`)<br>
-7. <strong>③</strong> RC4와 수출용 암호군은 깨진 암호로 허용하면 안 된다(3.4절).<br>
-8. <strong>④</strong> 오류·종료를 알리는 것은 Alert 프로토콜이다(protocol_version, 70번)(3.3절).
-
-</details>
+**정답:** **④** 오류·종료를 알리는 것은 Alert 프로토콜이다. 서버가 지원하지 않는 버전이면 protocol_version(70번) 경고를 보낸다(3.3절).
 
 ---
 
